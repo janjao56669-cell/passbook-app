@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>บัญชีรายรับ-รายจ่าย</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1B4332">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cover-green: #1B4332;
+    --cover-green-dark: #0F2B1D;
+    --page-cream: #FBF6EA;
+    --page-cream-2: #F5EEDC;
+    --brass: #B8922F;
+    --brass-light: #D4AF5A;
+    --ink: #23302B;
+    --ink-soft: #5C6B63;
+    --deposit: #1E6B3E;
+    --withdraw: #A13E3E;
+    --line: #DCD0AE;
+    --shadow: rgba(15, 43, 29, 0.18);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    margin: 0;
+    font-family: 'Noto Sans Thai', sans-serif;
+    background: linear-gradient(180deg, var(--cover-green-dark) 0%, var(--cover-green) 220px, #EDE6D2 220px, #EDE6D2 100%);
+    color: var(--ink);
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  .app-header {
+    padding: 28px 20px 18px;
+    text-align: center;
+    color: #F3E9CC;
+  }
+  .app-header .brand {
+    font-family: 'Noto Serif Thai', serif;
+    font-size: 15px;
+    letter-spacing: 4px;
+    color: var(--brass-light);
+    margin-bottom: 4px;
+  }
+  .app-header h1 {
+    font-family: 'Noto Serif Thai', serif;
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .passbook {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+
+  .balance-card {
+    background: var(--page-cream);
+    border-radius: 14px;
+    box-shadow: 0 12px 28px var(--shadow);
+    padding: 22px 20px 18px;
+    position: relative;
+    border: 1px solid var(--line);
+    margin-top: -6px;
+  }
+  .balance-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 22px; right: 22px;
+    height: 6px;
+    background: repeating-linear-gradient(90deg, var(--brass) 0 10px, transparent 10px 18px);
+    border-radius: 0 0 6px 6px;
+    opacity: 0.55;
+  }
+  .balance-label { font-size: 14px; color: var(--ink-soft); margin-bottom: 2px; }
+  .balance-amount {
+    font-family: 'Noto Serif Thai', serif;
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 1.2;
+    word-break: break-all;
+  }
+  .balance-sub {
+    display: flex;
+    gap: 14px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--line);
+  }
+  .balance-sub-item { flex: 1; }
+  .balance-sub-label { font-size: 13px; color: var(--ink-soft); }
+  .balance-sub-value { font-size: 19px; font-weight: 700; margin-top: 2px; }
+  .balance-sub-value.in { color: var(--deposit); }
+  .balance-sub-value.out { color: var(--withdraw); }
+
+  .actions { display: flex; gap: 12px; margin-top: 16px; }
+  .btn-big {
+    flex: 1; border: none; border-radius: 14px; padding: 18px 8px;
+    font-family: 'Noto Sans Thai', sans-serif; font-size: 17px; font-weight: 700;
+    color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px;
+    cursor: pointer; box-shadow: 0 6px 14px rgba(0,0,0,0.15); transition: transform 0.08s ease;
+  }
+  .btn-big:active { transform: scale(0.97); }
+  .btn-income { background: var(--deposit); }
+  .btn-expense { background: var(--withdraw); }
+  .btn-big .icon { font-size: 22px; line-height: 1; }
+
+  .btn-scan {
+    width: 100%;
+    margin-top: 12px;
+    border: 1px dashed var(--brass);
+    background: rgba(184,146,47,0.08);
+    border-radius: 14px;
+    padding: 15px 8px;
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: #7A5E1E;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    cursor: pointer;
+  }
+  .btn-scan:active { background: rgba(184,146,47,0.16); }
+  .btn-scan.loading { opacity: 0.6; pointer-events: none; }
+
+  /* Pie chart card */
+  .pie-card {
+    margin-top: 18px;
+    background: var(--page-cream);
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    box-shadow: 0 8px 20px var(--shadow);
+    padding: 18px;
+  }
+  .pie-title { font-size: 13px; color: var(--ink-soft); margin-bottom: 12px; }
+  .pie-body { display: flex; gap: 16px; align-items: center; }
+  .pie-circle { width: 108px; height: 108px; border-radius: 50%; flex-shrink: 0; }
+  .pie-legend { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 9px; }
+  .pie-legend-row { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+  .pie-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+  .pie-legend-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); font-weight: 600; }
+  .pie-legend-amt { font-weight: 700; color: var(--ink-soft); font-size: 12px; }
+  .pie-empty { color: var(--ink-soft); font-size: 14px; text-align: center; padding: 10px 0; }
+
+  .rank-section { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; padding-top: 16px; border-top: 1px dashed var(--line); }
+  .rank-col-title { font-size: 12.5px; font-weight: 700; margin-bottom: 8px; }
+  .rank-col-title.out { color: var(--withdraw); }
+  .rank-col-title.in { color: var(--deposit); }
+  .rank-row { display: flex; align-items: center; gap: 7px; margin-bottom: 7px; font-size: 12.5px; }
+  .rank-badge { width: 18px; height: 18px; border-radius: 50%; background: var(--page-cream-2); border: 1px solid var(--line); color: var(--ink-soft); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .rank-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
+  .rank-amt { font-weight: 700; color: var(--ink-soft); flex-shrink: 0; }
+  .rank-none { font-size: 12.5px; color: var(--ink-soft); }
+
+  .month-nav { display: flex; align-items: center; justify-content: space-between; margin-top: 24px; padding: 0 4px; }
+  .month-nav button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--page-cream); font-size: 20px; color: var(--ink); cursor: pointer; }
+  .month-nav button:active { background: var(--page-cream-2); }
+  .month-title { font-family: 'Noto Serif Thai', serif; font-size: 19px; font-weight: 600; color: #2f2313; }
+
+  .ledger { margin-top: 14px; background: var(--page-cream); border-radius: 14px; border: 1px solid var(--line); box-shadow: 0 8px 20px var(--shadow); overflow: hidden; }
+  .ledger-head { display: grid; grid-template-columns: 1fr 92px 92px; gap: 6px; padding: 12px 14px; font-size: 12px; color: var(--ink-soft); background: var(--page-cream-2); border-bottom: 1px solid var(--line); }
+  .ledger-head span:nth-child(2), .ledger-head span:nth-child(3) { text-align: right; }
+  .ledger-row { display: grid; grid-template-columns: 1fr 92px 92px; gap: 6px; padding: 13px 14px; border-bottom: 1px solid var(--line); align-items: center; font-size: 14px; }
+  .ledger-row:last-child { border-bottom: none; }
+  .ledger-row:active { background: var(--page-cream-2); }
+  .row-desc { min-width: 0; }
+  .row-date { font-size: 12px; color: var(--ink-soft); }
+  .row-note { font-weight: 600; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row-amt { text-align: right; font-weight: 700; font-size: 14px; }
+  .row-amt.out { color: var(--withdraw); }
+  .row-amt.in { color: var(--deposit); }
+  .row-bal { text-align: right; color: var(--ink-soft); font-size: 13px; }
+
+  .empty-state { padding: 40px 20px; text-align: center; color: var(--ink-soft); }
+  .empty-state .big-emoji { font-size: 40px; margin-bottom: 10px; }
+
+  .overlay { position: fixed; inset: 0; background: rgba(15,43,29,0.55); display: none; align-items: flex-end; justify-content: center; z-index: 50; }
+  .overlay.show { display: flex; }
+  .sheet { background: var(--page-cream); width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 22px 20px 28px; box-shadow: 0 -10px 30px rgba(0,0,0,0.3); animation: slideUp 0.22s ease; max-height: 88vh; overflow-y: auto; }
+  @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  .sheet-title { font-family: 'Noto Serif Thai', serif; font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+  .sheet-title.in { color: var(--deposit); }
+  .sheet-title.out { color: var(--withdraw); }
+
+  .amount-input { width: 100%; font-family: 'Noto Serif Thai', serif; font-size: 34px; font-weight: 700; text-align: center; border: none; border-bottom: 2px solid var(--line); background: transparent; padding: 10px 0; margin-bottom: 18px; color: var(--ink); outline: none; }
+  .amount-input:focus { border-bottom-color: var(--brass); }
+
+  .field-label { font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; margin-top: 14px; display: flex; justify-content: space-between; align-items: center; }
+  .manage-cat-link { font-size: 12px; color: var(--brass); font-weight: 700; cursor: pointer; text-decoration: underline; }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { padding: 9px 14px; border-radius: 20px; border: 1px solid var(--line); background: #fff; font-size: 14px; color: var(--ink); cursor: pointer; }
+  .chip.selected { background: var(--brass); border-color: var(--brass); color: #fff; font-weight: 700; }
+
+  .text-input, .date-input { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); font-size: 15px; font-family: 'Noto Sans Thai', sans-serif; background: #fff; color: var(--ink); outline: none; }
+  .text-input:focus, .date-input:focus { border-color: var(--brass); }
+
+  .sheet-actions { display: flex; gap: 10px; margin-top: 22px; }
+  .btn-cancel, .btn-save { flex: 1; padding: 15px; border-radius: 12px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; }
+  .btn-cancel { background: #E7E0C8; color: var(--ink); }
+  .btn-save { color: #fff; }
+  .btn-save.in { background: var(--deposit); }
+  .btn-save.out { background: var(--withdraw); }
+  .btn-save:disabled { opacity: 0.4; }
+
+  .scan-banner { background: #FFF6DE; border: 1px solid var(--brass-light); border-radius: 10px; padding: 10px 12px; font-size: 12.5px; color: #6B5217; margin-bottom: 10px; }
+  .scan-type-toggle { display: flex; gap: 8px; margin-top: 8px; }
+  .scan-type-btn { flex: 1; padding: 9px; border-radius: 8px; border: 1px solid var(--line); background: #fff; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--ink-soft); }
+  .scan-type-btn.in.active { background: var(--deposit); border-color: var(--deposit); color: #fff; }
+  .scan-type-btn.out.active { background: var(--withdraw); border-color: var(--withdraw); color: #fff; }
+
+  .confirm-box { background: var(--page-cream); border-radius: 16px; padding: 20px; max-width: 340px; width: 90%; text-align: center; }
+  .confirm-box p { font-size: 16px; margin: 6px 0 18px; }
+  .confirm-box .row { display: flex; gap: 10px; }
+  .confirm-box button { flex: 1; padding: 13px; border-radius: 10px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .confirm-cancel { background: #E7E0C8; color: var(--ink); }
+  .confirm-delete { background: var(--withdraw); color: #fff; }
+
+  /* Category management */
+  .cat-manage-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .cat-manage-row { display: flex; gap: 8px; align-items: center; }
+  .cat-manage-row input { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); font-size: 14px; font-family: 'Noto Sans Thai', sans-serif; background: #fff; }
+  .cat-del-btn { width: 38px; height: 38px; border-radius: 8px; border: 1px solid var(--line); background: #fff; color: var(--withdraw); font-size: 18px; cursor: pointer; flex-shrink: 0; }
+  .cat-add-btn { margin-top: 10px; width: 100%; padding: 12px; border-radius: 10px; border: 1px dashed var(--brass); background: transparent; color: #7A5E1E; font-weight: 700; font-size: 14px; cursor: pointer; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--cover-green-dark); color: #F3E9CC; padding: 12px 20px; border-radius: 30px; font-size: 14px; z-index: 100; box-shadow: 0 6px 16px rgba(0,0,0,0.25); max-width: 85%; text-align: center; }
+
+  .loading-note { text-align: center; color: var(--ink-soft); padding: 30px; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="brand">P A S S B O O K</div>
+  <h1>บัญชีรายรับ-รายจ่าย</h1>
+</div>
+
+<div class="passbook">
+
+  <div class="balance-card">
+    <div class="balance-label">ยอดคงเหลือทั้งหมด</div>
+    <div class="balance-amount" id="totalBalance">0.00</div>
+    <div class="balance-sub">
+      <div class="balance-sub-item">
+        <div class="balance-sub-label">รายรับเดือนนี้</div>
+        <div class="balance-sub-value in" id="monthIn">0.00</div>
+      </div>
+      <div class="balance-sub-item">
+        <div class="balance-sub-label">รายจ่ายเดือนนี้</div>
+        <div class="balance-sub-value out" id="monthOut">0.00</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-big btn-income" onclick="openSheet('in')"><span class="icon">+</span> รายรับ</button>
+    <button class="btn-big btn-expense" onclick="openSheet('out')"><span class="icon">−</span> รายจ่าย</button>
+  </div>
+
+  <label class="btn-scan" id="scanBtn" for="slipInput">📷 สแกนสลิปโอนเงิน (ให้ระบบอ่านให้)</label>
+  <input type="file" id="slipInput" accept="image/*" style="display:none">
+
+  <div class="pie-card">
+    <div class="pie-title">สัดส่วนรายรับ-รายจ่ายเดือนนี้</div>
+    <div id="pieContent"></div>
+  </div>
+
+  <div class="month-nav">
+    <button onclick="changeMonth(-1)">‹</button>
+    <div class="month-title" id="monthTitle">-</div>
+    <button onclick="changeMonth(1)">›</button>
+  </div>
+
+  <div class="ledger" id="ledgerBox">
+    <div class="loading-note">กำลังโหลดข้อมูล...</div>
+  </div>
+
+</div>
+
+<!-- Add entry sheet -->
+<div class="overlay" id="entryOverlay">
+  <div class="sheet">
+    <div class="sheet-title" id="sheetTitle">รายรับ</div>
+    <div class="scan-banner" id="scanBanner" style="display:none;">
+      อ่านจากรูปสลิปแล้ว ลองตรวจสอบความถูกต้องก่อนบันทึก (แก้ประเภทได้ถ้าเดาผิด)
+      <div class="scan-type-toggle">
+        <button type="button" class="scan-type-btn in" onclick="switchSheetType('in')">รายรับ</button>
+        <button type="button" class="scan-type-btn out" onclick="switchSheetType('out')">รายจ่าย</button>
+      </div>
+    </div>
+    <input type="text" inputmode="decimal" class="amount-input" id="amountInput" placeholder="0.00" autocomplete="off">
+
+    <div class="field-label">
+      <span>หมวดหมู่</span>
+      <span class="manage-cat-link" onclick="openCategoryManage()">แก้ไข/เพิ่มหมวดหมู่</span>
+    </div>
+    <div class="chip-row" id="categoryChips"></div>
+
+    <div class="field-label"><span>วันที่</span></div>
+    <input type="date" class="date-input" id="dateInput">
+
+    <div class="field-label"><span>บันทึกเพิ่มเติม (ถ้ามี)</span></div>
+    <input type="text" class="text-input" id="noteInput" placeholder="เช่น ค่ากับข้าว, เงินเดือน">
+
+    <div class="sheet-actions">
+      <button class="btn-cancel" onclick="closeSheet()">ยกเลิก</button>
+      <button class="btn-save" id="saveBtn" onclick="saveEntry()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Category management sheet -->
+<div class="overlay" id="categoryOverlay">
+  <div class="sheet">
+    <div class="sheet-title">จัดการหมวดหมู่</div>
+    <div class="cat-manage-list" id="catManageList"></div>
+    <button class="cat-add-btn" onclick="addCategoryRow()">+ เพิ่มหมวดหมู่ใหม่</button>
+    <div class="sheet-actions">
+      <button class="btn-cancel" onclick="closeCategoryManage()">ยกเลิก</button>
+      <button class="btn-save in" onclick="saveCategoryManage()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm -->
+<div class="overlay" id="deleteOverlay">
+  <div class="confirm-box">
+    <p>ต้องการลบรายการนี้ใช่ไหม?</p>
+    <div class="row">
+      <button class="confirm-cancel" onclick="closeDeleteConfirm()">ยกเลิก</button>
+      <button class="confirm-delete" onclick="confirmDelete()">ลบรายการ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DEFAULT_CATS_IN = ['เงินเดือน', 'บำนาญ', 'ลูกให้', 'ขายของ', 'ดอกเบี้ย', 'อื่นๆ'];
+const DEFAULT_CATS_OUT = ['กับข้าว', 'ค่าน้ำ-ไฟ', 'ค่ายา/หมอ', 'ค่าเดินทาง', 'ให้ลูกหลาน', 'อื่นๆ'];
+const PALETTE = ['#1B4332','#B8922F','#A13E3E','#4C6B54','#8C6A3F','#6B4C3F','#3F6B66','#7A4C6B','#5C6B23','#2F4858'];
+
+let transactions = [];
+let categories = { in: [...DEFAULT_CATS_IN], out: [...DEFAULT_CATS_OUT] };
+let currentMode = 'in';
+let selectedCategory = '';
+let viewYear, viewMonth;
+let deleteTargetId = null;
+let categoryManageMode = 'out';
+
+const TX_KEY = 'transactions';
+const CAT_KEY = 'categories';
+
+function fmt(n) {
+  return Number(n).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+async function loadData() {
+  try {
+    const raw = localStorage.getItem(TX_KEY);
+    transactions = raw ? JSON.parse(raw) : [];
+  } catch (e) { transactions = []; }
+
+  try {
+    const rawCat = localStorage.getItem(CAT_KEY);
+    if (rawCat) {
+      const parsed = JSON.parse(rawCat);
+      categories = {
+        in: Array.isArray(parsed.in) && parsed.in.length ? parsed.in : [...DEFAULT_CATS_IN],
+        out: Array.isArray(parsed.out) && parsed.out.length ? parsed.out : [...DEFAULT_CATS_OUT]
+      };
+    }
+  } catch (e) { /* keep defaults */ }
+
+  const now = new Date();
+  viewYear = now.getFullYear();
+  viewMonth = now.getMonth();
+  render();
+}
+
+async function saveTransactions() {
+  try { localStorage.setItem(TX_KEY, JSON.stringify(transactions)); }
+  catch (e) { showToast('บันทึกไม่สำเร็จ ลองอีกครั้ง'); }
+}
+
+async function saveCategories() {
+  try { localStorage.setItem(CAT_KEY, JSON.stringify(categories)); }
+  catch (e) { showToast('บันทึกหมวดหมู่ไม่สำเร็จ'); }
+}
+
+function showToast(msg, duration) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), duration || 2600);
+}
+
+function renderCategoryChips(mode, preselect) {
+  const cats = categories[mode];
+  const chipBox = document.getElementById('categoryChips');
+  chipBox.innerHTML = '';
+  cats.forEach(c => {
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    if (preselect && c === preselect) { chip.classList.add('selected'); selectedCategory = c; }
+    chip.textContent = c;
+    chip.onclick = () => {
+      selectedCategory = c;
+      [...chipBox.children].forEach(ch => ch.classList.remove('selected'));
+      chip.classList.add('selected');
+    };
+    chipBox.appendChild(chip);
+  });
+}
+
+function openSheet(mode, prefill) {
+  currentMode = mode;
+  selectedCategory = '';
+  document.getElementById('sheetTitle').textContent = mode === 'in' ? 'บันทึกรายรับ' : 'บันทึกรายจ่าย';
+  document.getElementById('sheetTitle').className = 'sheet-title ' + mode;
+  document.getElementById('saveBtn').className = 'btn-save ' + mode;
+  document.getElementById('amountInput').value = prefill && prefill.amount ? prefill.amount : '';
+  document.getElementById('noteInput').value = prefill && prefill.note ? prefill.note : '';
+  document.getElementById('dateInput').value = (prefill && prefill.date) ? prefill.date : todayStr();
+  document.getElementById('scanBanner').style.display = prefill ? 'block' : 'none';
+  if (prefill) {
+    document.querySelectorAll('.scan-type-btn').forEach(b => b.classList.remove('active'));
+    const activeBtn = document.querySelector('.scan-type-btn.' + mode);
+    if (activeBtn) activeBtn.classList.add('active');
+  }
+
+  renderCategoryChips(mode, prefill ? prefill.category : null);
+
+  document.getElementById('entryOverlay').classList.add('show');
+  if (!prefill) setTimeout(() => document.getElementById('amountInput').focus(), 100);
+}
+
+function switchSheetType(mode) {
+  currentMode = mode;
+  document.getElementById('sheetTitle').textContent = mode === 'in' ? 'บันทึกรายรับ' : 'บันทึกรายจ่าย';
+  document.getElementById('sheetTitle').className = 'sheet-title ' + mode;
+  document.getElementById('saveBtn').className = 'btn-save ' + mode;
+  renderCategoryChips(mode, null);
+  document.querySelectorAll('.scan-type-btn').forEach(b => b.classList.remove('active'));
+  const activeBtn = document.querySelector('.scan-type-btn.' + mode);
+  if (activeBtn) activeBtn.classList.add('active');
+}
+
+function closeSheet() { document.getElementById('entryOverlay').classList.remove('show'); }
+
+async function saveEntry() {
+  const amountRaw = document.getElementById('amountInput').value.replace(',', '.');
+  const amount = parseFloat(amountRaw);
+  if (!amount || amount <= 0) { showToast('กรุณาใส่จำนวนเงินให้ถูกต้อง'); return; }
+  const date = document.getElementById('dateInput').value || todayStr();
+  const note = document.getElementById('noteInput').value.trim();
+  const category = selectedCategory || categories[currentMode][categories[currentMode].length - 1];
+
+  const entry = {
+    id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+    type: currentMode, amount: Math.round(amount * 100) / 100,
+    date: date, category: category, note: note, createdAt: Date.now()
+  };
+
+  transactions.push(entry);
+  await saveTransactions();
+  closeSheet();
+  viewYear = parseInt(date.slice(0,4));
+  viewMonth = parseInt(date.slice(5,7)) - 1;
+  render();
+  showToast(currentMode === 'in' ? 'บันทึกรายรับเรียบร้อย' : 'บันทึกรายจ่ายเรียบร้อย');
+}
+
+function askDelete(id) { deleteTargetId = id; document.getElementById('deleteOverlay').classList.add('show'); }
+function closeDeleteConfirm() { deleteTargetId = null; document.getElementById('deleteOverlay').classList.remove('show'); }
+async function confirmDelete() {
+  transactions = transactions.filter(t => t.id !== deleteTargetId);
+  await saveTransactions();
+  closeDeleteConfirm();
+  render();
+  showToast('ลบรายการแล้ว');
+}
+
+function changeMonth(delta) {
+  viewMonth += delta;
+  if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+  if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+  render();
+}
+
+const THAI_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+/* ---------- Category management ---------- */
+function openCategoryManage() {
+  categoryManageMode = currentMode;
+  const list = document.getElementById('catManageList');
+  list.innerHTML = '';
+  categories[categoryManageMode].forEach(c => addCategoryRow(c));
+  document.getElementById('categoryOverlay').classList.add('show');
+}
+function closeCategoryManage() { document.getElementById('categoryOverlay').classList.remove('show'); }
+
+function addCategoryRow(value) {
+  const list = document.getElementById('catManageList');
+  const row = document.createElement('div');
+  row.className = 'cat-manage-row';
+  row.innerHTML = `<input type="text" value="${value ? value.replace(/"/g,'&quot;') : ''}" placeholder="ชื่อหมวดหมู่"><button class="cat-del-btn" type="button">✕</button>`;
+  row.querySelector('.cat-del-btn').onclick = () => row.remove();
+  list.appendChild(row);
+}
+
+async function saveCategoryManage() {
+  const inputs = document.querySelectorAll('#catManageList input');
+  const names = [...inputs].map(i => i.value.trim()).filter(v => v.length > 0);
+  if (names.length === 0) { showToast('ต้องมีอย่างน้อย 1 หมวดหมู่'); return; }
+  categories[categoryManageMode] = names;
+  await saveCategories();
+  closeCategoryManage();
+  renderCategoryChips(currentMode, null);
+  render();
+  showToast('บันทึกหมวดหมู่แล้ว');
+}
+
+/* ---------- Pie chart: income vs expense, plus top-3 category rankings ---------- */
+function renderPie(monthTxAll) {
+  const container = document.getElementById('pieContent');
+  const totalIn = monthTxAll.filter(t => t.type === 'in').reduce((s,t) => s+t.amount, 0);
+  const totalOut = monthTxAll.filter(t => t.type === 'out').reduce((s,t) => s+t.amount, 0);
+  const total = totalIn + totalOut;
+
+  let circleHtml, legendHtml;
+  if (total === 0) {
+    circleHtml = `<div class="pie-circle" style="background: var(--page-cream-2);"></div>`;
+    legendHtml = `<div class="pie-empty">ยังไม่มีข้อมูลในเดือนนี้</div>`;
+  } else {
+    const pctIn = (totalIn / total) * 100;
+    circleHtml = `<div class="pie-circle" style="background: conic-gradient(var(--deposit) 0% ${pctIn}%, var(--withdraw) ${pctIn}% 100%);"></div>`;
+    legendHtml = `
+      <div class="pie-legend">
+        <div class="pie-legend-row"><span class="pie-dot" style="background:var(--deposit)"></span><span class="pie-legend-label">รายรับ</span><span class="pie-legend-amt">${pctIn.toFixed(0)}% · ${fmt(totalIn)}</span></div>
+        <div class="pie-legend-row"><span class="pie-dot" style="background:var(--withdraw)"></span><span class="pie-legend-label">รายจ่าย</span><span class="pie-legend-amt">${(100-pctIn).toFixed(0)}% · ${fmt(totalOut)}</span></div>
+      </div>
+    `;
+  }
+
+  function topCategories(type) {
+    const relevant = monthTxAll.filter(t => t.type === type);
+    const sums = {};
+    relevant.forEach(t => { sums[t.category] = (sums[t.category] || 0) + t.amount; });
+    return Object.entries(sums).sort((a,b) => b[1]-a[1]).slice(0, 3);
+  }
+
+  function renderRankCol(type, title) {
+    const top = topCategories(type);
+    if (top.length === 0) return `<div><div class="rank-col-title ${type}">${title}</div><div class="rank-none">ยังไม่มีข้อมูล</div></div>`;
+    const rows = top.map(([cat, amt], i) => `
+      <div class="rank-row"><span class="rank-badge">${i+1}</span><span class="rank-label">${escapeHtml(cat)}</span><span class="rank-amt">${fmt(amt)}</span></div>
+    `).join('');
+    return `<div><div class="rank-col-title ${type}">${title}</div>${rows}</div>`;
+  }
+
+  container.innerHTML = `
+    <div class="pie-body">${circleHtml}${legendHtml}</div>
+    <div class="rank-section">
+      ${renderRankCol('out', 'รายจ่ายสูงสุด')}
+      ${renderRankCol('in', 'รายรับสูงสุด')}
+    </div>
+  `;
+}
+
+/* ---------- Main render ---------- */
+function render() {
+  const sorted = [...transactions].sort((a, b) => {
+    if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+    return a.createdAt - b.createdAt;
+  });
+
+  let running = 0;
+  const withBalance = sorted.map(t => {
+    running += t.type === 'in' ? t.amount : -t.amount;
+    return { ...t, balanceAfter: running };
+  });
+
+  document.getElementById('totalBalance').textContent = fmt(running);
+
+  const monthKey = viewYear + '-' + String(viewMonth+1).padStart(2,'0');
+  const monthTx = withBalance.filter(t => t.date.startsWith(monthKey));
+
+  const monthIn = monthTx.filter(t => t.type === 'in').reduce((s,t) => s+t.amount, 0);
+  const monthOut = monthTx.filter(t => t.type === 'out').reduce((s,t) => s+t.amount, 0);
+  document.getElementById('monthIn').textContent = fmt(monthIn);
+  document.getElementById('monthOut').textContent = fmt(monthOut);
+  document.getElementById('monthTitle').textContent = THAI_MONTHS[viewMonth] + ' ' + (viewYear + 543);
+
+  renderPie(monthTx);
+
+  const ledgerBox = document.getElementById('ledgerBox');
+  if (monthTx.length === 0) {
+    ledgerBox.innerHTML = '<div class="empty-state"><div class="big-emoji">📖</div>ยังไม่มีรายการในเดือนนี้</div>';
+    return;
+  }
+
+  const rowsHtml = monthTx.slice().reverse().map(t => {
+    const d = new Date(t.date + 'T00:00:00');
+    const dateLabel = d.getDate() + ' ' + THAI_MONTHS[d.getMonth()].slice(0,3);
+    const label = t.note ? t.note : t.category;
+    return `
+      <div class="ledger-row" onclick="askDelete('${t.id}')">
+        <div class="row-desc">
+          <div class="row-date">${dateLabel} · ${escapeHtml(t.category)}</div>
+          <div class="row-note">${escapeHtml(label)}</div>
+        </div>
+        <div class="row-amt ${t.type === 'in' ? 'in' : 'out'}">${t.type === 'in' ? '+' : '−'}${fmt(t.amount)}</div>
+        <div class="row-bal">${fmt(t.balanceAfter)}</div>
+      </div>
+    `;
+  }).join('');
+
+  ledgerBox.innerHTML = `
+    <div class="ledger-head"><span>รายการ</span><span>จำนวนเงิน</span><span>คงเหลือ</span></div>
+    ${rowsHtml}
+  `;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/* ---------- Slip scanning via our own backend (Vercel function) ---------- */
+/* IMPORTANT: replace this with your deployed Vercel URL, e.g.:
+   const API_ENDPOINT = 'https://passbook-api-yourname.vercel.app/api/scan-slip'; */
+const API_ENDPOINT = 'https://passbook-api-iota.vercel.app/api/scan-slip';
+
+document.getElementById('slipInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const scanBtn = document.getElementById('scanBtn');
+
+  scanBtn.classList.add('loading');
+  scanBtn.textContent = '⏳ กำลังอ่านสลิป...';
+  try {
+    const { base64, mediaType } = await resizeAndEncode(file);
+    const result = await analyzeSlip(base64, mediaType);
+    openSheet(result.type === 'out' ? 'out' : 'in', {
+      amount: result.amount || '',
+      date: result.date || todayStr(),
+      note: result.note || '',
+      category: result.category || null
+    });
+  } catch (err) {
+    console.error('Slip scan failed:', err);
+    const msg = (err && err.message) ? err.message : 'ไม่ทราบสาเหตุ';
+    showToast('อ่านสลิปไม่สำเร็จ: ' + msg, 6000);
+    openSheet('out');
+  } finally {
+    scanBtn.classList.remove('loading');
+    scanBtn.textContent = '📷 สแกนสลิปโอนเงิน (ให้ระบบอ่านให้)';
+    e.target.value = '';
+  }
+});
+
+function resizeAndEncode(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('FILE_READ_FAILED'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('IMAGE_DECODE_FAILED'));
+      img.onload = () => {
+        const maxDim = 1200;
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          const ratio = Math.min(maxDim / width, maxDim / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        resolve({ base64: dataUrl.split(',')[1], mediaType: 'image/jpeg' });
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function analyzeSlip(base64, mediaType) {
+  if (API_ENDPOINT.includes('YOUR-VERCEL-PROJECT')) {
+    throw new Error('ยังไม่ได้ตั้งค่า API_ENDPOINT ในโค้ด — แก้บรรทัด const API_ENDPOINT ให้เป็นลิงก์ Vercel ของคุณก่อน');
+  }
+
+  const response = await fetch(API_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      image: base64,
+      mediaType: mediaType,
+      categoriesIn: categories.in,
+      categoriesOut: categories.out
+    })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || ('API_ERROR (status ' + response.status + ')'));
+  }
+
+  return data;
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+loadData();
+</script>
+
+</body>
+</html>
