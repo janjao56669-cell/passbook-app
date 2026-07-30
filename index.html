@@ -222,7 +222,8 @@
   .ledger-row:active { background: var(--page-cream-2); }
 
   /* Ledger toolbar: view toggle + expand/collapse */
-  .ledger-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 14px; }
+  .ledger-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 14px; flex-wrap: wrap; row-gap: 8px; }
+  .search-icon-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--page-cream); font-size: 15px; cursor: pointer; flex-shrink: 0; }
   .ledger-view-toggle { display: flex; gap: 6px; background: var(--page-cream-2); border-radius: 10px; padding: 3px; }
   .view-tab { padding: 7px 14px; border-radius: 8px; border: none; background: transparent; font-size: 13px; font-weight: 700; color: var(--ink-soft); cursor: pointer; }
   .view-tab.active { background: var(--page-cream); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
@@ -236,9 +237,6 @@
   .day-chevron { color: var(--brass); font-size: 13px; width: 12px; }
   .day-date { flex: 1; font-weight: 700; font-size: 14px; color: var(--ink); }
   .day-count { font-size: 12px; color: var(--ink-soft); }
-  .day-net { font-weight: 700; font-size: 14px; min-width: 74px; text-align: right; }
-  .day-net.in { color: var(--deposit); }
-  .day-net.out { color: var(--withdraw); }
   .row-note.full { white-space: normal; overflow: visible; text-overflow: unset; word-break: break-word; }
 
   /* Category folder view */
@@ -319,13 +317,19 @@
 
   /* Category management */
   .cat-manage-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .cat-manage-hint { font-size: 12px; color: var(--ink-soft); margin-bottom: 4px; }
   .cat-manage-row { display: flex; gap: 8px; align-items: center; }
-  .cat-manage-row input { flex: 1; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); font-size: 14px; font-family: 'Noto Sans Thai', sans-serif; background: #fff; }
+  .cat-manage-row input { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); font-size: 14px; font-family: 'Noto Sans Thai', sans-serif; background: #fff; }
+  .cat-manage-row .cat-icon-input { flex: 0 0 50px; text-align: center; font-size: 18px; padding: 10px 6px; }
+  .cat-manage-row .cat-name-input { flex: 1; min-width: 0; }
   .cat-del-btn { width: 38px; height: 38px; border-radius: 8px; border: 1px solid var(--line); background: #fff; color: var(--withdraw); font-size: 18px; cursor: pointer; flex-shrink: 0; }
   .cat-add-btn { margin-top: 10px; width: 100%; padding: 12px; border-radius: 10px; border: 1px dashed var(--brass); background: transparent; color: #7A5E1E; font-weight: 700; font-size: 14px; cursor: pointer; }
 
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--cover-green-dark); color: #F3E9CC; padding: 12px 20px; border-radius: 30px; font-size: 14px; z-index: 100; box-shadow: 0 6px 16px rgba(0,0,0,0.25); max-width: 85%; text-align: center; }
 
+  .search-results { max-height: 55vh; overflow-y: auto; -webkit-overflow-scrolling: touch; margin-top: 14px; border-radius: 10px; border: 1px solid var(--line); }
+  .search-results .ledger-row { grid-template-columns: 1fr 92px; }
+  .search-results .row-date.month-tag { color: var(--brass); font-weight: 700; }
   .loading-note { text-align: center; color: var(--ink-soft); padding: 30px; font-size: 14px; }
 
   .update-banner {
@@ -345,7 +349,7 @@
 
 <div class="app-header">
   <div class="brand">P A S S B O O K</div>
-  <h1>บัญชีต้อการช่าง<span class="version-tag">V1.3</span></h1>
+  <h1>บัญชีต้อการช่าง<span class="version-tag">V1.4</span></h1>
 </div>
 
 <div class="passbook">
@@ -395,6 +399,7 @@
   </div>
 
   <div class="ledger-toolbar">
+    <button class="search-icon-btn" onclick="openSearchSheet()" title="ค้นหาย้อนหลัง">🔍</button>
     <div class="ledger-view-toggle">
       <button class="view-tab active" id="viewTabList" onclick="setLedgerView('list')">รายการ</button>
       <button class="view-tab" id="viewTabCat" onclick="setLedgerView('category')">หมวดหมู่</button>
@@ -445,11 +450,26 @@
 <div class="overlay" id="categoryOverlay">
   <div class="sheet">
     <div class="sheet-title">จัดการหมวดหมู่</div>
+    <div class="cat-manage-hint">แตะช่องอีโมจิ (ซ้ายสุด) เพื่อพิมพ์/เปลี่ยนไอคอนของหมวดหมู่เองได้ ถ้าเว้นว่างไว้ ระบบจะเดาให้อัตโนมัติ</div>
     <div class="cat-manage-list" id="catManageList"></div>
     <button class="cat-add-btn" onclick="addCategoryRow()">+ เพิ่มหมวดหมู่ใหม่</button>
     <div class="sheet-actions">
       <button class="btn-cancel" onclick="closeCategoryManage()">ยกเลิก</button>
       <button class="btn-save in" onclick="saveCategoryManage()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Search history -->
+<div class="overlay" id="searchOverlay">
+  <div class="sheet">
+    <div class="sheet-title">ค้นหาย้อนหลัง</div>
+    <input type="text" class="text-input" id="searchInput" placeholder="พิมพ์ชื่อ, หมวดหมู่, หรือบันทึก..." oninput="runSearch()" autocomplete="off">
+    <div class="search-results" id="searchResults">
+      <div class="empty-state" style="padding:24px 10px;"><div class="big-emoji">🔍</div>พิมพ์คำค้นเพื่อหารายการย้อนหลัง</div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" style="width:100%;" onclick="closeSearchSheet()">ปิด</button>
     </div>
   </div>
 </div>
@@ -497,8 +517,14 @@
 </div>
 
 <script>
-const DEFAULT_CATS_IN = ['เงินเดือน', 'บำนาญ', 'ลูกให้', 'ขายของ', 'ดอกเบี้ย', 'อื่นๆ'];
-const DEFAULT_CATS_OUT = ['กับข้าว', 'ค่าน้ำ-ไฟ', 'ค่ายา/หมอ', 'ค่าเดินทาง', 'ให้ลูกหลาน', 'อื่นๆ'];
+const DEFAULT_CATS_IN = [
+  { name: 'เงินเดือน', icon: '💰' }, { name: 'บำนาญ', icon: '🏦' }, { name: 'ลูกให้', icon: '🎁' },
+  { name: 'ขายของ', icon: '🛍️' }, { name: 'ดอกเบี้ย', icon: '📈' }, { name: 'อื่นๆ', icon: '📦' }
+];
+const DEFAULT_CATS_OUT = [
+  { name: 'กับข้าว', icon: '🍚' }, { name: 'ค่าน้ำ-ไฟ', icon: '💡' }, { name: 'ค่ายา/หมอ', icon: '💊' },
+  { name: 'ค่าเดินทาง', icon: '🚌' }, { name: 'ให้ลูกหลาน', icon: '👨‍👩‍👧' }, { name: 'อื่นๆ', icon: '📦' }
+];
 const PALETTE = ['#1B4332','#B8922F','#A13E3E','#4C6B54','#8C6A3F','#6B4C3F','#3F6B66','#7A4C6B','#5C6B23','#2F4858'];
 
 let transactions = [];
@@ -541,8 +567,8 @@ async function loadData() {
     if (rawCat) {
       const parsed = JSON.parse(rawCat);
       categories = {
-        in: Array.isArray(parsed.in) && parsed.in.length ? parsed.in : [...DEFAULT_CATS_IN],
-        out: Array.isArray(parsed.out) && parsed.out.length ? parsed.out : [...DEFAULT_CATS_OUT]
+        in: normalizeCategoryList(parsed.in, DEFAULT_CATS_IN),
+        out: normalizeCategoryList(parsed.out, DEFAULT_CATS_OUT)
       };
     }
   } catch (e) { /* keep defaults */ }
@@ -583,10 +609,10 @@ function renderCategoryChips(mode, preselect) {
   cats.forEach(c => {
     const chip = document.createElement('div');
     chip.className = 'chip';
-    if (preselect && c === preselect) { chip.classList.add('selected'); selectedCategory = c; }
-    chip.textContent = c;
+    if (preselect && c.name === preselect) { chip.classList.add('selected'); selectedCategory = c.name; }
+    chip.textContent = (c.icon || '🏷️') + ' ' + c.name;
     chip.onclick = () => {
-      selectedCategory = c;
+      selectedCategory = c.name;
       [...chipBox.children].forEach(ch => ch.classList.remove('selected'));
       chip.classList.add('selected');
     };
@@ -635,7 +661,7 @@ async function saveEntry() {
   if (!amount || amount <= 0) { showToast('กรุณาใส่จำนวนเงินให้ถูกต้อง'); return; }
   const date = document.getElementById('dateInput').value || todayStr();
   const note = document.getElementById('noteInput').value.trim();
-  const category = selectedCategory || categories[currentMode][categories[currentMode].length - 1];
+  const category = selectedCategory || categories[currentMode][categories[currentMode].length - 1].name;
 
   const entry = {
     id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
@@ -653,6 +679,55 @@ async function saveEntry() {
 }
 
 /* ---------- Receivables (ยอดค้างรับ) ---------- */
+/* ---------- Search history ---------- */
+function openSearchSheet() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchResults').innerHTML =
+    '<div class="empty-state" style="padding:24px 10px;"><div class="big-emoji">🔍</div>พิมพ์คำค้นเพื่อหารายการย้อนหลัง</div>';
+  document.getElementById('searchOverlay').classList.add('show');
+  setTimeout(() => document.getElementById('searchInput').focus(), 100);
+}
+
+function closeSearchSheet() {
+  document.getElementById('searchOverlay').classList.remove('show');
+}
+
+function runSearch() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const resultsBox = document.getElementById('searchResults');
+  if (!q) {
+    resultsBox.innerHTML = '<div class="empty-state" style="padding:24px 10px;"><div class="big-emoji">🔍</div>พิมพ์คำค้นเพื่อหารายการย้อนหลัง</div>';
+    return;
+  }
+
+  const matches = transactions.filter(t => {
+    const hay = [t.category, t.note, fmt(t.amount)].join(' ').toLowerCase();
+    return hay.includes(q);
+  }).sort((a, b) => b.createdAt - a.createdAt);
+
+  if (matches.length === 0) {
+    resultsBox.innerHTML = '<div class="empty-state" style="padding:24px 10px;">ไม่พบรายการที่ตรงกับ "' + escapeHtml(q) + '"</div>';
+    return;
+  }
+
+  const rowsHtml = matches.map(t => {
+    const d = new Date(t.date + 'T00:00:00');
+    const dateLabel = d.getDate() + ' ' + THAI_MONTHS[d.getMonth()] + ' ' + (d.getFullYear() + 543);
+    const label = t.note ? t.note : '(ไม่มีบันทึกเพิ่มเติม)';
+    return `
+      <div class="ledger-row" onclick="askDelete('${t.id}')">
+        <div class="row-desc">
+          <div class="row-date month-tag">${dateLabel} · ${escapeHtml(t.category)}</div>
+          <div class="row-note full">${escapeHtml(label)}</div>
+        </div>
+        <div class="row-amt ${t.type === 'in' ? 'in' : 'out'}">${t.type === 'in' ? '+' : '−'}${fmt(t.amount)}</div>
+      </div>
+    `;
+  }).join('');
+
+  resultsBox.innerHTML = rowsHtml;
+}
+
 function openReceivableSheet() {
   document.getElementById('recvAmountInput').value = '';
   document.getElementById('recvNameInput').value = '';
@@ -734,6 +809,9 @@ async function confirmDelete() {
   if (document.getElementById('catDetailOverlay').classList.contains('show')) {
     closeCategoryDetail();
   }
+  if (document.getElementById('searchOverlay').classList.contains('show')) {
+    runSearch();
+  }
   render();
   showToast('ลบรายการแล้ว');
 }
@@ -752,25 +830,37 @@ function openCategoryManage() {
   categoryManageMode = currentMode;
   const list = document.getElementById('catManageList');
   list.innerHTML = '';
-  categories[categoryManageMode].forEach(c => addCategoryRow(c));
+  categories[categoryManageMode].forEach(c => addCategoryRow(c.name, c.icon));
   document.getElementById('categoryOverlay').classList.add('show');
 }
 function closeCategoryManage() { document.getElementById('categoryOverlay').classList.remove('show'); }
 
-function addCategoryRow(value) {
+function addCategoryRow(name, icon) {
   const list = document.getElementById('catManageList');
   const row = document.createElement('div');
   row.className = 'cat-manage-row';
-  row.innerHTML = `<input type="text" value="${value ? value.replace(/"/g,'&quot;') : ''}" placeholder="ชื่อหมวดหมู่"><button class="cat-del-btn" type="button">✕</button>`;
+  const safeName = name ? name.replace(/"/g, '&quot;') : '';
+  const safeIcon = icon ? icon.replace(/"/g, '&quot;') : '';
+  row.innerHTML = `
+    <input type="text" class="cat-icon-input" value="${safeIcon}" placeholder="🏷️" maxlength="4">
+    <input type="text" class="cat-name-input" value="${safeName}" placeholder="ชื่อหมวดหมู่">
+    <button class="cat-del-btn" type="button">✕</button>
+  `;
   row.querySelector('.cat-del-btn').onclick = () => row.remove();
   list.appendChild(row);
 }
 
 async function saveCategoryManage() {
-  const inputs = document.querySelectorAll('#catManageList input');
-  const names = [...inputs].map(i => i.value.trim()).filter(v => v.length > 0);
-  if (names.length === 0) { showToast('ต้องมีอย่างน้อย 1 หมวดหมู่'); return; }
-  categories[categoryManageMode] = names;
+  const rows = document.querySelectorAll('#catManageList .cat-manage-row');
+  const entries = [...rows].map(row => {
+    const name = row.querySelector('.cat-name-input').value.trim();
+    let icon = row.querySelector('.cat-icon-input').value.trim();
+    if (!icon && name) icon = guessCategoryIcon(name);
+    return { name, icon };
+  }).filter(c => c.name.length > 0);
+
+  if (entries.length === 0) { showToast('ต้องมีอย่างน้อย 1 หมวดหมู่'); return; }
+  categories[categoryManageMode] = entries;
   await saveCategories();
   closeCategoryManage();
   renderCategoryChips(currentMode, null);
@@ -832,7 +922,7 @@ let expandedMonthKey = null;
 let allExpanded = false;
 let lastMonthTx = [];
 
-function categoryIcon(name) {
+function guessCategoryIcon(name) {
   const rules = [
     [/ข้าว|กับข้าว|อาหาร|กิน/, '🍚'],
     [/น้ำ.*ไฟ|ค่าไฟ|ค่าน้ำ/, '💡'],
@@ -843,10 +933,26 @@ function categoryIcon(name) {
     [/บำนาญ/, '🏦'],
     [/ขาย/, '🛍️'],
     [/ดอกเบี้ย/, '📈'],
+    [/รับชำระ|ค้างรับ/, '💰'],
     [/อื่น/, '📦']
   ];
   for (const [re, icon] of rules) if (re.test(name)) return icon;
   return '🏷️';
+}
+
+function normalizeCategoryList(list, fallback) {
+  if (!Array.isArray(list) || list.length === 0) return fallback.map(c => ({ ...c }));
+  return list.map(item => {
+    if (typeof item === 'string') return { name: item, icon: guessCategoryIcon(item) };
+    return { name: item.name || 'อื่นๆ', icon: item.icon || guessCategoryIcon(item.name || '') };
+  });
+}
+
+function catIconFor(mode, name) {
+  const list = categories[mode] || [];
+  const found = list.find(c => c.name === name);
+  if (found && found.icon) return found.icon;
+  return guessCategoryIcon(name);
 }
 
 function setLedgerView(mode) {
@@ -890,9 +996,6 @@ function renderDayAccordion(monthTx, ledgerBox) {
 
   const html = dateKeys.map(dateKey => {
     const entries = byDate[dateKey].slice().sort((a, b) => b.createdAt - a.createdAt);
-    const dayIn = entries.filter(t => t.type === 'in').reduce((s, t) => s + t.amount, 0);
-    const dayOut = entries.filter(t => t.type === 'out').reduce((s, t) => s + t.amount, 0);
-    const net = dayIn - dayOut;
     const d = new Date(dateKey + 'T00:00:00');
     const dateLabel = d.getDate() + ' ' + THAI_MONTHS[d.getMonth()] + ' ' + (d.getFullYear() + 543);
     const isOpen = expandedDays.has(dateKey);
@@ -917,7 +1020,6 @@ function renderDayAccordion(monthTx, ledgerBox) {
           <span class="day-chevron">${isOpen ? '▾' : '▸'}</span>
           <span class="day-date">${dateLabel}</span>
           <span class="day-count">${entries.length} รายการ</span>
-          <span class="day-net ${net >= 0 ? 'in' : 'out'}">${net >= 0 ? '+' : '−'}${fmt(Math.abs(net))}</span>
         </div>
         ${isOpen ? `<div class="day-body">
           <div class="ledger-head"><span>รายการ</span><span>จำนวนเงิน</span><span>คงเหลือ</span></div>
@@ -939,7 +1041,7 @@ function renderCategoryFolders(monthTx, ledgerBox) {
     if (entries.length === 0) return '<div class="cat-folder-empty">ยังไม่มีรายการ</div>';
     return entries.map(([cat, info]) => `
       <div class="cat-tile" onclick="openCategoryDetail('${type}', '${encodeURIComponent(cat)}')">
-        <div class="cat-tile-icon">${categoryIcon(cat)}</div>
+        <div class="cat-tile-icon">${catIconFor(type, cat)}</div>
         <div class="cat-tile-name">${escapeHtml(cat)}</div>
         <div class="cat-tile-amt ${type}">${fmt(info.total)}</div>
         <div class="cat-tile-count">${info.items.length} รายการ</div>
@@ -964,7 +1066,7 @@ function openCategoryDetail(type, encodedCat) {
   const items = lastMonthTx.filter(t => t.type === type && t.category === cat).sort((a, b) => b.createdAt - a.createdAt);
   const total = items.reduce((s, t) => s + t.amount, 0);
 
-  document.getElementById('catDetailTitle').textContent = categoryIcon(cat) + ' ' + cat;
+  document.getElementById('catDetailTitle').textContent = catIconFor(type, cat) + ' ' + cat;
   document.getElementById('catDetailTotal').innerHTML =
     `<span class="${type}">${type === 'in' ? '+' : '−'}${fmt(total)}</span> · ${items.length} รายการ`;
 
@@ -1167,8 +1269,8 @@ async function analyzeSlip(base64, mediaType) {
     body: JSON.stringify({
       image: base64,
       mediaType: mediaType,
-      categoriesIn: categories.in,
-      categoriesOut: categories.out
+      categoriesIn: categories.in.map(c => c.name),
+      categoriesOut: categories.out.map(c => c.name)
     })
   });
 
