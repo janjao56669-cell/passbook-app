@@ -22,6 +22,7 @@
     --ink-soft: #5C6B63;
     --deposit: #1E6B3E;
     --withdraw: #A13E3E;
+    --receivable: #1C7C7C;
     --line: #DCD0AE;
     --shadow: rgba(15, 43, 29, 0.18);
   }
@@ -108,6 +109,47 @@
   .balance-sub-value { font-size: 19px; font-weight: 700; margin-top: 2px; }
   .balance-sub-value.in { color: var(--deposit); }
   .balance-sub-value.out { color: var(--withdraw); }
+
+  .receivable-line {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line);
+    font-size: 13px; color: var(--ink-soft);
+  }
+  .receivable-line .value { font-weight: 700; color: var(--receivable); font-size: 15px; }
+  .grand-total-line {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 8px; font-size: 13px; color: var(--ink-soft);
+  }
+  .grand-total-line .value { font-weight: 700; color: var(--ink); font-size: 16px; }
+
+  .btn-receivable {
+    width: 100%;
+    margin-top: 10px;
+    border: 1px dashed var(--receivable);
+    background: rgba(28,124,124,0.08);
+    border-radius: 14px;
+    padding: 14px 8px;
+    font-family: 'Noto Sans Thai', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--receivable);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    cursor: pointer;
+  }
+  .btn-receivable:active { background: rgba(28,124,124,0.16); }
+
+  .recv-row { display: flex; align-items: center; gap: 10px; padding: 13px 14px; border-bottom: 1px solid var(--line); }
+  .recv-row:last-child { border-bottom: none; }
+  .recv-row.paid { opacity: 0.55; }
+  .recv-desc { flex: 1; min-width: 0; }
+  .recv-name { font-weight: 700; font-size: 14px; color: var(--ink); white-space: normal; word-break: break-word; }
+  .recv-date { font-size: 12px; color: var(--ink-soft); margin-top: 1px; }
+  .recv-amt { font-weight: 700; font-size: 15px; color: var(--receivable); flex-shrink: 0; }
+  .recv-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .recv-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--line); background: #fff; font-size: 15px; cursor: pointer; }
+  .recv-btn.paid-btn { color: var(--deposit); border-color: var(--deposit); }
+  .recv-btn.del-btn { color: var(--withdraw); }
+  .recv-toggle-history { text-align: center; padding: 12px; font-size: 13px; color: var(--brass); font-weight: 700; cursor: pointer; }
 
   .actions { display: flex; gap: 12px; margin-top: 16px; }
   .btn-big {
@@ -285,13 +327,25 @@
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--cover-green-dark); color: #F3E9CC; padding: 12px 20px; border-radius: 30px; font-size: 14px; z-index: 100; box-shadow: 0 6px 16px rgba(0,0,0,0.25); max-width: 85%; text-align: center; }
 
   .loading-note { text-align: center; color: var(--ink-soft); padding: 30px; font-size: 14px; }
+
+  .update-banner {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    background: var(--brass); color: #fff;
+    padding: 10px 16px; font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .update-banner button {
+    background: #fff; color: var(--brass); border: none; border-radius: 8px;
+    padding: 5px 12px; font-size: 12.5px; font-weight: 700; cursor: pointer;
+  }
 </style>
 </head>
 <body>
 
 <div class="app-header">
   <div class="brand">P A S S B O O K</div>
-  <h1>บัญชีต้อการช่าง<span class="version-tag">V1.1</span></h1>
+  <h1>บัญชีต้อการช่าง<span class="version-tag">V1.3</span></h1>
 </div>
 
 <div class="passbook">
@@ -309,6 +363,14 @@
         <div class="balance-sub-value out" id="monthOut">0.00</div>
       </div>
     </div>
+    <div class="receivable-line">
+      <span>ค้างรับ (ลูกค้ายังไม่จ่าย)</span>
+      <span class="value" id="receivableTotal">0.00</span>
+    </div>
+    <div class="grand-total-line">
+      <span>รวมทั้งหมด (คงเหลือ + ค้างรับ)</span>
+      <span class="value" id="grandTotal">0.00</span>
+    </div>
   </div>
 
   <div class="actions">
@@ -318,6 +380,8 @@
 
   <label class="btn-scan" id="scanBtn" for="slipInput">📷 สแกนสลิปโอนเงิน (ให้ระบบอ่านให้)</label>
   <input type="file" id="slipInput" accept="image/*" style="display:none">
+
+  <button class="btn-receivable" onclick="openReceivableSheet()">💰 เพิ่มยอดค้างรับ (ลูกค้ายังไม่จ่าย)</button>
 
   <div class="pie-card">
     <div class="pie-title">สัดส่วนรายรับ-รายจ่ายเดือนนี้</div>
@@ -334,6 +398,7 @@
     <div class="ledger-view-toggle">
       <button class="view-tab active" id="viewTabList" onclick="setLedgerView('list')">รายการ</button>
       <button class="view-tab" id="viewTabCat" onclick="setLedgerView('category')">หมวดหมู่</button>
+      <button class="view-tab" id="viewTabRecv" onclick="setLedgerView('receivable')">ค้างรับ</button>
     </div>
     <button class="expand-toggle-btn" id="expandToggleBtn" onclick="toggleExpandAll()">ขยายทั้งหมด</button>
   </div>
@@ -389,6 +454,25 @@
   </div>
 </div>
 
+<!-- Add receivable sheet -->
+<div class="overlay" id="receivableOverlay">
+  <div class="sheet">
+    <div class="sheet-title" style="color:var(--receivable);">เพิ่มยอดค้างรับ</div>
+    <input type="text" inputmode="decimal" class="amount-input" id="recvAmountInput" placeholder="0.00" autocomplete="off">
+
+    <div class="field-label"><span>ชื่อลูกค้า / รายละเอียดงาน</span></div>
+    <input type="text" class="text-input" id="recvNameInput" placeholder="เช่น ลุงสมชาย - งานกลึงเพลา">
+
+    <div class="field-label"><span>วันที่</span></div>
+    <input type="date" class="date-input" id="recvDateInput">
+
+    <div class="sheet-actions">
+      <button class="btn-cancel" onclick="closeReceivableSheet()">ยกเลิก</button>
+      <button class="btn-save" style="background:var(--receivable);" onclick="saveReceivable()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
 <!-- Category detail (folder view drill-down) -->
 <div class="overlay" id="catDetailOverlay">
   <div class="sheet">
@@ -423,9 +507,13 @@ let currentMode = 'in';
 let selectedCategory = '';
 let viewYear, viewMonth;
 let deleteTargetId = null;
+let deleteKind = 'transaction';
 let categoryManageMode = 'out';
+let receivables = [];
+let showPaidReceivables = false;
 
 const TX_KEY = 'transactions';
+const RECV_KEY = 'receivables';
 const CAT_KEY = 'categories';
 
 function fmt(n) {
@@ -442,6 +530,11 @@ async function loadData() {
     const raw = localStorage.getItem(TX_KEY);
     transactions = raw ? JSON.parse(raw) : [];
   } catch (e) { transactions = []; }
+
+  try {
+    const rawRecv = localStorage.getItem(RECV_KEY);
+    receivables = rawRecv ? JSON.parse(rawRecv) : [];
+  } catch (e) { receivables = []; }
 
   try {
     const rawCat = localStorage.getItem(CAT_KEY);
@@ -463,6 +556,11 @@ async function loadData() {
 async function saveTransactions() {
   try { localStorage.setItem(TX_KEY, JSON.stringify(transactions)); }
   catch (e) { showToast('บันทึกไม่สำเร็จ ลองอีกครั้ง'); }
+}
+
+async function saveReceivables() {
+  try { localStorage.setItem(RECV_KEY, JSON.stringify(receivables)); }
+  catch (e) { showToast('บันทึกยอดค้างรับไม่สำเร็จ'); }
 }
 
 async function saveCategories() {
@@ -554,9 +652,82 @@ async function saveEntry() {
   showToast(currentMode === 'in' ? 'บันทึกรายรับเรียบร้อย' : 'บันทึกรายจ่ายเรียบร้อย');
 }
 
-function askDelete(id) { deleteTargetId = id; document.getElementById('deleteOverlay').classList.add('show'); }
+/* ---------- Receivables (ยอดค้างรับ) ---------- */
+function openReceivableSheet() {
+  document.getElementById('recvAmountInput').value = '';
+  document.getElementById('recvNameInput').value = '';
+  document.getElementById('recvDateInput').value = todayStr();
+  document.getElementById('receivableOverlay').classList.add('show');
+  setTimeout(() => document.getElementById('recvAmountInput').focus(), 100);
+}
+
+function closeReceivableSheet() {
+  document.getElementById('receivableOverlay').classList.remove('show');
+}
+
+async function saveReceivable() {
+  const amountRaw = document.getElementById('recvAmountInput').value.replace(',', '.');
+  const amount = parseFloat(amountRaw);
+  if (!amount || amount <= 0) { showToast('กรุณาใส่จำนวนเงินให้ถูกต้อง'); return; }
+  const name = document.getElementById('recvNameInput').value.trim();
+  if (!name) { showToast('กรุณาใส่ชื่อลูกค้า/รายละเอียดงาน'); return; }
+  const date = document.getElementById('recvDateInput').value || todayStr();
+
+  receivables.push({
+    id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+    name: name,
+    amount: Math.round(amount * 100) / 100,
+    date: date,
+    status: 'pending',
+    createdAt: Date.now()
+  });
+
+  await saveReceivables();
+  closeReceivableSheet();
+  render();
+  showToast('บันทึกยอดค้างรับเรียบร้อย');
+}
+
+async function markReceivablePaid(id) {
+  const r = receivables.find(x => x.id === id);
+  if (!r) return;
+
+  r.status = 'paid';
+  r.paidDate = todayStr();
+  await saveReceivables();
+
+  transactions.push({
+    id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+    type: 'in',
+    amount: r.amount,
+    date: todayStr(),
+    category: 'รับชำระค้างรับ',
+    note: r.name,
+    createdAt: Date.now()
+  });
+  await saveTransactions();
+
+  render();
+  showToast('บันทึกรับเงินแล้ว: ' + r.name);
+}
+
+function toggleReceivableHistory() {
+  showPaidReceivables = !showPaidReceivables;
+  renderLedger(lastMonthTx);
+}
+
+function askDelete(id) { deleteTargetId = id; deleteKind = 'transaction'; document.getElementById('deleteOverlay').classList.add('show'); }
+function askDeleteReceivable(id) { deleteTargetId = id; deleteKind = 'receivable'; document.getElementById('deleteOverlay').classList.add('show'); }
 function closeDeleteConfirm() { deleteTargetId = null; document.getElementById('deleteOverlay').classList.remove('show'); }
 async function confirmDelete() {
+  if (deleteKind === 'receivable') {
+    receivables = receivables.filter(r => r.id !== deleteTargetId);
+    await saveReceivables();
+    closeDeleteConfirm();
+    render();
+    showToast('ลบรายการค้างรับแล้ว');
+    return;
+  }
   transactions = transactions.filter(t => t.id !== deleteTargetId);
   await saveTransactions();
   closeDeleteConfirm();
@@ -682,6 +853,7 @@ function setLedgerView(mode) {
   ledgerViewMode = mode;
   document.getElementById('viewTabList').classList.toggle('active', mode === 'list');
   document.getElementById('viewTabCat').classList.toggle('active', mode === 'category');
+  document.getElementById('viewTabRecv').classList.toggle('active', mode === 'receivable');
   document.getElementById('expandToggleBtn').style.display = mode === 'list' ? 'inline-block' : 'none';
   renderLedger(lastMonthTx);
 }
@@ -821,12 +993,57 @@ function closeCategoryDetail() {
 
 function renderLedger(monthTx) {
   const ledgerBox = document.getElementById('ledgerBox');
+
+  if (ledgerViewMode === 'receivable') {
+    renderReceivableList(ledgerBox);
+    return;
+  }
+
   if (monthTx.length === 0) {
     ledgerBox.innerHTML = '<div class="empty-state"><div class="big-emoji">📖</div>ยังไม่มีรายการในเดือนนี้</div>';
     return;
   }
   if (ledgerViewMode === 'category') renderCategoryFolders(monthTx, ledgerBox);
   else renderDayAccordion(monthTx, ledgerBox);
+}
+
+function renderReceivableList(ledgerBox) {
+  const sorted = [...receivables].sort((a, b) => b.createdAt - a.createdAt);
+  const pending = sorted.filter(r => r.status !== 'paid');
+  const paid = sorted.filter(r => r.status === 'paid');
+  const list = showPaidReceivables ? sorted : pending;
+
+  if (list.length === 0) {
+    ledgerBox.innerHTML = `
+      <div class="empty-state"><div class="big-emoji">💰</div>ยังไม่มียอดค้างรับ</div>
+      ${paid.length > 0 ? `<div class="recv-toggle-history" onclick="toggleReceivableHistory()">${showPaidReceivables ? 'ซ่อนประวัติที่รับแล้ว' : 'ดูประวัติที่รับแล้ว (' + paid.length + ')'}</div>` : ''}
+    `;
+    return;
+  }
+
+  const rowsHtml = list.map(r => {
+    const d = new Date(r.date + 'T00:00:00');
+    const dateLabel = d.getDate() + ' ' + THAI_MONTHS[d.getMonth()] + ' ' + (d.getFullYear() + 543);
+    const isPaid = r.status === 'paid';
+    return `
+      <div class="recv-row ${isPaid ? 'paid' : ''}">
+        <div class="recv-desc">
+          <div class="recv-name">${escapeHtml(r.name)}</div>
+          <div class="recv-date">${dateLabel}${isPaid ? ' · รับแล้ว' : ''}</div>
+        </div>
+        <div class="recv-amt">${fmt(r.amount)}</div>
+        <div class="recv-actions">
+          ${!isPaid ? `<button class="recv-btn paid-btn" onclick="markReceivablePaid('${r.id}')" title="รับเงินแล้ว">✓</button>` : ''}
+          <button class="recv-btn del-btn" onclick="askDeleteReceivable('${r.id}')" title="ลบ">✕</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  ledgerBox.innerHTML = `
+    ${rowsHtml}
+    ${paid.length > 0 ? `<div class="recv-toggle-history" onclick="toggleReceivableHistory()">${showPaidReceivables ? 'ซ่อนประวัติที่รับแล้ว' : 'ดูประวัติที่รับแล้ว (' + paid.length + ')'}</div>` : ''}
+  `;
 }
 
 function render() {
@@ -842,6 +1059,10 @@ function render() {
   });
 
   document.getElementById('totalBalance').textContent = fmt(running);
+
+  const receivableTotal = receivables.filter(r => r.status !== 'paid').reduce((s, r) => s + r.amount, 0);
+  document.getElementById('receivableTotal').textContent = fmt(receivableTotal);
+  document.getElementById('grandTotal').textContent = fmt(running + receivableTotal);
 
   const monthKey = viewYear + '-' + String(viewMonth + 1).padStart(2, '0');
   const monthTx = withBalance.filter(t => t.date.startsWith(monthKey));
@@ -961,7 +1182,42 @@ async function analyzeSlip(base64, mediaType) {
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    reg.addEventListener('updatefound', () => {
+      const newWorker = reg.installing;
+      if (!newWorker) return;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          showUpdateBanner(reg);
+        }
+      });
+    });
+  }).catch(() => {});
+
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
+}
+
+function showUpdateBanner(reg) {
+  if (document.getElementById('updateBanner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'updateBanner';
+  banner.className = 'update-banner';
+  banner.innerHTML = '<span>มีเวอร์ชันใหม่ของแอปแล้ว</span><button onclick="applyUpdate()">อัปเดตเลย</button>';
+  document.body.appendChild(banner);
+  window._pendingReg = reg;
+}
+
+function applyUpdate() {
+  if (window._pendingReg && window._pendingReg.waiting) {
+    window._pendingReg.waiting.postMessage({ type: 'SKIP_WAITING' });
+  } else {
+    window.location.reload();
+  }
 }
 
 loadData();
