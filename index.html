@@ -27,6 +27,7 @@
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  button, .chip, label.btn-scan, .cat-del-btn { touch-action: manipulation; }
 
   body {
     margin: 0;
@@ -54,6 +55,13 @@
     font-size: 24px;
     font-weight: 700;
     margin: 0;
+  }
+  .app-header .version-tag {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--brass-light);
+    margin-left: 6px;
+    vertical-align: middle;
   }
 
   .passbook {
@@ -170,6 +178,49 @@
   .ledger-row { display: grid; grid-template-columns: 1fr 92px 92px; gap: 6px; padding: 13px 14px; border-bottom: 1px solid var(--line); align-items: center; font-size: 14px; }
   .ledger-row:last-child { border-bottom: none; }
   .ledger-row:active { background: var(--page-cream-2); }
+
+  /* Ledger toolbar: view toggle + expand/collapse */
+  .ledger-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 14px; }
+  .ledger-view-toggle { display: flex; gap: 6px; background: var(--page-cream-2); border-radius: 10px; padding: 3px; }
+  .view-tab { padding: 7px 14px; border-radius: 8px; border: none; background: transparent; font-size: 13px; font-weight: 700; color: var(--ink-soft); cursor: pointer; }
+  .view-tab.active { background: var(--page-cream); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+  .expand-toggle-btn { padding: 7px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--page-cream); font-size: 12.5px; font-weight: 700; color: var(--ink-soft); cursor: pointer; }
+
+  /* Day accordion */
+  .day-group { border-bottom: 1px solid var(--line); }
+  .day-group:last-child { border-bottom: none; }
+  .day-header { display: flex; align-items: center; gap: 8px; padding: 13px 14px; cursor: pointer; background: var(--page-cream-2); }
+  .day-header:active { background: var(--line); }
+  .day-chevron { color: var(--brass); font-size: 13px; width: 12px; }
+  .day-date { flex: 1; font-weight: 700; font-size: 14px; color: var(--ink); }
+  .day-count { font-size: 12px; color: var(--ink-soft); }
+  .day-net { font-weight: 700; font-size: 14px; min-width: 74px; text-align: right; }
+  .day-net.in { color: var(--deposit); }
+  .day-net.out { color: var(--withdraw); }
+  .row-note.full { white-space: normal; overflow: visible; text-overflow: unset; word-break: break-word; }
+
+  /* Category folder view */
+  .cat-folder-section { padding: 16px 14px; }
+  .cat-folder-section + .cat-folder-section { border-top: 1px dashed var(--line); }
+  .cat-folder-title { font-size: 13px; font-weight: 700; margin-bottom: 10px; }
+  .cat-folder-title.out { color: var(--withdraw); }
+  .cat-folder-title.in { color: var(--deposit); }
+  .cat-folder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .cat-tile { background: var(--page-cream-2); border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; border: 1px solid var(--line); }
+  .cat-tile:active { background: var(--line); }
+  .cat-tile-icon { font-size: 26px; margin-bottom: 4px; }
+  .cat-tile-name { font-size: 13px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cat-tile-amt { font-size: 13px; font-weight: 700; margin-top: 2px; }
+  .cat-tile-amt.in { color: var(--deposit); }
+  .cat-tile-amt.out { color: var(--withdraw); }
+  .cat-tile-count { font-size: 11px; color: var(--ink-soft); margin-top: 1px; }
+  .cat-folder-empty { grid-column: 1 / -1; font-size: 13px; color: var(--ink-soft); text-align: center; padding: 10px 0; }
+
+  .cat-detail-total { font-size: 14px; color: var(--ink-soft); margin-bottom: 14px; }
+  .cat-detail-total .in { color: var(--deposit); font-weight: 700; }
+  .cat-detail-total .out { color: var(--withdraw); font-weight: 700; }
+  .cat-detail-list { max-height: 50vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .cat-detail-list .ledger-row { grid-template-columns: 1fr 92px; }
   .row-desc { min-width: 0; }
   .row-date { font-size: 12px; color: var(--ink-soft); }
   .row-note { font-weight: 600; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -196,8 +247,8 @@
   .field-label { font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; margin-top: 14px; display: flex; justify-content: space-between; align-items: center; }
   .manage-cat-link { font-size: 12px; color: var(--brass); font-weight: 700; cursor: pointer; text-decoration: underline; }
 
-  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
-  .chip { padding: 9px 14px; border-radius: 20px; border: 1px solid var(--line); background: #fff; font-size: 14px; color: var(--ink); cursor: pointer; }
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; max-height: 168px; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 2px; }
+  .chip { padding: 9px 14px; border-radius: 20px; border: 1px solid var(--line); background: #fff; font-size: 14px; color: var(--ink); cursor: pointer; touch-action: manipulation; }
   .chip.selected { background: var(--brass); border-color: var(--brass); color: #fff; font-weight: 700; }
 
   .text-input, .date-input { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); font-size: 15px; font-family: 'Noto Sans Thai', sans-serif; background: #fff; color: var(--ink); outline: none; }
@@ -240,7 +291,7 @@
 
 <div class="app-header">
   <div class="brand">P A S S B O O K</div>
-  <h1>บัญชีต้อการช่าง</h1>
+  <h1>บัญชีต้อการช่าง<span class="version-tag">V1.1</span></h1>
 </div>
 
 <div class="passbook">
@@ -277,6 +328,14 @@
     <button onclick="changeMonth(-1)">‹</button>
     <div class="month-title" id="monthTitle">-</div>
     <button onclick="changeMonth(1)">›</button>
+  </div>
+
+  <div class="ledger-toolbar">
+    <div class="ledger-view-toggle">
+      <button class="view-tab active" id="viewTabList" onclick="setLedgerView('list')">รายการ</button>
+      <button class="view-tab" id="viewTabCat" onclick="setLedgerView('category')">หมวดหมู่</button>
+    </div>
+    <button class="expand-toggle-btn" id="expandToggleBtn" onclick="toggleExpandAll()">ขยายทั้งหมด</button>
   </div>
 
   <div class="ledger" id="ledgerBox">
@@ -326,6 +385,18 @@
     <div class="sheet-actions">
       <button class="btn-cancel" onclick="closeCategoryManage()">ยกเลิก</button>
       <button class="btn-save in" onclick="saveCategoryManage()">บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<!-- Category detail (folder view drill-down) -->
+<div class="overlay" id="catDetailOverlay">
+  <div class="sheet">
+    <div class="sheet-title" id="catDetailTitle">หมวดหมู่</div>
+    <div class="cat-detail-total" id="catDetailTotal"></div>
+    <div class="ledger cat-detail-list" id="catDetailList"></div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" style="width:100%;" onclick="closeCategoryDetail()">ปิด</button>
     </div>
   </div>
 </div>
@@ -489,6 +560,9 @@ async function confirmDelete() {
   transactions = transactions.filter(t => t.id !== deleteTargetId);
   await saveTransactions();
   closeDeleteConfirm();
+  if (document.getElementById('catDetailOverlay').classList.contains('show')) {
+    closeCategoryDetail();
+  }
   render();
   showToast('ลบรายการแล้ว');
 }
@@ -581,6 +655,180 @@ function renderPie(monthTxAll) {
 }
 
 /* ---------- Main render ---------- */
+let ledgerViewMode = 'list';
+let expandedDays = new Set();
+let expandedMonthKey = null;
+let allExpanded = false;
+let lastMonthTx = [];
+
+function categoryIcon(name) {
+  const rules = [
+    [/ข้าว|กับข้าว|อาหาร|กิน/, '🍚'],
+    [/น้ำ.*ไฟ|ค่าไฟ|ค่าน้ำ/, '💡'],
+    [/ยา|หมอ|รักษา|โรงพยาบาล/, '💊'],
+    [/เดินทาง|น้ำมัน|รถ|ค่าโดยสาร/, '🚌'],
+    [/ลูกหลาน|ลูก/, '👨‍👩‍👧'],
+    [/เงินเดือน/, '💰'],
+    [/บำนาญ/, '🏦'],
+    [/ขาย/, '🛍️'],
+    [/ดอกเบี้ย/, '📈'],
+    [/อื่น/, '📦']
+  ];
+  for (const [re, icon] of rules) if (re.test(name)) return icon;
+  return '🏷️';
+}
+
+function setLedgerView(mode) {
+  ledgerViewMode = mode;
+  document.getElementById('viewTabList').classList.toggle('active', mode === 'list');
+  document.getElementById('viewTabCat').classList.toggle('active', mode === 'category');
+  document.getElementById('expandToggleBtn').style.display = mode === 'list' ? 'inline-block' : 'none';
+  renderLedger(lastMonthTx);
+}
+
+function toggleDay(dateKey) {
+  if (expandedDays.has(dateKey)) expandedDays.delete(dateKey);
+  else expandedDays.add(dateKey);
+  renderLedger(lastMonthTx);
+}
+
+function toggleExpandAll() {
+  const dateKeys = [...new Set(lastMonthTx.map(t => t.date))];
+  allExpanded = !allExpanded;
+  if (allExpanded) { expandedDays = new Set(dateKeys); }
+  else { expandedDays = new Set(); }
+  document.getElementById('expandToggleBtn').textContent = allExpanded ? 'ย่อทั้งหมด' : 'ขยายทั้งหมด';
+  renderLedger(lastMonthTx);
+}
+
+function groupByCategory(list) {
+  const map = {};
+  list.forEach(t => {
+    if (!map[t.category]) map[t.category] = { total: 0, items: [] };
+    map[t.category].total += t.amount;
+    map[t.category].items.push(t);
+  });
+  return map;
+}
+
+function renderDayAccordion(monthTx, ledgerBox) {
+  const byDate = {};
+  monthTx.forEach(t => { (byDate[t.date] = byDate[t.date] || []).push(t); });
+  const dateKeys = Object.keys(byDate).sort().reverse();
+
+  const html = dateKeys.map(dateKey => {
+    const entries = byDate[dateKey].slice().sort((a, b) => b.createdAt - a.createdAt);
+    const dayIn = entries.filter(t => t.type === 'in').reduce((s, t) => s + t.amount, 0);
+    const dayOut = entries.filter(t => t.type === 'out').reduce((s, t) => s + t.amount, 0);
+    const net = dayIn - dayOut;
+    const d = new Date(dateKey + 'T00:00:00');
+    const dateLabel = d.getDate() + ' ' + THAI_MONTHS[d.getMonth()] + ' ' + (d.getFullYear() + 543);
+    const isOpen = expandedDays.has(dateKey);
+
+    const rowsHtml = entries.map(t => {
+      const label = t.note ? t.note : '(ไม่มีบันทึกเพิ่มเติม)';
+      return `
+        <div class="ledger-row" onclick="askDelete('${t.id}')">
+          <div class="row-desc">
+            <div class="row-date">${escapeHtml(t.category)}</div>
+            <div class="row-note full">${escapeHtml(label)}</div>
+          </div>
+          <div class="row-amt ${t.type === 'in' ? 'in' : 'out'}">${t.type === 'in' ? '+' : '−'}${fmt(t.amount)}</div>
+          <div class="row-bal">${fmt(t.balanceAfter)}</div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="day-group">
+        <div class="day-header" onclick="toggleDay('${dateKey}')">
+          <span class="day-chevron">${isOpen ? '▾' : '▸'}</span>
+          <span class="day-date">${dateLabel}</span>
+          <span class="day-count">${entries.length} รายการ</span>
+          <span class="day-net ${net >= 0 ? 'in' : 'out'}">${net >= 0 ? '+' : '−'}${fmt(Math.abs(net))}</span>
+        </div>
+        ${isOpen ? `<div class="day-body">
+          <div class="ledger-head"><span>รายการ</span><span>จำนวนเงิน</span><span>คงเหลือ</span></div>
+          ${rowsHtml}
+        </div>` : ''}
+      </div>
+    `;
+  }).join('');
+
+  ledgerBox.innerHTML = html;
+}
+
+function renderCategoryFolders(monthTx, ledgerBox) {
+  const outCats = groupByCategory(monthTx.filter(t => t.type === 'out'));
+  const inCats = groupByCategory(monthTx.filter(t => t.type === 'in'));
+
+  function tilesHtml(catMap, type) {
+    const entries = Object.entries(catMap).sort((a, b) => b[1].total - a[1].total);
+    if (entries.length === 0) return '<div class="cat-folder-empty">ยังไม่มีรายการ</div>';
+    return entries.map(([cat, info]) => `
+      <div class="cat-tile" onclick="openCategoryDetail('${type}', '${encodeURIComponent(cat)}')">
+        <div class="cat-tile-icon">${categoryIcon(cat)}</div>
+        <div class="cat-tile-name">${escapeHtml(cat)}</div>
+        <div class="cat-tile-amt ${type}">${fmt(info.total)}</div>
+        <div class="cat-tile-count">${info.items.length} รายการ</div>
+      </div>
+    `).join('');
+  }
+
+  ledgerBox.innerHTML = `
+    <div class="cat-folder-section">
+      <div class="cat-folder-title out">รายจ่ายตามหมวดหมู่</div>
+      <div class="cat-folder-grid">${tilesHtml(outCats, 'out')}</div>
+    </div>
+    <div class="cat-folder-section">
+      <div class="cat-folder-title in">รายรับตามหมวดหมู่</div>
+      <div class="cat-folder-grid">${tilesHtml(inCats, 'in')}</div>
+    </div>
+  `;
+}
+
+function openCategoryDetail(type, encodedCat) {
+  const cat = decodeURIComponent(encodedCat);
+  const items = lastMonthTx.filter(t => t.type === type && t.category === cat).sort((a, b) => b.createdAt - a.createdAt);
+  const total = items.reduce((s, t) => s + t.amount, 0);
+
+  document.getElementById('catDetailTitle').textContent = categoryIcon(cat) + ' ' + cat;
+  document.getElementById('catDetailTotal').innerHTML =
+    `<span class="${type}">${type === 'in' ? '+' : '−'}${fmt(total)}</span> · ${items.length} รายการ`;
+
+  const rowsHtml = items.map(t => {
+    const d = new Date(t.date + 'T00:00:00');
+    const dateLabel = d.getDate() + ' ' + THAI_MONTHS[d.getMonth()] + ' ' + (d.getFullYear() + 543);
+    const label = t.note ? t.note : '(ไม่มีบันทึกเพิ่มเติม)';
+    return `
+      <div class="ledger-row" onclick="askDelete('${t.id}')">
+        <div class="row-desc">
+          <div class="row-date">${dateLabel}</div>
+          <div class="row-note full">${escapeHtml(label)}</div>
+        </div>
+        <div class="row-amt ${type}">${type === 'in' ? '+' : '−'}${fmt(t.amount)}</div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('catDetailList').innerHTML = rowsHtml || '<div class="empty-state">ไม่มีรายการ</div>';
+  document.getElementById('catDetailOverlay').classList.add('show');
+}
+
+function closeCategoryDetail() {
+  document.getElementById('catDetailOverlay').classList.remove('show');
+}
+
+function renderLedger(monthTx) {
+  const ledgerBox = document.getElementById('ledgerBox');
+  if (monthTx.length === 0) {
+    ledgerBox.innerHTML = '<div class="empty-state"><div class="big-emoji">📖</div>ยังไม่มีรายการในเดือนนี้</div>';
+    return;
+  }
+  if (ledgerViewMode === 'category') renderCategoryFolders(monthTx, ledgerBox);
+  else renderDayAccordion(monthTx, ledgerBox);
+}
+
 function render() {
   const sorted = [...transactions].sort((a, b) => {
     if (a.date !== b.date) return a.date < b.date ? -1 : 1;
@@ -595,44 +843,30 @@ function render() {
 
   document.getElementById('totalBalance').textContent = fmt(running);
 
-  const monthKey = viewYear + '-' + String(viewMonth+1).padStart(2,'0');
+  const monthKey = viewYear + '-' + String(viewMonth + 1).padStart(2, '0');
   const monthTx = withBalance.filter(t => t.date.startsWith(monthKey));
+  lastMonthTx = monthTx;
 
-  const monthIn = monthTx.filter(t => t.type === 'in').reduce((s,t) => s+t.amount, 0);
-  const monthOut = monthTx.filter(t => t.type === 'out').reduce((s,t) => s+t.amount, 0);
+  const monthIn = monthTx.filter(t => t.type === 'in').reduce((s, t) => s + t.amount, 0);
+  const monthOut = monthTx.filter(t => t.type === 'out').reduce((s, t) => s + t.amount, 0);
   document.getElementById('monthIn').textContent = fmt(monthIn);
   document.getElementById('monthOut').textContent = fmt(monthOut);
   document.getElementById('monthTitle').textContent = THAI_MONTHS[viewMonth] + ' ' + (viewYear + 543);
 
   renderPie(monthTx);
 
-  const ledgerBox = document.getElementById('ledgerBox');
-  if (monthTx.length === 0) {
-    ledgerBox.innerHTML = '<div class="empty-state"><div class="big-emoji">📖</div>ยังไม่มีรายการในเดือนนี้</div>';
-    return;
+  if (expandedMonthKey !== monthKey) {
+    const dateKeys = [...new Set(monthTx.map(t => t.date))].sort().reverse();
+    expandedDays = dateKeys.length ? new Set([dateKeys[0]]) : new Set();
+    expandedMonthKey = monthKey;
+    allExpanded = false;
+    const btn = document.getElementById('expandToggleBtn');
+    if (btn) btn.textContent = 'ขยายทั้งหมด';
   }
 
-  const rowsHtml = monthTx.slice().reverse().map(t => {
-    const d = new Date(t.date + 'T00:00:00');
-    const dateLabel = d.getDate() + ' ' + THAI_MONTHS[d.getMonth()].slice(0,3);
-    const label = t.note ? t.note : t.category;
-    return `
-      <div class="ledger-row" onclick="askDelete('${t.id}')">
-        <div class="row-desc">
-          <div class="row-date">${dateLabel} · ${escapeHtml(t.category)}</div>
-          <div class="row-note">${escapeHtml(label)}</div>
-        </div>
-        <div class="row-amt ${t.type === 'in' ? 'in' : 'out'}">${t.type === 'in' ? '+' : '−'}${fmt(t.amount)}</div>
-        <div class="row-bal">${fmt(t.balanceAfter)}</div>
-      </div>
-    `;
-  }).join('');
-
-  ledgerBox.innerHTML = `
-    <div class="ledger-head"><span>รายการ</span><span>จำนวนเงิน</span><span>คงเหลือ</span></div>
-    ${rowsHtml}
-  `;
+  renderLedger(monthTx);
 }
+
 
 function escapeHtml(str) {
   const div = document.createElement('div');
