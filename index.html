@@ -320,10 +320,28 @@
   .cat-manage-hint { font-size: 12px; color: var(--ink-soft); margin-bottom: 4px; }
   .cat-manage-row { display: flex; gap: 8px; align-items: center; }
   .cat-manage-row input { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); font-size: 14px; font-family: 'Noto Sans Thai', sans-serif; background: #fff; }
-  .cat-manage-row .cat-icon-input { flex: 0 0 50px; text-align: center; font-size: 18px; padding: 10px 6px; }
+  .cat-manage-row .cat-icon-btn {
+    flex: 0 0 auto; min-width: 46px; height: 46px; text-align: center; font-size: 20px;
+    padding: 6px; border-radius: 8px; border: 1px solid var(--line); background: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; line-height: 1;
+  }
+  .cat-manage-row .cat-icon-btn.placeholder { color: var(--ink-soft); font-size: 20px; }
+  .cat-manage-row .cat-icon-btn:active { background: var(--page-cream-2); }
   .cat-manage-row .cat-name-input { flex: 1; min-width: 0; }
   .cat-del-btn { width: 38px; height: 38px; border-radius: 8px; border: 1px solid var(--line); background: #fff; color: var(--withdraw); font-size: 18px; cursor: pointer; flex-shrink: 0; }
   .cat-add-btn { margin-top: 10px; width: 100%; padding: 12px; border-radius: 10px; border: 1px dashed var(--brass); background: transparent; color: #7A5E1E; font-weight: 700; font-size: 14px; cursor: pointer; }
+
+  /* Emoji picker */
+  .emoji-reset-row { margin-bottom: 12px; }
+  .emoji-reset-btn { width: 100%; padding: 11px; border-radius: 10px; border: 1px dashed var(--brass); background: rgba(184,146,47,0.08); color: #7A5E1E; font-size: 13.5px; font-weight: 700; cursor: pointer; }
+  .emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; max-height: 44vh; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 2px; }
+  .emoji-opt { aspect-ratio: 1; font-size: 22px; border-radius: 8px; border: 1px solid var(--line); background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .emoji-opt:active { background: var(--page-cream-2); }
+  .cat-trash-section { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--line); }
+  .cat-trash-title { font-size: 12.5px; font-weight: 700; color: var(--ink-soft); margin-bottom: 8px; }
+  .trash-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; background: var(--page-cream-2); border-radius: 8px; margin-bottom: 6px; }
+  .trash-label { font-size: 13px; color: var(--ink); }
+  .trash-restore-btn { border: 1px solid var(--brass); background: #fff; color: #7A5E1E; border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
 
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--cover-green-dark); color: #F3E9CC; padding: 12px 20px; border-radius: 30px; font-size: 14px; z-index: 100; box-shadow: 0 6px 16px rgba(0,0,0,0.25); max-width: 85%; text-align: center; }
 
@@ -349,7 +367,7 @@
 
 <div class="app-header">
   <div class="brand">P A S S B O O K</div>
-  <h1>บัญชีต้อการช่าง<span class="version-tag">V1.4</span></h1>
+  <h1>บัญชีต้อการช่าง<span class="version-tag">V1.5</span></h1>
 </div>
 
 <div class="passbook">
@@ -450,15 +468,34 @@
 <div class="overlay" id="categoryOverlay">
   <div class="sheet">
     <div class="sheet-title">จัดการหมวดหมู่</div>
-    <div class="cat-manage-hint">แตะช่องอีโมจิ (ซ้ายสุด) เพื่อพิมพ์/เปลี่ยนไอคอนของหมวดหมู่เองได้ ถ้าเว้นว่างไว้ ระบบจะเดาให้อัตโนมัติ</div>
+    <div class="cat-manage-hint">แตะปุ่มไอคอน (ซ้ายสุด) เพื่อเลือกอีโมจิของหมวดหมู่เอง ถ้าไม่เลือก ระบบจะเดาให้อัตโนมัติ</div>
     <div class="cat-manage-list" id="catManageList"></div>
     <button class="cat-add-btn" onclick="addCategoryRow()">+ เพิ่มหมวดหมู่ใหม่</button>
+    <div class="cat-trash-section" id="catTrashSection" style="display:none;">
+      <div class="cat-trash-title">🗑️ หมวดหมู่ที่เพิ่งลบ (กู้คืนได้)</div>
+      <div id="catTrashList"></div>
+    </div>
     <div class="sheet-actions">
       <button class="btn-cancel" onclick="closeCategoryManage()">ยกเลิก</button>
       <button class="btn-save in" onclick="saveCategoryManage()">บันทึก</button>
     </div>
   </div>
 </div>
+
+<!-- Emoji picker -->
+<div class="overlay" id="emojiPickerOverlay">
+  <div class="sheet">
+    <div class="sheet-title">เลือกไอคอนหมวดหมู่</div>
+    <div class="emoji-reset-row">
+      <button type="button" class="emoji-reset-btn" onclick="resetEmojiToGuess()">🔄 ให้ระบบเดาให้อัตโนมัติ</button>
+    </div>
+    <div class="emoji-grid" id="emojiGrid"></div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" style="width:100%;" onclick="closeEmojiPicker()">ปิด</button>
+    </div>
+  </div>
+</div>
+
 
 <!-- Search history -->
 <div class="overlay" id="searchOverlay">
@@ -537,10 +574,12 @@ let deleteKind = 'transaction';
 let categoryManageMode = 'out';
 let receivables = [];
 let showPaidReceivables = false;
+let categoryTrash = [];
 
 const TX_KEY = 'transactions';
 const RECV_KEY = 'receivables';
 const CAT_KEY = 'categories';
+const CAT_TRASH_KEY = 'categoryTrash';
 
 function fmt(n) {
   return Number(n).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -573,6 +612,11 @@ async function loadData() {
     }
   } catch (e) { /* keep defaults */ }
 
+  try {
+    const rawTrash = localStorage.getItem(CAT_TRASH_KEY);
+    categoryTrash = rawTrash ? JSON.parse(rawTrash) : [];
+  } catch (e) { categoryTrash = []; }
+
   const now = new Date();
   viewYear = now.getFullYear();
   viewMonth = now.getMonth();
@@ -587,6 +631,11 @@ async function saveTransactions() {
 async function saveReceivables() {
   try { localStorage.setItem(RECV_KEY, JSON.stringify(receivables)); }
   catch (e) { showToast('บันทึกยอดค้างรับไม่สำเร็จ'); }
+}
+
+async function saveCategoryTrash() {
+  try { localStorage.setItem(CAT_TRASH_KEY, JSON.stringify(categoryTrash)); }
+  catch (e) { /* non-critical, ignore */ }
 }
 
 async function saveCategories() {
@@ -831,22 +880,100 @@ function openCategoryManage() {
   const list = document.getElementById('catManageList');
   list.innerHTML = '';
   categories[categoryManageMode].forEach(c => addCategoryRow(c.name, c.icon));
+  renderCategoryTrash();
   document.getElementById('categoryOverlay').classList.add('show');
 }
 function closeCategoryManage() { document.getElementById('categoryOverlay').classList.remove('show'); }
+
+function renderCategoryTrash() {
+  const section = document.getElementById('catTrashSection');
+  const box = document.getElementById('catTrashList');
+  const items = categoryTrash.filter(t => t.mode === categoryManageMode);
+  if (items.length === 0) {
+    section.style.display = 'none';
+    box.innerHTML = '';
+    return;
+  }
+  section.style.display = 'block';
+  box.innerHTML = items.map(t => `
+    <div class="trash-row">
+      <span class="trash-label">${t.icon || '🏷️'} ${escapeHtml(t.name)}</span>
+      <button type="button" class="trash-restore-btn" onclick="restoreCategoryFromTrash('${t.id}')">↺ กู้คืน</button>
+    </div>
+  `).join('');
+}
+
+function restoreCategoryFromTrash(id) {
+  const item = categoryTrash.find(t => t.id === id);
+  if (!item) return;
+  addCategoryRow(item.name, item.icon);
+  showToast('กู้คืน "' + item.name + '" แล้ว กด "บันทึก" ด้านล่างเพื่อยืนยัน');
+}
+
+const EMOJI_PICKER_LIST = [
+  '💰','🏦','💵','💳','📈','🧾','🎁','💸',
+  '🍚','🍜','🍔','☕','🍎','🥤','🍺','🍳',
+  '💡','🚰','🔥','📶','📱','🖥️','⚡','🧊',
+  '💊','🏥','🩺','🚑','🧴','😷','🦷','🩹',
+  '🚌','🚗','🏍️','⛽','🚕','🚲','✈️','🚛',
+  '👨‍👩‍👧','👶','🎓','📚','🎉','🧸','🐶','🐱',
+  '🛠️','⚙️','🔧','🔩','🧑‍🔧','🚜','🏗️','🧰',
+  '🛍️','👕','🏠','🧹','✂️','🧵','📦','🏷️'
+];
+
+let emojiPickerTargetBtn = null;
+
+function openEmojiPicker(btn) {
+  emojiPickerTargetBtn = btn;
+  const grid = document.getElementById('emojiGrid');
+  grid.innerHTML = EMOJI_PICKER_LIST.map(e =>
+    `<button type="button" class="emoji-opt" onclick="pickEmoji('${e}')">${e}</button>`
+  ).join('');
+  document.getElementById('emojiPickerOverlay').classList.add('show');
+}
+
+function pickEmoji(emoji) {
+  if (emojiPickerTargetBtn) {
+    emojiPickerTargetBtn.textContent = emoji;
+    emojiPickerTargetBtn.classList.remove('placeholder');
+    emojiPickerTargetBtn.dataset.empty = 'false';
+  }
+  closeEmojiPicker();
+}
+
+function resetEmojiToGuess() {
+  if (emojiPickerTargetBtn) {
+    emojiPickerTargetBtn.textContent = '+';
+    emojiPickerTargetBtn.classList.add('placeholder');
+    emojiPickerTargetBtn.dataset.empty = 'true';
+  }
+  closeEmojiPicker();
+}
+
+function closeEmojiPicker() {
+  document.getElementById('emojiPickerOverlay').classList.remove('show');
+  emojiPickerTargetBtn = null;
+}
 
 function addCategoryRow(name, icon) {
   const list = document.getElementById('catManageList');
   const row = document.createElement('div');
   row.className = 'cat-manage-row';
   const safeName = name ? name.replace(/"/g, '&quot;') : '';
-  const safeIcon = icon ? icon.replace(/"/g, '&quot;') : '';
+  const hasIcon = !!icon;
+  const iconBtnClass = hasIcon ? 'cat-icon-btn' : 'cat-icon-btn placeholder';
+  const iconBtnText = hasIcon ? icon : '+';
+  const iconBtnEmpty = hasIcon ? 'false' : 'true';
   row.innerHTML = `
-    <input type="text" class="cat-icon-input" value="${safeIcon}" placeholder="🏷️" maxlength="4">
+    <button type="button" class="${iconBtnClass}" data-empty="${iconBtnEmpty}" onclick="openEmojiPicker(this)">${iconBtnText}</button>
     <input type="text" class="cat-name-input" value="${safeName}" placeholder="ชื่อหมวดหมู่">
     <button class="cat-del-btn" type="button">✕</button>
   `;
-  row.querySelector('.cat-del-btn').onclick = () => row.remove();
+  row.querySelector('.cat-del-btn').onclick = () => {
+    const currentName = row.querySelector('.cat-name-input').value.trim();
+    const msg = currentName ? `ต้องการลบหมวดหมู่ "${currentName}" ออกไหมคะ` : 'ต้องการลบแถวนี้ไหมคะ';
+    if (confirm(msg)) row.remove();
+  };
   list.appendChild(row);
 }
 
@@ -854,12 +981,31 @@ async function saveCategoryManage() {
   const rows = document.querySelectorAll('#catManageList .cat-manage-row');
   const entries = [...rows].map(row => {
     const name = row.querySelector('.cat-name-input').value.trim();
-    let icon = row.querySelector('.cat-icon-input').value.trim();
+    const iconBtn = row.querySelector('.cat-icon-btn');
+    let icon = iconBtn.dataset.empty === 'true' ? '' : iconBtn.textContent.trim();
     if (!icon && name) icon = guessCategoryIcon(name);
     return { name, icon };
   }).filter(c => c.name.length > 0);
 
   if (entries.length === 0) { showToast('ต้องมีอย่างน้อย 1 หมวดหมู่'); return; }
+
+  const oldList = categories[categoryManageMode] || [];
+  const removed = oldList.filter(o => !entries.find(e => e.name === o.name));
+  removed.forEach(r => {
+    categoryTrash.unshift({
+      id: Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+      mode: categoryManageMode,
+      name: r.name,
+      icon: r.icon,
+      deletedAt: Date.now()
+    });
+  });
+  // purge trash of anything now restored (present again in the saved list)
+  categoryTrash = categoryTrash
+    .filter(t => !(t.mode === categoryManageMode && entries.find(e => e.name === t.name)))
+    .slice(0, 30);
+  await saveCategoryTrash();
+
   categories[categoryManageMode] = entries;
   await saveCategories();
   closeCategoryManage();
