@@ -952,16 +952,28 @@ function closeMonthSummary() {
   document.getElementById('monthSummaryOverlay').classList.remove('show');
 }
 
-function buildDonutSvgFromSegments(segments) {
-  const R = 15.915; // radius chosen so the circle's circumference ≈ 100 (simplifies % math)
-  let acc = 0;
-  const circleParts = segments.map(seg => {
-    const dashOffset = 100 - acc;
-    const part = `<circle cx="18" cy="18" r="${R}" fill="transparent" stroke="${seg.color}" stroke-width="6" stroke-dasharray="${seg.pct} ${100 - seg.pct}" stroke-dashoffset="${dashOffset}"></circle>`;
-    acc += seg.pct;
-    return part;
+function buildPieSvgFromSegments(segments) {
+  const cx = 18, cy = 18, r = 18;
+  let cumulativeDeg = 0;
+  const paths = segments.map(seg => {
+    if (seg.pct <= 0) return '';
+    if (seg.pct >= 99.999) {
+      return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${seg.color}"></circle>`;
+    }
+    const startDeg = cumulativeDeg;
+    const sweepDeg = seg.pct * 3.6;
+    const endDeg = startDeg + sweepDeg;
+    cumulativeDeg = endDeg;
+    const startRad = (startDeg - 90) * Math.PI / 180;
+    const endRad = (endDeg - 90) * Math.PI / 180;
+    const x1 = (cx + r * Math.cos(startRad)).toFixed(3);
+    const y1 = (cy + r * Math.sin(startRad)).toFixed(3);
+    const x2 = (cx + r * Math.cos(endRad)).toFixed(3);
+    const y2 = (cy + r * Math.sin(endRad)).toFixed(3);
+    const largeArc = sweepDeg > 180 ? 1 : 0;
+    return `<path d="M ${cx},${cy} L ${x1},${y1} A ${r},${r} 0 ${largeArc} 1 ${x2},${y2} Z" fill="${seg.color}"></path>`;
   }).join('');
-  return `<svg viewBox="0 0 36 36" width="88" height="88" style="transform:rotate(-90deg); flex-shrink:0; display:block;">${circleParts}</svg>`;
+  return `<svg viewBox="0 0 36 36" width="88" height="88" style="flex-shrink:0; display:block;">${paths}</svg>`;
 }
 
 async function saveSummaryAsImage() {
@@ -987,7 +999,7 @@ async function saveSummaryAsImage() {
       if (!raw) return;
       try {
         const segments = JSON.parse(raw.replace(/&quot;/g, '"'));
-        const svgHtml = buildDonutSvgFromSegments(segments);
+        const svgHtml = buildPieSvgFromSegments(segments);
         circleDiv.outerHTML = svgHtml;
       } catch (e) { /* leave as-is if parsing fails */ }
     });
