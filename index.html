@@ -251,7 +251,6 @@
   .btn-save-image.loading { opacity: 0.6; pointer-events: none; }
   .summary-none { font-size: 13.5px; color: var(--ink-soft); }
   .summary-pie-body { display: flex; gap: 14px; align-items: center; }
-  .summary-pie-circle { width: 88px; height: 88px; border-radius: 50%; flex-shrink: 0; }
   .summary-pie-legend { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
   .summary-pie-legend-row { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink); }
   .summary-pie-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
@@ -860,15 +859,16 @@ function openMonthSummary() {
   const totalOut = monthTx.filter(t => t.type === 'out').reduce((s, t) => s + t.amount, 0);
   const net = totalIn - totalOut;
 
-  // Cumulative running balance through the end of the viewed month (carries forward
-  // from all prior months, like a real passbook), plus the balance right before this month started.
-  let balanceThroughMonth = 0;
-  transactions.forEach(t => {
-    const txMonthKey = t.date.slice(0, 7);
-    if (txMonthKey <= monthKey) {
-      balanceThroughMonth += t.type === 'in' ? t.amount : -t.amount;
-    }
+  // Cumulative running balance through the end of the viewed month — reuses the exact
+  // same computed balanceAfter values as the main dashboard total, so the two numbers
+  // can never drift apart (even if some transaction has a missing/malformed date).
+  const txUpToMonth = allTxWithBalance.filter(t => {
+    const key = (t.date && t.date.length >= 7) ? t.date.slice(0, 7) : '0000-00';
+    return key <= monthKey;
   });
+  const balanceThroughMonth = txUpToMonth.length > 0
+    ? txUpToMonth[txUpToMonth.length - 1].balanceAfter
+    : 0;
   const balanceBeforeMonth = balanceThroughMonth - net;
 
   const topOut = topCategoriesFor(monthTx, 'out', 5);
@@ -878,11 +878,15 @@ function openMonthSummary() {
     if (list.length === 0) return '<div class="summary-none">ยังไม่มีข้อมูล</div>';
     const total = list.reduce((s, [, amt]) => s + amt, 0);
     let acc = 0;
-    const gradientParts = [];
+    const R = 15.915; // radius chosen so the circle's circumference ≈ 100 (simplifies % math)
+    const circleParts = [];
     const legendRows = list.map(([cat, amt], i) => {
       const pct = total > 0 ? (amt / total) * 100 : 0;
       const color = SUMMARY_PIE_COLORS[i % SUMMARY_PIE_COLORS.length];
-      gradientParts.push(`${color} ${acc}% ${acc + pct}%`);
+      const dashOffset = 100 - acc;
+      circleParts.push(
+        `<circle cx="18" cy="18" r="${R}" fill="transparent" stroke="${color}" stroke-width="6" stroke-dasharray="${pct} ${100 - pct}" stroke-dashoffset="${dashOffset}"></circle>`
+      );
       acc += pct;
       return `
         <div class="summary-pie-legend-row">
@@ -892,9 +896,14 @@ function openMonthSummary() {
         </div>
       `;
     }).join('');
+    const svg = `
+      <svg viewBox="0 0 36 36" width="88" height="88" style="transform:rotate(-90deg); flex-shrink:0;">
+        ${circleParts.join('')}
+      </svg>
+    `;
     return `
       <div class="summary-pie-body">
-        <div class="summary-pie-circle" style="background: conic-gradient(${gradientParts.join(', ')});"></div>
+        ${svg}
         <div class="summary-pie-legend">${legendRows}</div>
       </div>
     `;
@@ -1326,6 +1335,7 @@ let expandedDays = new Set();
 let expandedMonthKey = null;
 let allExpanded = false;
 let lastMonthTx = [];
+let allTxWithBalance = [];
 
 function guessCategoryIcon(name) {
   const rules = [
@@ -1564,6 +1574,7 @@ function render() {
     running += t.type === 'in' ? t.amount : -t.amount;
     return { ...t, balanceAfter: running };
   });
+  allTxWithBalance = withBalance;
 
   document.getElementById('totalBalance').textContent = fmt(running);
 
