@@ -10,6 +10,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root {
     --cover-green: #1B4332;
@@ -241,6 +242,13 @@
   .summary-rank-amt { font-weight: 700; color: var(--ink-soft); }
   .summary-recv-box { background: rgba(28,124,124,0.08); border: 1px solid var(--receivable); border-radius: 10px; padding: 12px; font-size: 13.5px; }
   .summary-recv-box .value { font-weight: 700; color: var(--receivable); }
+  .btn-save-image {
+    width: 100%; margin-top: 16px; padding: 13px; border-radius: 12px;
+    border: 1px solid var(--brass); background: rgba(184,146,47,0.08);
+    color: #7A5E1E; font-family: 'Noto Sans Thai', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+  .btn-save-image:active { background: rgba(184,146,47,0.16); }
+  .btn-save-image.loading { opacity: 0.6; pointer-events: none; }
   .summary-none { font-size: 13.5px; color: var(--ink-soft); }
   .summary-pie-body { display: flex; gap: 14px; align-items: center; }
   .summary-pie-circle { width: 88px; height: 88px; border-radius: 50%; flex-shrink: 0; }
@@ -554,6 +562,7 @@
 <div class="overlay" id="monthSummaryOverlay">
   <div class="sheet">
     <div id="monthSummaryContent"></div>
+    <button class="btn-save-image" id="saveImageBtn" onclick="saveSummaryAsImage()">📷 บันทึกภาพลงเครื่อง</button>
     <div class="sheet-actions">
       <button class="btn-cancel" style="width:100%;" onclick="closeMonthSummary()">ปิด</button>
     </div>
@@ -851,6 +860,17 @@ function openMonthSummary() {
   const totalOut = monthTx.filter(t => t.type === 'out').reduce((s, t) => s + t.amount, 0);
   const net = totalIn - totalOut;
 
+  // Cumulative running balance through the end of the viewed month (carries forward
+  // from all prior months, like a real passbook), plus the balance right before this month started.
+  let balanceThroughMonth = 0;
+  transactions.forEach(t => {
+    const txMonthKey = t.date.slice(0, 7);
+    if (txMonthKey <= monthKey) {
+      balanceThroughMonth += t.type === 'in' ? t.amount : -t.amount;
+    }
+  });
+  const balanceBeforeMonth = balanceThroughMonth - net;
+
   const topOut = topCategoriesFor(monthTx, 'out', 5);
   const topIn = topCategoriesFor(monthTx, 'in', 5);
 
@@ -889,8 +909,11 @@ function openMonthSummary() {
     <div class="summary-hero">
       <div class="month-label">สรุปยอดเดือน</div>
       <div style="font-family:'Noto Serif Thai',serif; font-size:18px; margin-bottom:10px;">${THAI_MONTHS[viewMonth]} ${viewYear + 543}</div>
-      <div class="net-amount">${net >= 0 ? '+' : '−'}${fmt(Math.abs(net))}</div>
-      <div style="font-size:12px; color:#D4AF5A; margin-top:2px;">ยอดสุทธิเดือนนี้</div>
+      <div class="net-amount">${fmt(balanceThroughMonth)}</div>
+      <div style="font-size:12px; color:#D4AF5A; margin-top:2px;">ยอดคงเหลือสะสม ณ สิ้นเดือนนี้</div>
+      <div style="font-size:12px; color:#F3E9CC; margin-top:8px; padding-top:8px; border-top:1px dashed rgba(255,255,255,0.2);">
+        ยกมาจากเดือนก่อน ${fmt(balanceBeforeMonth)} ${net >= 0 ? '+' : '−'} เดือนนี้ ${fmt(Math.abs(net))}
+      </div>
     </div>
 
     <div class="summary-stat-row">
@@ -923,6 +946,43 @@ function openMonthSummary() {
 
 function closeMonthSummary() {
   document.getElementById('monthSummaryOverlay').classList.remove('show');
+}
+
+async function saveSummaryAsImage() {
+  const btn = document.getElementById('saveImageBtn');
+  const el = document.getElementById('monthSummaryContent');
+
+  if (typeof html2canvas === 'undefined') {
+    showToast('ไม่พบเครื่องมือสร้างภาพ ลองเช็คอินเทอร์เน็ตแล้วลองใหม่');
+    return;
+  }
+
+  btn.classList.add('loading');
+  btn.textContent = '⏳ กำลังสร้างภาพ...';
+  try {
+    const canvas = await html2canvas(el, {
+      backgroundColor: '#FBF6EA',
+      scale: 2,
+      useCORS: true
+    });
+    const dataUrl = canvas.toDataURL('image/png');
+    const fileName = 'สรุปยอด-' + THAI_MONTHS[viewMonth] + '-' + (viewYear + 543) + '.png';
+
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    showToast('บันทึกภาพแล้ว (ถ้าไม่เด้งดาวน์โหลดอัตโนมัติ ลองแตะค้างที่ภาพแล้วเลือก "บันทึกรูปภาพ")', 5000);
+  } catch (err) {
+    console.error('Save image failed:', err);
+    showToast('บันทึกภาพไม่สำเร็จ: ' + (err && err.message ? err.message : 'ไม่ทราบสาเหตุ'), 5000);
+  } finally {
+    btn.classList.remove('loading');
+    btn.textContent = '📷 บันทึกภาพลงเครื่อง';
+  }
 }
 
 function openSearchSheet() {
