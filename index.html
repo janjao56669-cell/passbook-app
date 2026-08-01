@@ -474,7 +474,7 @@
     <button onclick="changeMonth(1)">›</button>
   </div>
 
-  <button class="btn-month-summary" onclick="openMonthSummary()">📋 สรุปยอดเดือนนี้แบบเต็ม</button>
+  <button class="btn-month-summary" id="monthSummaryBtn" onclick="openMonthSummary()">📋 สรุปยอดเดือนนี้แบบเต็ม</button>
 
   <div class="ledger-toolbar">
     <button class="search-icon-btn" onclick="openSearchSheet()" title="ค้นหาย้อนหลัง">🔍</button>
@@ -1783,18 +1783,32 @@ function applyUpdate() {
 }
 
 /* ---------- New month reminder ---------- */
-const LAST_OPENED_KEY = 'lastOpenedMonth';
+function isFirstDayOfMonth() {
+  return new Date().getDate() === 1;
+}
+
+function updateMonthSummaryButtonVisibility() {
+  const btn = document.getElementById('monthSummaryBtn');
+  if (!btn) return;
+  btn.style.display = isFirstDayOfMonth() ? 'block' : 'none';
+}
 
 function checkNewMonthBanner() {
-  const currentKey = todayStr().slice(0, 7);
-  let lastOpened = null;
-  try { lastOpened = localStorage.getItem(LAST_OPENED_KEY); } catch (e) { /* ignore */ }
+  if (!isFirstDayOfMonth()) return;
 
-  if (lastOpened && lastOpened !== currentKey) {
-    showNewMonthBanner(lastOpened);
-  }
+  // Give the service-worker update check a moment to appear first, so the two
+  // banners never stack — if an update is pending, skip for now (it'll show
+  // again on next open, and reappears immediately after the update reloads the page).
+  setTimeout(() => {
+    if (document.getElementById('updateBanner')) return;
 
-  try { localStorage.setItem(LAST_OPENED_KEY, currentKey); } catch (e) { /* ignore */ }
+    const now = new Date();
+    let prevMonthIdx = now.getMonth() - 1;
+    let prevYear = now.getFullYear();
+    if (prevMonthIdx < 0) { prevMonthIdx = 11; prevYear -= 1; }
+    const prevMonthKey = prevYear + '-' + String(prevMonthIdx + 1).padStart(2, '0');
+    showNewMonthBanner(prevMonthKey);
+  }, 800);
 }
 
 function showNewMonthBanner(prevMonthKey) {
@@ -1828,7 +1842,9 @@ function viewPrevMonthSummary(y, mIdx) {
   openMonthSummary();
 }
 
+
 loadData();
+updateMonthSummaryButtonVisibility();
 checkNewMonthBanner();
 
 </script>
