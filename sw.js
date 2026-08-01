@@ -3,7 +3,7 @@
 // same) — this is what actually makes the browser detect a service worker
 // update and fire the in-app "new version" banner.
 const APP_VERSION = 'V1.6';
-const BUILD_ID = '20260801080207';
+const BUILD_ID = '20260801080722';
 const CACHE_NAME = 'passbook-cache-' + BUILD_ID;
 const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
