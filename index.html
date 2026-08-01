@@ -249,6 +249,9 @@
   }
   .btn-save-image:active { background: rgba(184,146,47,0.16); }
   .btn-save-image.loading { opacity: 0.6; pointer-events: none; }
+  .image-preview-hint { background: #FFF6DE; border: 1px solid var(--brass-light); border-radius: 10px; padding: 10px 12px; font-size: 12.5px; color: #6B5217; margin-bottom: 12px; }
+  .image-preview-box { max-height: 60vh; overflow-y: auto; border-radius: 10px; border: 1px solid var(--line); }
+  .image-preview-box img { width: 100%; display: block; -webkit-touch-callout: default; }
   .summary-none { font-size: 13.5px; color: var(--ink-soft); }
   .summary-pie-body { display: flex; gap: 14px; align-items: center; }
   .summary-pie-circle { width: 88px; height: 88px; border-radius: 50%; flex-shrink: 0; }
@@ -579,6 +582,20 @@
     </div>
     <div class="sheet-actions">
       <button class="btn-cancel" style="width:100%;" onclick="closeSearchSheet()">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<!-- Generated image preview (for saving) -->
+<div class="overlay" id="imagePreviewOverlay">
+  <div class="sheet">
+    <div class="sheet-title">ภาพสรุปยอด</div>
+    <div class="image-preview-hint">📌 กดค้างที่รูปด้านล่าง แล้วเลือก "บันทึกรูปภาพ" เพื่อเก็บลงเครื่อง</div>
+    <div class="image-preview-box">
+      <img id="generatedImagePreview" src="" alt="ภาพสรุปยอด">
+    </div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" style="width:100%;" onclick="closeImagePreview()">ปิด</button>
     </div>
   </div>
 </div>
@@ -976,6 +993,10 @@ function buildPieSvgFromSegments(segments) {
   return `<svg viewBox="0 0 36 36" width="88" height="88" style="flex-shrink:0; display:block;">${paths}</svg>`;
 }
 
+function closeImagePreview() {
+  document.getElementById('imagePreviewOverlay').classList.remove('show');
+}
+
 async function saveSummaryAsImage() {
   const btn = document.getElementById('saveImageBtn');
   const sourceEl = document.getElementById('monthSummaryContent');
@@ -1019,14 +1040,20 @@ async function saveSummaryAsImage() {
     const dataUrl = canvas.toDataURL('image/png');
     const fileName = 'สรุปยอด-' + THAI_MONTHS[viewMonth] + '-' + (viewYear + 543) + '.png';
 
-    const link = document.createElement('a');
-    link.href = dataUrl;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    // Try the automatic download (works on Android/desktop) as a bonus —
+    // but always show the image on-screen too, since iOS Safari gives no
+    // visible feedback when the automatic download silently fails there.
+    try {
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e) { /* ignore — the preview below is the reliable fallback */ }
 
-    showToast('บันทึกภาพแล้ว (ถ้าไม่เด้งดาวน์โหลดอัตโนมัติ ลองแตะค้างที่ภาพแล้วเลือก "บันทึกรูปภาพ")', 5000);
+    document.getElementById('generatedImagePreview').src = dataUrl;
+    document.getElementById('imagePreviewOverlay').classList.add('show');
   } catch (err) {
     console.error('Save image failed:', err);
     showToast('บันทึกภาพไม่สำเร็จ: ' + (err && err.message ? err.message : 'ไม่ทราบสาเหตุ'), 5000);
