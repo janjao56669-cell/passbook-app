@@ -214,6 +214,42 @@
   .month-nav button:active { background: var(--page-cream-2); }
   .month-title { font-family: 'Noto Serif Thai', serif; font-size: 19px; font-weight: 600; color: #2f2313; }
 
+  .btn-month-summary {
+    width: 100%; margin-top: 10px; padding: 12px 8px; border-radius: 12px;
+    border: 1px solid var(--line); background: var(--page-cream);
+    font-family: 'Noto Sans Thai', sans-serif; font-size: 14px; font-weight: 700; color: var(--ink);
+    cursor: pointer;
+  }
+  .btn-month-summary:active { background: var(--page-cream-2); }
+
+  /* Month summary sheet */
+  .summary-hero {
+    background: linear-gradient(180deg, var(--cover-green-dark), var(--cover-green));
+    border-radius: 14px; padding: 18px; text-align: center; margin-bottom: 16px; color: #F3E9CC;
+  }
+  .summary-hero .month-label { font-size: 13px; letter-spacing: 2px; color: var(--brass-light); margin-bottom: 4px; }
+  .summary-hero .net-amount { font-family: 'Noto Serif Thai', serif; font-size: 30px; font-weight: 700; }
+  .summary-stat-row { display: flex; gap: 10px; margin-bottom: 16px; }
+  .summary-stat-box { flex: 1; background: var(--page-cream-2); border-radius: 10px; padding: 12px; text-align: center; }
+  .summary-stat-label { font-size: 12px; color: var(--ink-soft); }
+  .summary-stat-value { font-size: 17px; font-weight: 700; margin-top: 2px; }
+  .summary-section-title { font-size: 13px; font-weight: 700; color: var(--ink-soft); margin: 16px 0 8px; padding-top: 12px; border-top: 1px dashed var(--line); }
+  .summary-section-title:first-of-type { border-top: none; padding-top: 0; }
+  .summary-rank-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; font-size: 14px; }
+  .summary-rank-badge { width: 20px; height: 20px; border-radius: 50%; background: var(--page-cream-2); border: 1px solid var(--line); color: var(--ink-soft); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .summary-rank-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .summary-rank-amt { font-weight: 700; color: var(--ink-soft); }
+  .summary-recv-box { background: rgba(28,124,124,0.08); border: 1px solid var(--receivable); border-radius: 10px; padding: 12px; font-size: 13.5px; }
+  .summary-recv-box .value { font-weight: 700; color: var(--receivable); }
+  .summary-none { font-size: 13.5px; color: var(--ink-soft); }
+  .summary-pie-body { display: flex; gap: 14px; align-items: center; }
+  .summary-pie-circle { width: 88px; height: 88px; border-radius: 50%; flex-shrink: 0; }
+  .summary-pie-legend { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .summary-pie-legend-row { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink); }
+  .summary-pie-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .summary-pie-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .summary-pie-amt { font-weight: 700; color: var(--ink-soft); flex-shrink: 0; }
+
   .ledger { margin-top: 14px; background: var(--page-cream); border-radius: 14px; border: 1px solid var(--line); box-shadow: 0 8px 20px var(--shadow); overflow: hidden; }
   .ledger-head { display: grid; grid-template-columns: 1fr 92px 92px; gap: 6px; padding: 12px 14px; font-size: 12px; color: var(--ink-soft); background: var(--page-cream-2); border-bottom: 1px solid var(--line); }
   .ledger-head span:nth-child(2), .ledger-head span:nth-child(3) { text-align: right; }
@@ -295,6 +331,7 @@
   .text-input:focus, .date-input:focus { border-color: var(--brass); }
 
   .sheet-actions { display: flex; gap: 10px; margin-top: 22px; }
+  .btn-delete-entry { width: 100%; margin-top: 10px; padding: 11px; border-radius: 10px; border: 1px dashed var(--withdraw); background: rgba(161,62,62,0.06); color: var(--withdraw); font-size: 13.5px; font-weight: 700; cursor: pointer; }
   .btn-cancel, .btn-save { flex: 1; padding: 15px; border-radius: 12px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; }
   .btn-cancel { background: #E7E0C8; color: var(--ink); }
   .btn-save { color: #fff; }
@@ -361,13 +398,26 @@
     background: #fff; color: var(--brass); border: none; border-radius: 8px;
     padding: 5px 12px; font-size: 12.5px; font-weight: 700; cursor: pointer;
   }
+
+  .new-month-banner {
+    background: var(--cover-green); color: #F3E9CC;
+    border-radius: 12px; padding: 12px 14px; margin-bottom: 14px;
+    font-size: 13px; display: flex; flex-direction: column; gap: 8px;
+  }
+  .new-month-banner-actions { display: flex; gap: 8px; }
+  .new-month-banner-actions button {
+    flex: 1; padding: 8px; border-radius: 8px; border: none;
+    font-size: 12.5px; font-weight: 700; cursor: pointer;
+    background: var(--brass); color: #fff;
+  }
+  .new-month-banner-actions button.dismiss { background: rgba(255,255,255,0.15); color: #F3E9CC; }
 </style>
 </head>
 <body>
 
 <div class="app-header">
   <div class="brand">P A S S B O O K</div>
-  <h1>บัญชีต้อการช่าง<span class="version-tag">V1.5</span></h1>
+  <h1>บัญชีต้อการช่าง<span class="version-tag">V1.6</span></h1>
 </div>
 
 <div class="passbook">
@@ -416,6 +466,8 @@
     <button onclick="changeMonth(1)">›</button>
   </div>
 
+  <button class="btn-month-summary" onclick="openMonthSummary()">📋 สรุปยอดเดือนนี้แบบเต็ม</button>
+
   <div class="ledger-toolbar">
     <button class="search-icon-btn" onclick="openSearchSheet()" title="ค้นหาย้อนหลัง">🔍</button>
     <div class="ledger-view-toggle">
@@ -461,6 +513,7 @@
       <button class="btn-cancel" onclick="closeSheet()">ยกเลิก</button>
       <button class="btn-save" id="saveBtn" onclick="saveEntry()">บันทึก</button>
     </div>
+    <button class="btn-delete-entry" id="deleteEntryBtn" style="display:none;" onclick="deleteFromEditSheet()">🗑️ ลบรายการนี้</button>
   </div>
 </div>
 
@@ -496,6 +549,16 @@
   </div>
 </div>
 
+
+<!-- Month summary -->
+<div class="overlay" id="monthSummaryOverlay">
+  <div class="sheet">
+    <div id="monthSummaryContent"></div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" style="width:100%;" onclick="closeMonthSummary()">ปิด</button>
+    </div>
+  </div>
+</div>
 
 <!-- Search history -->
 <div class="overlay" id="searchOverlay">
@@ -669,21 +732,33 @@ function renderCategoryChips(mode, preselect) {
   });
 }
 
-function openSheet(mode, prefill) {
+let editingTransactionId = null;
+
+function openSheet(mode, prefill, isEdit) {
   currentMode = mode;
   selectedCategory = '';
-  document.getElementById('sheetTitle').textContent = mode === 'in' ? 'บันทึกรายรับ' : 'บันทึกรายจ่าย';
+  editingTransactionId = isEdit || null;
+
+  const titleText = editingTransactionId
+    ? 'แก้ไขรายการ'
+    : (mode === 'in' ? 'บันทึกรายรับ' : 'บันทึกรายจ่าย');
+  document.getElementById('sheetTitle').textContent = titleText;
   document.getElementById('sheetTitle').className = 'sheet-title ' + mode;
   document.getElementById('saveBtn').className = 'btn-save ' + mode;
+  document.getElementById('saveBtn').textContent = editingTransactionId ? 'บันทึกการแก้ไข' : 'บันทึก';
   document.getElementById('amountInput').value = prefill && prefill.amount ? prefill.amount : '';
   document.getElementById('noteInput').value = prefill && prefill.note ? prefill.note : '';
   document.getElementById('dateInput').value = (prefill && prefill.date) ? prefill.date : todayStr();
-  document.getElementById('scanBanner').style.display = prefill ? 'block' : 'none';
-  if (prefill) {
+
+  const isScanPrefill = prefill && !editingTransactionId;
+  document.getElementById('scanBanner').style.display = isScanPrefill ? 'block' : 'none';
+  if (isScanPrefill) {
     document.querySelectorAll('.scan-type-btn').forEach(b => b.classList.remove('active'));
     const activeBtn = document.querySelector('.scan-type-btn.' + mode);
     if (activeBtn) activeBtn.classList.add('active');
   }
+
+  document.getElementById('deleteEntryBtn').style.display = editingTransactionId ? 'block' : 'none';
 
   renderCategoryChips(mode, prefill ? prefill.category : null);
 
@@ -691,9 +766,24 @@ function openSheet(mode, prefill) {
   if (!prefill) setTimeout(() => document.getElementById('amountInput').focus(), 100);
 }
 
+function openEditEntry(id) {
+  const tx = transactions.find(t => t.id === id);
+  if (!tx) return;
+  openSheet(tx.type, { amount: tx.amount, date: tx.date, note: tx.note, category: tx.category }, id);
+}
+
+function deleteFromEditSheet() {
+  if (!editingTransactionId) return;
+  const id = editingTransactionId;
+  closeSheet();
+  askDelete(id);
+}
+
 function switchSheetType(mode) {
   currentMode = mode;
-  document.getElementById('sheetTitle').textContent = mode === 'in' ? 'บันทึกรายรับ' : 'บันทึกรายจ่าย';
+  document.getElementById('sheetTitle').textContent = editingTransactionId
+    ? 'แก้ไขรายการ'
+    : (mode === 'in' ? 'บันทึกรายรับ' : 'บันทึกรายจ่าย');
   document.getElementById('sheetTitle').className = 'sheet-title ' + mode;
   document.getElementById('saveBtn').className = 'btn-save ' + mode;
   renderCategoryChips(mode, null);
@@ -702,7 +792,10 @@ function switchSheetType(mode) {
   if (activeBtn) activeBtn.classList.add('active');
 }
 
-function closeSheet() { document.getElementById('entryOverlay').classList.remove('show'); }
+function closeSheet() {
+  document.getElementById('entryOverlay').classList.remove('show');
+  editingTransactionId = null;
+}
 
 async function saveEntry() {
   const amountRaw = document.getElementById('amountInput').value.replace(',', '.');
@@ -711,10 +804,30 @@ async function saveEntry() {
   const date = document.getElementById('dateInput').value || todayStr();
   const note = document.getElementById('noteInput').value.trim();
   const category = selectedCategory || categories[currentMode][categories[currentMode].length - 1].name;
+  const roundedAmount = Math.round(amount * 100) / 100;
+
+  if (editingTransactionId) {
+    const tx = transactions.find(t => t.id === editingTransactionId);
+    if (tx) {
+      tx.type = currentMode;
+      tx.amount = roundedAmount;
+      tx.date = date;
+      tx.category = category;
+      tx.note = note;
+    }
+    editingTransactionId = null;
+    await saveTransactions();
+    closeSheet();
+    viewYear = parseInt(date.slice(0, 4));
+    viewMonth = parseInt(date.slice(5, 7)) - 1;
+    render();
+    showToast('แก้ไขรายการเรียบร้อย');
+    return;
+  }
 
   const entry = {
     id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
-    type: currentMode, amount: Math.round(amount * 100) / 100,
+    type: currentMode, amount: roundedAmount,
     date: date, category: category, note: note, createdAt: Date.now()
   };
 
@@ -729,6 +842,89 @@ async function saveEntry() {
 
 /* ---------- Receivables (ยอดค้างรับ) ---------- */
 /* ---------- Search history ---------- */
+/* ---------- Month summary (full report) ---------- */
+function openMonthSummary() {
+  const monthTx = lastMonthTx;
+  const monthKey = viewYear + '-' + String(viewMonth + 1).padStart(2, '0');
+
+  const totalIn = monthTx.filter(t => t.type === 'in').reduce((s, t) => s + t.amount, 0);
+  const totalOut = monthTx.filter(t => t.type === 'out').reduce((s, t) => s + t.amount, 0);
+  const net = totalIn - totalOut;
+
+  const topOut = topCategoriesFor(monthTx, 'out', 5);
+  const topIn = topCategoriesFor(monthTx, 'in', 5);
+
+  function pieBreakdownHtml(list, type) {
+    if (list.length === 0) return '<div class="summary-none">ยังไม่มีข้อมูล</div>';
+    const total = list.reduce((s, [, amt]) => s + amt, 0);
+    let acc = 0;
+    const gradientParts = [];
+    const legendRows = list.map(([cat, amt], i) => {
+      const pct = total > 0 ? (amt / total) * 100 : 0;
+      const color = SUMMARY_PIE_COLORS[i % SUMMARY_PIE_COLORS.length];
+      gradientParts.push(`${color} ${acc}% ${acc + pct}%`);
+      acc += pct;
+      return `
+        <div class="summary-pie-legend-row">
+          <span class="summary-pie-dot" style="background:${color}"></span>
+          <span class="summary-pie-label">${catIconFor(type, cat)} ${escapeHtml(cat)} (${pct.toFixed(0)}%)</span>
+          <span class="summary-pie-amt">${fmt(amt)}</span>
+        </div>
+      `;
+    }).join('');
+    return `
+      <div class="summary-pie-body">
+        <div class="summary-pie-circle" style="background: conic-gradient(${gradientParts.join(', ')});"></div>
+        <div class="summary-pie-legend">${legendRows}</div>
+      </div>
+    `;
+  }
+
+  const recvThisMonth = receivables.filter(r => r.date && r.date.startsWith(monthKey));
+  const recvThisMonthTotal = recvThisMonth.reduce((s, r) => s + r.amount, 0);
+  const recvPendingAll = receivables.filter(r => r.status !== 'paid');
+  const recvPendingAllTotal = recvPendingAll.reduce((s, r) => s + r.amount, 0);
+
+  const html = `
+    <div class="summary-hero">
+      <div class="month-label">สรุปยอดเดือน</div>
+      <div style="font-family:'Noto Serif Thai',serif; font-size:18px; margin-bottom:10px;">${THAI_MONTHS[viewMonth]} ${viewYear + 543}</div>
+      <div class="net-amount">${net >= 0 ? '+' : '−'}${fmt(Math.abs(net))}</div>
+      <div style="font-size:12px; color:#D4AF5A; margin-top:2px;">ยอดสุทธิเดือนนี้</div>
+    </div>
+
+    <div class="summary-stat-row">
+      <div class="summary-stat-box">
+        <div class="summary-stat-label">รายรับรวม</div>
+        <div class="summary-stat-value in">${fmt(totalIn)}</div>
+      </div>
+      <div class="summary-stat-box">
+        <div class="summary-stat-label">รายจ่ายรวม</div>
+        <div class="summary-stat-value out">${fmt(totalOut)}</div>
+      </div>
+    </div>
+
+    <div class="summary-section-title">🥧 สัดส่วนรายจ่ายสูงสุด 5 อันดับ</div>
+    ${pieBreakdownHtml(topOut, 'out')}
+
+    <div class="summary-section-title">🥧 สัดส่วนรายรับสูงสุด 5 อันดับ</div>
+    ${pieBreakdownHtml(topIn, 'in')}
+
+    <div class="summary-section-title">💰 ยอดค้างรับ</div>
+    <div class="summary-recv-box">
+      เกิดขึ้นใหม่เดือนนี้: <span class="value">${fmt(recvThisMonthTotal)}</span> (${recvThisMonth.length} รายการ)<br>
+      ค้างอยู่ทั้งหมด (ทุกเดือนรวมกัน): <span class="value">${fmt(recvPendingAllTotal)}</span> (${recvPendingAll.length} รายการ)
+    </div>
+  `;
+
+  document.getElementById('monthSummaryContent').innerHTML = html;
+  document.getElementById('monthSummaryOverlay').classList.add('show');
+}
+
+function closeMonthSummary() {
+  document.getElementById('monthSummaryOverlay').classList.remove('show');
+}
+
 function openSearchSheet() {
   document.getElementById('searchInput').value = '';
   document.getElementById('searchResults').innerHTML =
@@ -764,7 +960,7 @@ function runSearch() {
     const dateLabel = d.getDate() + ' ' + THAI_MONTHS[d.getMonth()] + ' ' + (d.getFullYear() + 543);
     const label = t.note ? t.note : '(ไม่มีบันทึกเพิ่มเติม)';
     return `
-      <div class="ledger-row" onclick="askDelete('${t.id}')">
+      <div class="ledger-row" onclick="openEditEntry('${t.id}')">
         <div class="row-desc">
           <div class="row-date month-tag">${dateLabel} · ${escapeHtml(t.category)}</div>
           <div class="row-note full">${escapeHtml(label)}</div>
@@ -1015,6 +1211,15 @@ async function saveCategoryManage() {
 }
 
 /* ---------- Pie chart: income vs expense, plus top-3 category rankings ---------- */
+const SUMMARY_PIE_COLORS = ['#A13E3E', '#B8922F', '#4C6B54', '#8C6A3F', '#6B4C3F'];
+
+function topCategoriesFor(monthTxAll, type, limit) {
+  const relevant = monthTxAll.filter(t => t.type === type);
+  const sums = {};
+  relevant.forEach(t => { sums[t.category] = (sums[t.category] || 0) + t.amount; });
+  return Object.entries(sums).sort((a, b) => b[1] - a[1]).slice(0, limit || 3);
+}
+
 function renderPie(monthTxAll) {
   const container = document.getElementById('pieContent');
   const totalIn = monthTxAll.filter(t => t.type === 'in').reduce((s,t) => s+t.amount, 0);
@@ -1036,15 +1241,8 @@ function renderPie(monthTxAll) {
     `;
   }
 
-  function topCategories(type) {
-    const relevant = monthTxAll.filter(t => t.type === type);
-    const sums = {};
-    relevant.forEach(t => { sums[t.category] = (sums[t.category] || 0) + t.amount; });
-    return Object.entries(sums).sort((a,b) => b[1]-a[1]).slice(0, 3);
-  }
-
   function renderRankCol(type, title) {
-    const top = topCategories(type);
+    const top = topCategoriesFor(monthTxAll, type, 3);
     if (top.length === 0) return `<div><div class="rank-col-title ${type}">${title}</div><div class="rank-none">ยังไม่มีข้อมูล</div></div>`;
     const rows = top.map(([cat, amt], i) => `
       <div class="rank-row"><span class="rank-badge">${i+1}</span><span class="rank-label">${escapeHtml(cat)}</span><span class="rank-amt">${fmt(amt)}</span></div>
@@ -1060,6 +1258,7 @@ function renderPie(monthTxAll) {
     </div>
   `;
 }
+
 
 /* ---------- Main render ---------- */
 let ledgerViewMode = 'list';
@@ -1149,7 +1348,7 @@ function renderDayAccordion(monthTx, ledgerBox) {
     const rowsHtml = entries.map(t => {
       const label = t.note ? t.note : '(ไม่มีบันทึกเพิ่มเติม)';
       return `
-        <div class="ledger-row" onclick="askDelete('${t.id}')">
+        <div class="ledger-row" onclick="openEditEntry('${t.id}')">
           <div class="row-desc">
             <div class="row-date">${escapeHtml(t.category)}</div>
             <div class="row-note full">${escapeHtml(label)}</div>
@@ -1221,7 +1420,7 @@ function openCategoryDetail(type, encodedCat) {
     const dateLabel = d.getDate() + ' ' + THAI_MONTHS[d.getMonth()] + ' ' + (d.getFullYear() + 543);
     const label = t.note ? t.note : '(ไม่มีบันทึกเพิ่มเติม)';
     return `
-      <div class="ledger-row" onclick="askDelete('${t.id}')">
+      <div class="ledger-row" onclick="openEditEntry('${t.id}')">
         <div class="row-desc">
           <div class="row-date">${dateLabel}</div>
           <div class="row-note full">${escapeHtml(label)}</div>
@@ -1468,7 +1667,55 @@ function applyUpdate() {
   }
 }
 
+/* ---------- New month reminder ---------- */
+const LAST_OPENED_KEY = 'lastOpenedMonth';
+
+function checkNewMonthBanner() {
+  const currentKey = todayStr().slice(0, 7);
+  let lastOpened = null;
+  try { lastOpened = localStorage.getItem(LAST_OPENED_KEY); } catch (e) { /* ignore */ }
+
+  if (lastOpened && lastOpened !== currentKey) {
+    showNewMonthBanner(lastOpened);
+  }
+
+  try { localStorage.setItem(LAST_OPENED_KEY, currentKey); } catch (e) { /* ignore */ }
+}
+
+function showNewMonthBanner(prevMonthKey) {
+  if (document.getElementById('newMonthBanner')) return;
+  const [y, m] = prevMonthKey.split('-').map(Number);
+  const banner = document.createElement('div');
+  banner.id = 'newMonthBanner';
+  banner.className = 'new-month-banner';
+  banner.innerHTML = `
+    <span>🎉 เดือนใหม่แล้ว! ดูสรุปยอดเดือน ${THAI_MONTHS[m - 1]} ${y + 543} ไหม?</span>
+    <div class="new-month-banner-actions">
+      <button onclick="viewPrevMonthSummary(${y}, ${m - 1})">ดูสรุป</button>
+      <button class="dismiss" onclick="dismissNewMonthBanner()">ปิด</button>
+    </div>
+  `;
+  const container = document.querySelector('.passbook');
+  if (container) container.prepend(banner);
+}
+
+function dismissNewMonthBanner() {
+  const b = document.getElementById('newMonthBanner');
+  if (b) b.remove();
+}
+
+function viewPrevMonthSummary(y, mIdx) {
+  dismissNewMonthBanner();
+  viewYear = y;
+  viewMonth = mIdx;
+  expandedMonthKey = null;
+  render();
+  openMonthSummary();
+}
+
 loadData();
+checkNewMonthBanner();
+
 </script>
 
 </body>
