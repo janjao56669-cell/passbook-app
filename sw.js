@@ -1,8 +1,10 @@
 // APP_VERSION marker — bump this string on every release alongside index.html.
-// The browser only detects a service worker "update" when this file's bytes
-// change, so this line is what makes the in-app update banner fire at all.
+// BUILD_ID changes on every release too (even when APP_VERSION label stays the
+// same) — this is what actually makes the browser detect a service worker
+// update and fire the in-app "new version" banner.
 const APP_VERSION = 'V1.6';
-const CACHE_NAME = 'passbook-cache-' + APP_VERSION;
+const BUILD_ID = '20260801074740';
+const CACHE_NAME = 'passbook-cache-' + BUILD_ID;
 const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (event) => {
