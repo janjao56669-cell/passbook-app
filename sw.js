@@ -1,4 +1,8 @@
-const CACHE_NAME = 'passbook-cache-v3';
+// APP_VERSION marker — bump this string on every release alongside index.html.
+// The browser only detects a service worker "update" when this file's bytes
+// change, so this line is what makes the in-app update banner fire at all.
+const APP_VERSION = 'V1.6';
+const CACHE_NAME = 'passbook-cache-' + APP_VERSION;
 const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', (event) => {
