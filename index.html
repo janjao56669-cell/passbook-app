@@ -251,6 +251,7 @@
   .btn-save-image.loading { opacity: 0.6; pointer-events: none; }
   .summary-none { font-size: 13.5px; color: var(--ink-soft); }
   .summary-pie-body { display: flex; gap: 14px; align-items: center; }
+  .summary-pie-circle { width: 88px; height: 88px; border-radius: 50%; flex-shrink: 0; }
   .summary-pie-legend { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
   .summary-pie-legend-row { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink); }
   .summary-pie-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
@@ -878,15 +879,13 @@ function openMonthSummary() {
     if (list.length === 0) return '<div class="summary-none">ยังไม่มีข้อมูล</div>';
     const total = list.reduce((s, [, amt]) => s + amt, 0);
     let acc = 0;
-    const R = 15.915; // radius chosen so the circle's circumference ≈ 100 (simplifies % math)
-    const circleParts = [];
+    const gradientParts = [];
+    const segments = [];
     const legendRows = list.map(([cat, amt], i) => {
       const pct = total > 0 ? (amt / total) * 100 : 0;
       const color = SUMMARY_PIE_COLORS[i % SUMMARY_PIE_COLORS.length];
-      const dashOffset = 100 - acc;
-      circleParts.push(
-        `<circle cx="18" cy="18" r="${R}" fill="transparent" stroke="${color}" stroke-width="6" stroke-dasharray="${pct} ${100 - pct}" stroke-dashoffset="${dashOffset}"></circle>`
-      );
+      gradientParts.push(`${color} ${acc}% ${acc + pct}%`);
+      segments.push({ pct: pct, color: color });
       acc += pct;
       return `
         <div class="summary-pie-legend-row">
@@ -896,14 +895,10 @@ function openMonthSummary() {
         </div>
       `;
     }).join('');
-    const svg = `
-      <svg viewBox="0 0 36 36" width="88" height="88" style="transform:rotate(-90deg); flex-shrink:0;">
-        ${circleParts.join('')}
-      </svg>
-    `;
+    const segmentsJson = JSON.stringify(segments).replace(/"/g, '&quot;');
     return `
       <div class="summary-pie-body">
-        ${svg}
+        <div class="summary-pie-circle" data-pie-segments="${segmentsJson}" style="background: conic-gradient(${gradientParts.join(', ')});"></div>
         <div class="summary-pie-legend">${legendRows}</div>
       </div>
     `;
@@ -957,9 +952,21 @@ function closeMonthSummary() {
   document.getElementById('monthSummaryOverlay').classList.remove('show');
 }
 
+function buildDonutSvgFromSegments(segments) {
+  const R = 15.915; // radius chosen so the circle's circumference ≈ 100 (simplifies % math)
+  let acc = 0;
+  const circleParts = segments.map(seg => {
+    const dashOffset = 100 - acc;
+    const part = `<circle cx="18" cy="18" r="${R}" fill="transparent" stroke="${seg.color}" stroke-width="6" stroke-dasharray="${seg.pct} ${100 - seg.pct}" stroke-dashoffset="${dashOffset}"></circle>`;
+    acc += seg.pct;
+    return part;
+  }).join('');
+  return `<svg viewBox="0 0 36 36" width="88" height="88" style="transform:rotate(-90deg); flex-shrink:0; display:block;">${circleParts}</svg>`;
+}
+
 async function saveSummaryAsImage() {
   const btn = document.getElementById('saveImageBtn');
-  const el = document.getElementById('monthSummaryContent');
+  const sourceEl = document.getElementById('monthSummaryContent');
 
   if (typeof html2canvas === 'undefined') {
     showToast('ไม่พบเครื่องมือสร้างภาพ ลองเช็คอินเทอร์เน็ตแล้วลองใหม่');
@@ -968,8 +975,31 @@ async function saveSummaryAsImage() {
 
   btn.classList.add('loading');
   btn.textContent = '⏳ กำลังสร้างภาพ...';
+
+  let clone = null;
   try {
-    const canvas = await html2canvas(el, {
+    // Clone the summary content off-screen, swapping each conic-gradient pie
+    // for an equivalent SVG (which the image-capture tool can actually draw) —
+    // the visible app is never touched, only this hidden capture copy.
+    clone = sourceEl.cloneNode(true);
+    clone.querySelectorAll('.summary-pie-circle').forEach(circleDiv => {
+      const raw = circleDiv.getAttribute('data-pie-segments');
+      if (!raw) return;
+      try {
+        const segments = JSON.parse(raw.replace(/&quot;/g, '"'));
+        const svgHtml = buildDonutSvgFromSegments(segments);
+        circleDiv.outerHTML = svgHtml;
+      } catch (e) { /* leave as-is if parsing fails */ }
+    });
+
+    clone.style.position = 'fixed';
+    clone.style.top = '0';
+    clone.style.left = '-9999px';
+    clone.style.width = sourceEl.offsetWidth + 'px';
+    clone.style.background = '#FBF6EA';
+    document.body.appendChild(clone);
+
+    const canvas = await html2canvas(clone, {
       backgroundColor: '#FBF6EA',
       scale: 2,
       useCORS: true
@@ -989,10 +1019,12 @@ async function saveSummaryAsImage() {
     console.error('Save image failed:', err);
     showToast('บันทึกภาพไม่สำเร็จ: ' + (err && err.message ? err.message : 'ไม่ทราบสาเหตุ'), 5000);
   } finally {
+    if (clone && clone.parentNode) clone.parentNode.removeChild(clone);
     btn.classList.remove('loading');
     btn.textContent = '📷 บันทึกภาพลงเครื่อง';
   }
 }
+
 
 function openSearchSheet() {
   document.getElementById('searchInput').value = '';
