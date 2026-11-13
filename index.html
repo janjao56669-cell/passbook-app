@@ -542,6 +542,21 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     background: var(--brass); color: #fff;
   }
   .new-month-banner-actions button.dismiss { background: rgba(255,255,255,0.15); color: #F3E9CC; }
+  /* ---- V1.8: feedback / report / search summary ---- */
+  .fb-text { width: 100%; min-height: 120px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); font-size: 15px; font-family: 'Noto Sans Thai', sans-serif; background: #fff; color: var(--ink); outline: none; resize: vertical; line-height: 1.5; }
+  .fb-text:focus { border-color: var(--brass); }
+  .fb-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+  .fb-error { display: none; margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: #FBECEC; color: var(--withdraw); font-size: 13.5px; line-height: 1.5; }
+  .fb-error.show { display: block; }
+  .fb-error button { margin-top: 8px; display: block; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--withdraw); background: #fff; color: var(--withdraw); font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .report-preview { margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: #fff; border: 1px solid var(--line); font-size: 14px; line-height: 1.7; }
+  .report-preview .in { color: var(--deposit); font-weight: 700; }
+  .report-preview .out { color: var(--withdraw); font-weight: 700; }
+  .search-summary { margin: 14px 2px 0; font-size: 13.5px; color: var(--ink-soft); line-height: 1.6; }
+  .search-summary b.in { color: var(--deposit); }
+  .search-summary b.out { color: var(--withdraw); }
+  .search-more { padding: 12px; text-align: center; font-size: 13.5px; font-weight: 700; color: var(--brass); cursor: pointer; }
+  .search-results .ledger-row.recv { cursor: default; background: #FFFBEF; }
 </style>
 </head>
 <body>
@@ -549,7 +564,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
 <div class="app-header">
   <button type="button" class="settings-btn" id="settingsBtn" aria-label="ตั้งค่า" onclick="openSettings()">⚙️</button>
   <div class="brand">P A S S B O O K</div>
-  <h1>บัญชีต้อการช่าง<span class="version-tag">V1.7</span></h1>
+  <h1>บัญชีต้อการช่าง<span class="version-tag">V1.8</span></h1>
 </div>
 
 <div class="passbook">
@@ -659,6 +674,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
       <div class="set-card">
         <button type="button" class="set-row" onclick="exportBackup()"><span class="ic">💾</span><span class="tx">สำรองข้อมูล<span class="sub">บันทึกเป็นไฟล์เก็บไว้ (ย้ายเครื่อง/กันข้อมูลหาย)</span></span><span class="arrow">›</span></button>
         <button type="button" class="set-row" onclick="document.getElementById('restoreFile').click()"><span class="ic">📂</span><span class="tx">กู้คืนข้อมูลจากไฟล์สำรอง<span class="sub">เลือกไฟล์ที่เคยสำรองไว้</span></span><span class="arrow">›</span></button>
+        <button type="button" class="set-row" onclick="openReport()"><span class="ic">📊</span><span class="tx">รายงานรายปี (Excel)<span class="sub">สรุปรายรับ-รายจ่าย 12 เดือน พร้อมกราฟ</span></span><span class="arrow">›</span></button>
       </div>
       <div class="set-note" id="backupInfo"></div>
       <input type="file" id="restoreFile" accept=".json,application/json,text/plain" style="display:none" onchange="onRestoreFileChosen(this)">
@@ -686,6 +702,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     <div class="set-group">
       <div class="set-group-title">เกี่ยวกับแอป</div>
       <div class="set-card">
+        <button type="button" class="set-row" onclick="openFeedback()"><span class="ic">💬</span><span class="tx">ส่งความคิดเห็น<span class="sub">บอกปัญหาที่เจอ หรือสิ่งที่อยากให้เพิ่ม</span></span><span class="arrow">›</span></button>
         <button type="button" class="set-row" onclick="openWhatsNew('history')"><span class="ic">🆕</span><span class="tx">มีอะไรใหม่ในแอป<span class="sub">ดูว่าอัปเดตครั้งนี้เพิ่ม/แก้อะไรบ้าง</span></span><span class="arrow">›</span></button>
         <button type="button" class="set-row" onclick="openTutorial()"><span class="ic">📖</span><span class="tx">วิธีใช้งาน<span class="sub">คู่มือสั้นๆ สำหรับมือใหม่</span></span><span class="arrow">›</span></button>
         <button type="button" class="set-row" onclick="checkForUpdate()"><span class="ic">🔄</span><span class="tx">ตรวจหาเวอร์ชันใหม่<span class="sub" id="versionInfo"></span></span><span class="arrow">›</span></button>
@@ -757,11 +774,47 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   </div>
 </div>
 
+<!-- Feedback (V1.8) -->
+<div class="overlay" id="feedbackOverlay">
+  <div class="sheet">
+    <div class="sheet-title">💬 ส่งความคิดเห็น</div>
+    <div class="set-note" style="margin:-6px 0 4px;">บอกปัญหาที่เจอ หรือสิ่งที่อยากให้เพิ่ม ข้อความจะส่งถึงผู้พัฒนาโดยตรง (ไม่มีข้อมูลบัญชีของคุณถูกส่งไปด้วย)</div>
+    <div class="field-label"><span>เรื่องอะไร</span></div>
+    <div class="chip-row" id="fbTypeChips"></div>
+    <div class="field-label"><span>ชื่อ (ไม่ใส่ก็ได้)</span></div>
+    <input type="text" class="text-input" id="fbName" maxlength="40" placeholder="พิมพ์ชื่อหรือชื่อเล่น" autocomplete="off">
+    <div class="field-label"><span>ข้อความ</span><span id="fbCount">0/1000</span></div>
+    <textarea class="fb-text" id="fbText" maxlength="1000" placeholder="พิมพ์ที่นี่..." oninput="fbOnInput()"></textarea>
+    <input type="text" class="fb-hp" id="fbWebsite" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <div class="fb-error" id="fbError"></div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" onclick="closeFeedback()">ปิด</button>
+      <button class="btn-save in" id="fbSendBtn" onclick="sendFeedback()">ส่ง</button>
+    </div>
+  </div>
+</div>
+
+<!-- Yearly report (V1.8) -->
+<div class="overlay" id="reportOverlay">
+  <div class="sheet">
+    <div class="sheet-title">📊 รายงานรายปี (Excel)</div>
+    <div class="field-label"><span>เลือกปี</span></div>
+    <div class="chip-row" id="reportYearChips"></div>
+    <div class="report-preview" id="reportPreview"></div>
+    <div class="set-note">ได้ไฟล์ Excel 3 แผ่น: สรุปรายเดือนพร้อมกราฟ, สรุปตามหมวดหมู่, และรายการทั้งหมดของปีนั้น ข้อมูลไม่ออกจากเครื่องของคุณ</div>
+    <div class="fb-error" id="reportError"></div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" onclick="closeReport()">ปิด</button>
+      <button class="btn-save in" id="reportBtn" onclick="makeYearReport()">สร้างไฟล์ Excel</button>
+    </div>
+  </div>
+</div>
+
 <!-- Search history -->
 <div class="overlay" id="searchOverlay">
   <div class="sheet">
     <div class="sheet-title">ค้นหาย้อนหลัง</div>
-    <input type="text" class="text-input" id="searchInput" placeholder="พิมพ์ชื่อ, หมวดหมู่, หรือบันทึก..." oninput="runSearch()" autocomplete="off">
+    <input type="text" class="text-input" id="searchInput" placeholder="พิมพ์ชื่อ, หมวดหมู่, หรือบันทึก..." oninput="runSearchSoon()" autocomplete="off">
     <div class="search-results" id="searchResults">
       <div class="empty-state" style="padding:24px 10px;"><div class="big-emoji">🔍</div>พิมพ์คำค้นเพื่อหารายการย้อนหลัง</div>
     </div>
@@ -930,7 +983,7 @@ const CAT_TRASH_KEY = 'categoryTrash';
 const CUSTOM_EMOJI_KEY = 'customEmojis';
 const TEXT_SIZE_KEY = 'uiTextSize';
 const LAST_BACKUP_KEY = 'lastBackupAt';
-const APP_VERSION_LABEL = 'V1.7';
+const APP_VERSION_LABEL = 'V1.8';
 const TEXT_ZOOMS = { normal: 1, large: 1.12, xlarge: 1.24 };
 let customEmojis = [];
 
@@ -1390,6 +1443,7 @@ async function saveSummaryAsImage() {
 
 
 function openSearchSheet() {
+  const oldSum = document.getElementById('searchSummary'); if (oldSum) oldSum.remove();
   document.getElementById('searchInput').value = '';
   document.getElementById('searchResults').innerHTML =
     '<div class="empty-state" style="padding:24px 10px;"><div class="big-emoji">🔍</div>พิมพ์คำค้นเพื่อหารายการย้อนหลัง</div>';
@@ -1401,40 +1455,71 @@ function closeSearchSheet() {
   document.getElementById('searchOverlay').classList.remove('show');
 }
 
-function runSearch() {
-  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+let searchShowAll = false;
+let searchTimer = null;
+function runSearchSoon() { clearTimeout(searchTimer); searchTimer = setTimeout(runSearch, 180); }
+function searchEmpty(msg) {
+  return '<div class="empty-state" style="padding:24px 10px;"><div class="big-emoji">🔍</div>' + msg + '</div>';
+}
+function runSearch(keepAll) {
+  if (keepAll !== true) searchShowAll = false;
+  const raw = document.getElementById('searchInput').value.trim().toLowerCase();
   const resultsBox = document.getElementById('searchResults');
-  if (!q) {
-    resultsBox.innerHTML = '<div class="empty-state" style="padding:24px 10px;"><div class="big-emoji">🔍</div>พิมพ์คำค้นเพื่อหารายการย้อนหลัง</div>';
-    return;
-  }
+  const old = document.getElementById('searchSummary');
+  if (old) old.remove();
+  if (!raw) { resultsBox.innerHTML = searchEmpty('พิมพ์คำค้นเพื่อหารายการย้อนหลัง'); return; }
+  const tokens = raw.split(/\s+/).filter(Boolean);
+  const hit = hay => tokens.every(tk => hay.includes(tk) || hay.includes(tk.replace(/,/g, '')));
+  const needFmt = tokens.some(tk => /[0-9]/.test(tk));   // formatting amounts is slow, only do it when digits are searched
 
   const matches = transactions.filter(t => {
-    const hay = [t.category, t.note, fmt(t.amount)].join(' ').toLowerCase();
-    return hay.includes(q);
-  }).sort((a, b) => b.createdAt - a.createdAt);
+    if (!t || typeof t.date !== 'string') return false;
+    const hay = [t.category, t.note, needFmt ? fmt(t.amount) : '', String(Number(t.amount)), thaiDateLabel(t.date), t.date, t.type === 'in' ? 'รายรับ' : 'รายจ่าย'].join(' ').toLowerCase();
+    return hit(hay);
+  }).sort((a, b) => a.date !== b.date ? (a.date < b.date ? 1 : -1) : (b.createdAt || 0) - (a.createdAt || 0));
 
-  if (matches.length === 0) {
-    resultsBox.innerHTML = '<div class="empty-state" style="padding:24px 10px;">ไม่พบรายการที่ตรงกับ "' + escapeHtml(q) + '"</div>';
+  const recvMatches = receivables.filter(r => {
+    const hay = [r.name, needFmt ? fmt(r.amount) : '', String(Number(r.amount)), thaiDateLabel(r.date), r.date, 'ค้างรับ'].join(' ').toLowerCase();
+    return hit(hay);
+  }).sort((a, b) => a.date !== b.date ? (a.date < b.date ? 1 : -1) : 0);
+
+  if (matches.length === 0 && recvMatches.length === 0) {
+    resultsBox.innerHTML = '<div class="empty-state" style="padding:24px 10px;">ไม่พบรายการที่ตรงกับ "' + escapeHtml(raw) + '"</div>';
     return;
   }
 
-  const rowsHtml = matches.map(t => {
-    const d = new Date(t.date + 'T00:00:00');
-    const dateLabel = d.getDate() + ' ' + THAI_MONTHS[d.getMonth()] + ' ' + (d.getFullYear() + 543);
+  const sumIn = matches.filter(t => t.type === 'in').reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  const sumOut = matches.filter(t => t.type !== 'in').reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  const LIMIT = 150;
+  const shown = searchShowAll ? matches : matches.slice(0, LIMIT);
+
+  const rowsHtml = shown.map(t => {
     const label = t.note ? t.note : '(ไม่มีบันทึกเพิ่มเติม)';
     return `
       <div class="ledger-row" onclick="openEditEntry('${t.id}')">
         <div class="row-desc">
-          <div class="row-date month-tag">${dateLabel} · ${escapeHtml(t.category)}</div>
+          <div class="row-date month-tag">${escapeHtml(thaiDateLabel(t.date))} · ${escapeHtml(t.category)}</div>
           <div class="row-note full">${escapeHtml(label)}</div>
         </div>
         <div class="row-amt ${t.type === 'in' ? 'in' : 'out'}">${t.type === 'in' ? '+' : '−'}${fmt(t.amount)}</div>
-      </div>
-    `;
+      </div>`;
   }).join('');
+  const moreHtml = (!searchShowAll && matches.length > LIMIT)
+    ? `<div class="search-more" onclick="searchShowAll=true;runSearch(true)">แสดงอีก ${matches.length - LIMIT} รายการ</div>` : '';
+  const recvHtml = recvMatches.map(r => `
+      <div class="ledger-row recv">
+        <div class="row-desc">
+          <div class="row-date month-tag">${escapeHtml(thaiDateLabel(r.date))} · 💰 ${r.status === 'paid' ? 'ค้างรับ (รับแล้ว)' : 'ค้างรับ'}</div>
+          <div class="row-note full">${escapeHtml(r.name)}</div>
+        </div>
+        <div class="row-amt in">${fmt(r.amount)}</div>
+      </div>`).join('');
 
-  resultsBox.innerHTML = rowsHtml;
+  let summary = '';
+  if (matches.length) summary += 'พบ <b>' + matches.length + '</b> รายการ · รับรวม <b class="in">' + fmt(sumIn) + '</b> · จ่ายรวม <b class="out">' + fmt(sumOut) + '</b>';
+  if (recvMatches.length) summary += (summary ? '<br>' : '') + 'ยอดค้างรับที่ตรงกัน <b>' + recvMatches.length + '</b> รายการ (แสดงท้ายรายการ)';
+  resultsBox.insertAdjacentHTML('beforebegin', '<div class="search-summary" id="searchSummary">' + summary + '</div>');
+  resultsBox.innerHTML = rowsHtml + moreHtml + recvHtml;
 }
 
 function openReceivableSheet() {
@@ -2074,9 +2159,369 @@ async function checkForUpdate() {
   }
 }
 
+/* ================= V1.8: feedback ================= */
+const FEEDBACK_API = 'https://passbook-api-iota.vercel.app/api/feedback';
+const FB_TYPES = ['💡 อยากได้ระบบเพิ่ม', '🐞 พบปัญหา', '💬 อื่นๆ'];
+const FB_NAME_KEY = 'feedbackName';
+const FB_DRAFT_KEY = 'feedbackDraft';
+let fbType = FB_TYPES[0];
+let fbSending = false;
+
+function detectPlatform() {
+  const ua = navigator.userAgent || '';
+  if (/iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) return 'ios';
+  if (/Android/i.test(ua)) return 'android';
+  if (/Windows|Macintosh|Linux|CrOS/i.test(ua)) return 'desktop';
+  return 'other';
+}
+function renderFbTypes() {
+  document.getElementById('fbTypeChips').innerHTML = FB_TYPES.map(t =>
+    `<button type="button" class="chip ${t === fbType ? 'selected' : ''}" onclick="setFbType(${FB_TYPES.indexOf(t)})">${escapeHtml(t)}</button>`).join('');
+}
+function setFbType(i) { fbType = FB_TYPES[i] || FB_TYPES[0]; renderFbTypes(); }
+function fbOnInput() {
+  const v = document.getElementById('fbText').value;
+  document.getElementById('fbCount').textContent = v.length + '/1000';
+  try { localStorage.setItem(FB_DRAFT_KEY, v); } catch (e) {}
+  showFbError('');
+}
+function showFbError(msg, withShare) {
+  const box = document.getElementById('fbError');
+  if (!msg) { box.className = 'fb-error'; box.innerHTML = ''; return; }
+  box.className = 'fb-error show';
+  box.innerHTML = escapeHtml(msg) + (withShare ? '<button type="button" onclick="fbShareFallback()">📤 ส่งทางแอปอื่นแทน (LINE ฯลฯ)</button>' : '');
+}
+function openFeedback() {
+  closeSettings();
+  let name = '', draft = '';
+  try { name = localStorage.getItem(FB_NAME_KEY) || ''; draft = localStorage.getItem(FB_DRAFT_KEY) || ''; } catch (e) {}
+  document.getElementById('fbName').value = name;
+  document.getElementById('fbText').value = draft;
+  document.getElementById('fbWebsite').value = '';
+  document.getElementById('fbCount').textContent = draft.length + '/1000';
+  showFbError('');
+  renderFbTypes();
+  document.getElementById('feedbackOverlay').classList.add('show');
+}
+function closeFeedback() { document.getElementById('feedbackOverlay').classList.remove('show'); }
+
+async function fbShareFallback() {
+  const text = 'ความคิดเห็นเรื่องแอปบัญชีต้อการช่าง ' + APP_VERSION_LABEL + '\n' + fbType + '\n\n' + document.getElementById('fbText').value;
+  try {
+    if (navigator.share) { await navigator.share({ text }); return; }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(text); showToast('คัดลอกข้อความแล้ว นำไปวางส่งได้เลย', 3500); }
+  catch (e) { showToast('คัดลอกไม่สำเร็จ ลองกดค้างที่ข้อความแล้วคัดลอกเอง', 3500); }
+}
+
+async function sendFeedback() {
+  if (fbSending) return;
+  const text = document.getElementById('fbText').value.trim();
+  const name = document.getElementById('fbName').value.trim();
+  if (text.length < 3) { showFbError('กรุณาพิมพ์ข้อความอย่างน้อย 3 ตัวอักษร'); return; }
+  if (!navigator.onLine) { showFbError('ตอนนี้ไม่มีอินเทอร์เน็ต ข้อความของคุณยังอยู่ ลองส่งใหม่เมื่อมีสัญญาณ', true); return; }
+  const btn = document.getElementById('fbSendBtn');
+  fbSending = true; btn.disabled = true; btn.textContent = 'กำลังส่ง...';
+  showFbError('');
+  const ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  const timer = setTimeout(() => { if (ctrl) ctrl.abort(); }, 15000);
+  try {
+    const res = await fetch(FEEDBACK_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: fbType, name, text,
+        appVersion: APP_VERSION_LABEL, platform: detectPlatform(),
+        website: document.getElementById('fbWebsite').value
+      }),
+      signal: ctrl ? ctrl.signal : undefined
+    });
+    let data = {};
+    try { data = await res.json(); } catch (e) {}
+    if (res.ok && data.ok) {
+      try { localStorage.setItem(FB_NAME_KEY, name); localStorage.removeItem(FB_DRAFT_KEY); } catch (e) {}
+      document.getElementById('fbText').value = '';
+      document.getElementById('fbCount').textContent = '0/1000';
+      closeFeedback();
+      showToast('ส่งความคิดเห็นแล้ว ขอบคุณค่ะ 🙏', 3500);
+    } else if (res.status === 429) {
+      showFbError('ส่งบ่อยเกินไป รอสักครู่แล้วลองใหม่ (ข้อความของคุณยังอยู่)');
+    } else if (res.status === 400 && data.error === 'too_short') {
+      showFbError('ข้อความสั้นเกินไป');
+    } else {
+      showFbError('ส่งไม่สำเร็จในตอนนี้ ข้อความของคุณยังอยู่ ลองใหม่อีกครั้ง หรือส่งทางแอปอื่นแทน', true);
+    }
+  } catch (e) {
+    showFbError((e && e.name === 'AbortError') ? 'ใช้เวลานานเกินไป ลองใหม่อีกครั้ง (ข้อความของคุณยังอยู่)' : 'เชื่อมต่อไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่ (ข้อความของคุณยังอยู่)', true);
+  } finally {
+    clearTimeout(timer);
+    fbSending = false; btn.disabled = false; btn.textContent = 'ส่ง';
+  }
+}
+
+/* ================= V1.8: yearly Excel report ================= */
+const EXCELJS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';
+let reportYear = null;
+let reportBusy = false;
+
+function loadExcelJS() {
+  if (window.ExcelJS) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = EXCELJS_URL;
+    s.onload = () => window.ExcelJS ? resolve() : reject(new Error('load'));
+    s.onerror = () => reject(new Error('load'));
+    document.head.appendChild(s);
+  });
+}
+function reportYearsAvailable() {
+  const set = new Set([new Date().getFullYear()]);
+  transactions.forEach(t => { if (t && typeof t.date === 'string' && /^\d{4}-/.test(t.date)) set.add(parseInt(t.date.slice(0, 4), 10)); });
+  return [...set].sort((a, b) => b - a);
+}
+function yearTotals(year) {
+  const m = Array.from({ length: 12 }, () => ({ in: 0, out: 0, n: 0 }));
+  transactions.forEach(t => {
+    if (!t || typeof t.date !== 'string' || t.date.slice(0, 4) !== String(year)) return;
+    const mi = parseInt(t.date.slice(5, 7), 10) - 1;
+    if (!(mi >= 0 && mi < 12)) return;
+    const a = Number(t.amount) || 0;
+    if (t.type === 'in') m[mi].in += a; else m[mi].out += a;
+    m[mi].n++;
+  });
+  return m;
+}
+function openReport() {
+  closeSettings();
+  const years = reportYearsAvailable();
+  if (reportYear == null || !years.includes(reportYear)) reportYear = years[0];
+  renderReportOverlay();
+  showReportError('');
+  document.getElementById('reportOverlay').classList.add('show');
+}
+function closeReport() { document.getElementById('reportOverlay').classList.remove('show'); }
+function setReportYear(y) { reportYear = y; renderReportOverlay(); showReportError(''); }
+function showReportError(msg) {
+  const box = document.getElementById('reportError');
+  box.className = msg ? 'fb-error show' : 'fb-error';
+  box.textContent = msg || '';
+}
+function renderReportOverlay() {
+  const years = reportYearsAvailable();
+  document.getElementById('reportYearChips').innerHTML = years.map(y =>
+    `<button type="button" class="chip ${y === reportYear ? 'selected' : ''}" onclick="setReportYear(${y})">พ.ศ. ${y + 543}</button>`).join('');
+  const m = yearTotals(reportYear);
+  const tin = m.reduce((s, x) => s + x.in, 0), tout = m.reduce((s, x) => s + x.out, 0), n = m.reduce((s, x) => s + x.n, 0);
+  const box = document.getElementById('reportPreview');
+  if (n === 0) box.innerHTML = 'ปี ' + (reportYear + 543) + ' ยังไม่มีรายการ';
+  else box.innerHTML = 'ปี ' + (reportYear + 543) + ' มี <b>' + n + '</b> รายการ<br>รายรับรวม <span class="in">' + fmt(tin) + '</span><br>รายจ่ายรวม <span class="out">' + fmt(tout) + '</span>';
+  document.getElementById('reportBtn').disabled = (n === 0);
+}
+
+function niceStep(rough) {
+  const p = Math.pow(10, Math.floor(Math.log10(rough || 1)));
+  const f = rough / p;
+  return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p;
+}
+// Draws the 12-month bar chart onto a canvas and returns a PNG data URL.
+function drawYearChartPng(year, months) {
+  const W = 1200, H = 600, c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  const FONT = "'Noto Sans Thai', Tahoma, sans-serif";
+  g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+  g.fillStyle = '#1B4332'; g.font = 'bold 30px ' + FONT; g.textAlign = 'center';
+  g.fillText('รายรับ-รายจ่ายรายเดือน ปี ' + (year + 543), W / 2, 44);
+  const maxV = Math.max(1, ...months.map(m => Math.max(m.in, m.out)));
+  const step = niceStep(maxV / 5), top = Math.ceil(maxV / step) * step;
+  const L = 110, R = 30, T = 80, B = 80, pw = W - L - R, ph = H - T - B;
+  g.font = '20px ' + FONT; g.textAlign = 'right'; g.strokeStyle = '#E2DCCB'; g.lineWidth = 1;
+  for (let v = 0; v <= top + 1e-9; v += step) {
+    const y = T + ph - (v / top) * ph;
+    g.beginPath(); g.moveTo(L, y); g.lineTo(W - R, y); g.stroke();
+    g.fillStyle = '#6B6B5E'; g.fillText(v.toLocaleString('th-TH'), L - 10, y + 7);
+  }
+  const gw = pw / 12, bw = gw * 0.34;
+  months.forEach((m, i) => {
+    const cx = L + gw * i + gw / 2;
+    const hIn = (m.in / top) * ph, hOut = (m.out / top) * ph;
+    g.fillStyle = '#2D6A4F'; g.fillRect(cx - bw - 2, T + ph - hIn, bw, hIn);
+    g.fillStyle = '#B5473F'; g.fillRect(cx + 2, T + ph - hOut, bw, hOut);
+    g.fillStyle = '#3A3A30'; g.textAlign = 'center'; g.font = '20px ' + FONT;
+    g.fillText(THAI_MONTHS_SHORT[i], cx, T + ph + 30);
+  });
+  g.fillStyle = '#2D6A4F'; g.fillRect(W / 2 - 150, H - 36, 22, 22);
+  g.fillStyle = '#3A3A30'; g.textAlign = 'left'; g.font = '22px ' + FONT; g.fillText('รายรับ', W / 2 - 122, H - 17);
+  g.fillStyle = '#B5473F'; g.fillRect(W / 2 + 20, H - 36, 22, 22);
+  g.fillStyle = '#3A3A30'; g.fillText('รายจ่าย', W / 2 + 48, H - 17);
+  return c.toDataURL('image/png');
+}
+const THAI_MONTHS_SHORT = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+
+async function buildYearReportBuffer(year) {
+  await loadExcelJS();
+  const FN = 'Tahoma';
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'บัญชีต้อการช่าง'; wb.created = new Date();
+  const months = yearTotals(year);
+  const yearTx = transactions.filter(t => t && typeof t.date === 'string' && t.date.slice(0, 4) === String(year) && /^\d{4}-\d{2}-\d{2}$/.test(t.date))
+    .sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.createdAt || 0) - (b.createdAt || 0));
+  const N = yearTx.length, last = Math.max(2, N + 1);
+  const D = "'รายการทั้งหมด'!";
+  const rngF = D + '$F$2:$F$' + last, rngB = D + '$B$2:$B$' + last, rngC = D + '$C$2:$C$' + last, rngD = D + '$D$2:$D$' + last;
+  const HEAD = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1B4332' } };
+  const headStyle = c => { c.font = { name: FN, bold: true, color: { argb: 'FFFFFFFF' }, size: 12 }; c.fill = HEAD; c.alignment = { horizontal: 'center', vertical: 'middle' }; };
+  const MONEY = '#,##0.00';
+  const thin = { style: 'thin', color: { argb: 'FFD9D3C0' } };
+  const box = c => { c.border = { top: thin, left: thin, bottom: thin, right: thin }; };
+
+  /* ---- Sheet 1: monthly summary ---- */
+  const ws = wb.addWorksheet('สรุปรายเดือน');
+  ws.columns = [{ width: 9 }, { width: 16 }, { width: 17 }, { width: 17 }, { width: 19 }, { width: 3 }];
+  ws.mergeCells('A1:E1');
+  ws.getCell('A1').value = 'สรุปรายรับ-รายจ่าย ปี พ.ศ. ' + (year + 543);
+  ws.getCell('A1').font = { name: FN, bold: true, size: 18, color: { argb: 'FF1B4332' } };
+  ws.mergeCells('A2:E2');
+  ws.getCell('A2').value = 'โรงกลึงต้อการช่างชุมพร · สร้างจากแอปเมื่อ ' + formatThaiDateTime(Date.now());
+  ws.getCell('A2').font = { name: FN, size: 10, color: { argb: 'FF6B6B5E' } };
+  ['เดือนที่', 'เดือน', 'รายรับ', 'รายจ่าย', 'คงเหลือสุทธิ'].forEach((h, i) => { const c = ws.getCell(4, i + 1); c.value = h; headStyle(c); });
+  months.forEach((m, i) => {
+    const r = 5 + i;
+    ws.getCell(r, 1).value = i + 1;
+    ws.getCell(r, 2).value = THAI_MONTHS[i];
+    ws.getCell(r, 3).value = { formula: `SUMIFS(${rngF},${rngB},$A${r},${rngC},"รายรับ")`, result: Math.round(m.in * 100) / 100 };
+    ws.getCell(r, 4).value = { formula: `SUMIFS(${rngF},${rngB},$A${r},${rngC},"รายจ่าย")`, result: Math.round(m.out * 100) / 100 };
+    ws.getCell(r, 5).value = { formula: `C${r}-D${r}`, result: Math.round((m.in - m.out) * 100) / 100 };
+    for (let k = 1; k <= 5; k++) { const c = ws.getCell(r, k); c.font = { name: FN, size: 11 }; box(c); if (k >= 3) c.numFmt = MONEY; if (k <= 2) c.alignment = { horizontal: 'center' }; }
+  });
+  const tin = months.reduce((s, x) => s + x.in, 0), tout = months.reduce((s, x) => s + x.out, 0);
+  ws.getCell(17, 1).value = ''; ws.getCell(17, 2).value = 'รวมทั้งปี';
+  ws.getCell(17, 3).value = { formula: 'SUM(C5:C16)', result: Math.round(tin * 100) / 100 };
+  ws.getCell(17, 4).value = { formula: 'SUM(D5:D16)', result: Math.round(tout * 100) / 100 };
+  ws.getCell(17, 5).value = { formula: 'C17-D17', result: Math.round((tin - tout) * 100) / 100 };
+  for (let k = 1; k <= 5; k++) { const c = ws.getCell(17, k); c.font = { name: FN, bold: true, size: 12 }; c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3E9CC' } }; box(c); if (k >= 3) c.numFmt = MONEY; if (k <= 2) c.alignment = { horizontal: 'center' }; }
+
+  const maxIdx = (key) => { let bi = 0; months.forEach((m, i) => { if (m[key] > months[bi][key]) bi = i; }); return months[bi][key] > 0 ? bi : -1; };
+  const hiIn = maxIdx('in'), hiOut = maxIdx('out');
+  ws.getCell('A19').value = 'จุดเด่นของปี'; ws.getCell('A19').font = { name: FN, bold: true, size: 13, color: { argb: 'FF1B4332' } };
+  ws.getCell('A20').value = 'เดือนที่รายรับสูงสุด'; ws.mergeCells('A20:B20');
+  ws.getCell('C20').value = { formula: 'IF(MAX(C5:C16)=0,"-",INDEX(B5:B16,MATCH(MAX(C5:C16),C5:C16,0)))', result: hiIn < 0 ? '-' : THAI_MONTHS[hiIn] };
+  ws.getCell('A21').value = 'เดือนที่รายจ่ายสูงสุด'; ws.mergeCells('A21:B21');
+  ws.getCell('C21').value = { formula: 'IF(MAX(D5:D16)=0,"-",INDEX(B5:B16,MATCH(MAX(D5:D16),D5:D16,0)))', result: hiOut < 0 ? '-' : THAI_MONTHS[hiOut] };
+  ['A20', 'C20', 'A21', 'C21'].forEach(a => { ws.getCell(a).font = { name: FN, size: 11 }; });
+  const pend = receivables.filter(r => r.status !== 'paid').reduce((s, r) => s + (Number(r.amount) || 0), 0);
+  ws.mergeCells('A23:E23');
+  ws.getCell('A23').value = 'หมายเหตุ: ยอดค้างรับ (ลูกค้ายังไม่จ่าย) ณ วันที่สร้างไฟล์ ' + fmt(pend) + ' บาท — ยังไม่นับรวมในตารางข้างบน เพราะยังไม่ได้รับเงิน';
+  ws.getCell('A23').font = { name: FN, size: 10, italic: true, color: { argb: 'FF6B6B5E' } };
+  ws.getCell('A23').alignment = { wrapText: true, vertical: 'top' }; ws.getRow(23).height = 32;
+  ws.getCell('A24').value = 'กราฟเป็นรูปภาพ ตัวเลขในตารางคำนวณด้วยสูตรจากแผ่น "รายการทั้งหมด" — ถ้าแก้ตัวเลขในแผ่นนั้น ตารางจะอัปเดต แต่รูปกราฟจะไม่เปลี่ยน';
+  ws.mergeCells('A24:E24'); ws.getCell('A24').font = { name: FN, size: 10, italic: true, color: { argb: 'FF6B6B5E' } };
+  ws.getCell('A24').alignment = { wrapText: true, vertical: 'top' }; ws.getRow(24).height = 32;
+  try {
+    const imgId = wb.addImage({ base64: drawYearChartPng(year, months), extension: 'png' });
+    ws.addImage(imgId, { tl: { col: 6, row: 3 }, ext: { width: 720, height: 360 } });
+  } catch (e) { /* chart is optional; the table is still complete */ }
+
+  /* ---- Sheet 2: by category ---- */
+  const wc = wb.addWorksheet('ตามหมวดหมู่');
+  wc.columns = [{ width: 24 }, { width: 17 }, { width: 11 }, { width: 3 }, { width: 24 }, { width: 17 }, { width: 11 }];
+  const catTable = (type, label, colStart, color) => {
+    const map = new Map();
+    yearTx.filter(t => t.type === type).forEach(t => { const k = t.category || 'อื่นๆ'; map.set(k, (map.get(k) || 0) + (Number(t.amount) || 0)); });
+    const rows = [...map.entries()].sort((a, b) => b[1] - a[1]);
+    const total = rows.reduce((s, r) => s + r[1], 0);
+    const c0 = colStart;
+    const tcell = wc.getCell(1, c0); tcell.value = label; tcell.font = { name: FN, bold: true, size: 14, color: { argb: color } };
+    ['หมวดหมู่', 'ยอดรวม', 'สัดส่วน'].forEach((h, i) => { const c = wc.getCell(3, c0 + i); c.value = h; headStyle(c); });
+    const col = n => String.fromCharCode(64 + n);
+    rows.forEach((r, i) => {
+      const rr = 4 + i;
+      wc.getCell(rr, c0).value = r[0];
+      wc.getCell(rr, c0 + 1).value = { formula: `SUMIFS(${rngF},${rngD},${col(c0)}${rr},${rngC},"${label === 'รายรับ' ? 'รายรับ' : 'รายจ่าย'}")`, result: Math.round(r[1] * 100) / 100 };
+      const tr = 4 + rows.length;
+      wc.getCell(rr, c0 + 2).value = { formula: `IF(${col(c0 + 1)}$${tr}=0,0,${col(c0 + 1)}${rr}/${col(c0 + 1)}$${tr})`, result: total ? r[1] / total : 0 };
+      for (let k = 0; k < 3; k++) { const c = wc.getCell(rr, c0 + k); c.font = { name: FN, size: 11 }; box(c); }
+      wc.getCell(rr, c0 + 1).numFmt = MONEY; wc.getCell(rr, c0 + 2).numFmt = '0.0%';
+    });
+    const tr = 4 + rows.length;
+    wc.getCell(tr, c0).value = 'รวม';
+    wc.getCell(tr, c0 + 1).value = { formula: rows.length ? `SUM(${col(c0 + 1)}4:${col(c0 + 1)}${tr - 1})` : '0', result: Math.round(total * 100) / 100 };
+    wc.getCell(tr, c0 + 2).value = { formula: rows.length ? `SUM(${col(c0 + 2)}4:${col(c0 + 2)}${tr - 1})` : '0', result: rows.length ? 1 : 0 };
+    for (let k = 0; k < 3; k++) { const c = wc.getCell(tr, c0 + k); c.font = { name: FN, bold: true, size: 11 }; c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3E9CC' } }; box(c); }
+    wc.getCell(tr, c0 + 1).numFmt = MONEY; wc.getCell(tr, c0 + 2).numFmt = '0.0%';
+    if (!rows.length) wc.getCell(4, c0).value = '(ไม่มีรายการ)';
+  };
+  catTable('in', 'รายรับ', 1, 'FF1E6B3E');
+  catTable('out', 'รายจ่าย', 5, 'FFA13E3E');
+
+  /* ---- Sheet 3: all entries ---- */
+  const wd = wb.addWorksheet('รายการทั้งหมด');
+  wd.columns = [{ width: 18 }, { width: 10 }, { width: 11 }, { width: 22 }, { width: 38 }, { width: 16 }];
+  ['วันที่', 'เดือนที่', 'ประเภท', 'หมวดหมู่', 'บันทึก', 'จำนวนเงิน'].forEach((h, i) => { const c = wd.getCell(1, i + 1); c.value = h; headStyle(c); });
+  yearTx.forEach((t, i) => {
+    const r = 2 + i;
+    wd.getCell(r, 1).value = thaiDateLabel(t.date);
+    wd.getCell(r, 2).value = parseInt(t.date.slice(5, 7), 10);
+    wd.getCell(r, 3).value = t.type === 'in' ? 'รายรับ' : 'รายจ่าย';
+    wd.getCell(r, 4).value = t.category || 'อื่นๆ';
+    wd.getCell(r, 5).value = t.note || '';
+    wd.getCell(r, 6).value = Number(t.amount) || 0;
+    for (let k = 1; k <= 6; k++) { const c = wd.getCell(r, k); c.font = { name: FN, size: 11 }; if (k === 2 || k === 3) c.alignment = { horizontal: 'center' }; }
+    wd.getCell(r, 6).numFmt = MONEY;
+    wd.getCell(r, 3).font = { name: FN, size: 11, color: { argb: t.type === 'in' ? 'FF1E6B3E' : 'FFA13E3E' } };
+  });
+  wd.views = [{ state: 'frozen', ySplit: 1 }];
+  if (N > 0) wd.autoFilter = { from: 'A1', to: 'F' + (N + 1) };
+  return await wb.xlsx.writeBuffer();
+}
+
+async function makeYearReport() {
+  if (reportBusy) return;
+  const btn = document.getElementById('reportBtn');
+  reportBusy = true; btn.disabled = true; btn.textContent = 'กำลังสร้างไฟล์...';
+  showReportError('');
+  try {
+    let buf;
+    try { buf = await buildYearReportBuffer(reportYear); }
+    catch (e) {
+      if (e && e.message === 'load') showReportError('โหลดตัวสร้างไฟล์ไม่ได้ ต้องเชื่อมต่ออินเทอร์เน็ตในครั้งแรก แล้วลองใหม่อีกครั้ง');
+      else showReportError('สร้างไฟล์ไม่สำเร็จ ลองอีกครั้ง (ข้อมูลของคุณไม่ได้รับผลกระทบ)');
+      return;
+    }
+    const fileName = 'passbook-report-' + (reportYear + 543) + '.xlsx';
+    const mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    let done = false;
+    try {
+      const file = new File([buf], fileName, { type: mime });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'รายงานรายปี บัญชีต้อการช่าง' });
+        done = true;
+      }
+    } catch (e) { if (e && e.name === 'AbortError') return; }
+    if (!done) {
+      try {
+        const url = URL.createObjectURL(new Blob([buf], { type: mime }));
+        const a = document.createElement('a'); a.href = url; a.download = fileName;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+        done = true;
+      } catch (e) {}
+    }
+    if (done) { closeReport(); showToast('สร้างรายงานปี ' + (reportYear + 543) + ' แล้ว', 3500); }
+    else showReportError('บันทึกไฟล์ไม่สำเร็จ ลองอีกครั้ง');
+  } finally {
+    reportBusy = false; btn.textContent = 'สร้างไฟล์ Excel'; renderReportOverlay();
+  }
+}
+
 /* ----- What's new (release notes) ----- */
 // Newest first. Every new release: add a new entry at the TOP and bump APP_VERSION_LABEL + sw.js.
 const RELEASE_NOTES = [
+  { ver: 'V1.8', date: '2026-11-14', items: [
+    { e: '💬', t: 'ส่งความคิดเห็นถึงผู้พัฒนาได้แล้ว', d: 'ตั้งค่า › ส่งความคิดเห็น พิมพ์แล้วกดส่ง ไม่ต้องใส่ชื่อก็ได้' },
+    { e: '📊', t: 'สร้างรายงานรายปีเป็น Excel', d: 'ตั้งค่า › รายงานรายปี ได้ตารางรายรับ-รายจ่าย 12 เดือน พร้อมกราฟ (ต้องต่ออินเทอร์เน็ตตอนสร้างครั้งแรก)' },
+    { e: '🔍', t: 'ค้นหาย้อนหลังเก่งขึ้น', d: 'พิมพ์หลายคำพร้อมกันได้ ค้นด้วยวันที่หรือจำนวนเงินได้ มียอดรวมของที่เจอ และรวมยอดค้างรับด้วย' }
+  ]},
   { ver: 'V1.7', date: '2026-11-13', items: [
     { e: '⚙️', t: 'มีปุ่มตั้งค่า (มุมขวาบน)', d: 'สำรอง/กู้คืนข้อมูล, เลือกขนาดตัวอักษร, ตรวจเวอร์ชันใหม่, ล้างข้อมูล' },
     { e: '↕️', t: 'ลากสลับลำดับหมวดหมู่ได้', d: 'แตะค้างที่ ☰ แล้วลากขึ้น-ลง ลากได้ทุกหมวด' },
@@ -2197,7 +2642,7 @@ function onClearInput() {
 }
 function doClearAll() {
   if (document.getElementById('clearInput').value.replace(/\s+/g, '') !== 'ลบทั้งหมด') return;
-  [TX_KEY, RECV_KEY, CAT_KEY, CAT_TRASH_KEY, CUSTOM_EMOJI_KEY, LAST_BACKUP_KEY].forEach(k => {
+  [TX_KEY, RECV_KEY, CAT_KEY, CAT_TRASH_KEY, CUSTOM_EMOJI_KEY, LAST_BACKUP_KEY, FB_NAME_KEY, FB_DRAFT_KEY].forEach(k => {
     try { localStorage.removeItem(k); } catch (e) {}
   });
   window.location.reload();
