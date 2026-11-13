@@ -674,7 +674,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
       <div class="set-card">
         <button type="button" class="set-row" onclick="exportBackup()"><span class="ic">💾</span><span class="tx">สำรองข้อมูล<span class="sub">บันทึกเป็นไฟล์เก็บไว้ (ย้ายเครื่อง/กันข้อมูลหาย)</span></span><span class="arrow">›</span></button>
         <button type="button" class="set-row" onclick="document.getElementById('restoreFile').click()"><span class="ic">📂</span><span class="tx">กู้คืนข้อมูลจากไฟล์สำรอง<span class="sub">เลือกไฟล์ที่เคยสำรองไว้</span></span><span class="arrow">›</span></button>
-        <button type="button" class="set-row" onclick="openReport()"><span class="ic">📊</span><span class="tx">รายงานรายปี (Excel)<span class="sub">สรุปรายรับ-รายจ่าย 12 เดือน พร้อมกราฟ</span></span><span class="arrow">›</span></button>
+        <button type="button" class="set-row" onclick="openReport()"><span class="ic">📊</span><span class="tx">สรุปรายปี (ภาพ / Excel)<span class="sub">รายรับ-รายจ่าย 12 เดือน พร้อมกราฟ ส่งต่อเป็นรูปได้</span></span><span class="arrow">›</span></button>
       </div>
       <div class="set-note" id="backupInfo"></div>
       <input type="file" id="restoreFile" accept=".json,application/json,text/plain" style="display:none" onchange="onRestoreFileChosen(this)">
@@ -797,15 +797,31 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
 <!-- Yearly report (V1.8) -->
 <div class="overlay" id="reportOverlay">
   <div class="sheet">
-    <div class="sheet-title">📊 รายงานรายปี (Excel)</div>
+    <div class="sheet-title">📊 สรุปรายปี</div>
     <div class="field-label"><span>เลือกปี</span></div>
     <div class="chip-row" id="reportYearChips"></div>
     <div class="report-preview" id="reportPreview"></div>
-    <div class="set-note">ได้ไฟล์ Excel 3 แผ่น: สรุปรายเดือนพร้อมกราฟ, สรุปตามหมวดหมู่, และรายการทั้งหมดของปีนั้น ข้อมูลไม่ออกจากเครื่องของคุณ</div>
+    <div class="set-note"><b>ภาพสรุป</b> เป็นรูปเดียวมีตารางรายเดือน กราฟ และยอดรวม ส่งต่อให้คนอื่นดูได้เลย (เช่น ทาง LINE)<br><b>ไฟล์ Excel</b> สำหรับเปิดแก้หรือคำนวณต่อ ข้อมูลไม่ออกจากเครื่องของคุณ</div>
     <div class="fb-error" id="reportError"></div>
+    <div class="sheet-actions" style="flex-direction:column;">
+      <button class="btn-save in" id="reportImgBtn" onclick="makeYearImage()">🖼️ สร้างภาพสรุป (ส่งต่อได้ง่าย)</button>
+      <button class="btn-cancel" id="reportBtn" onclick="makeYearReport()">📄 ไฟล์ Excel (สำหรับแก้ไขต่อ)</button>
+      <button class="btn-cancel" style="background:transparent;" onclick="closeReport()">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<!-- Yearly summary picture preview (V1.8) -->
+<div class="overlay" id="yearImgOverlay">
+  <div class="sheet">
+    <div class="sheet-title">🖼️ ภาพสรุปรายปี</div>
+    <div class="image-preview-hint">กด "ส่ง / บันทึกรูป" เพื่อส่งต่อหรือเก็บลงเครื่อง (ถ้าไม่ขึ้น ให้กดค้างที่รูปแล้วเลือกบันทึกรูปภาพ)</div>
+    <div class="image-preview-box">
+      <img id="yearImgPreview" src="" alt="ภาพสรุปรายปี">
+    </div>
     <div class="sheet-actions">
-      <button class="btn-cancel" onclick="closeReport()">ปิด</button>
-      <button class="btn-save in" id="reportBtn" onclick="makeYearReport()">สร้างไฟล์ Excel</button>
+      <button class="btn-cancel" onclick="closeYearImg()">ปิด</button>
+      <button class="btn-save in" onclick="shareYearImg()">📤 ส่ง / บันทึกรูป</button>
     </div>
   </div>
 </div>
@@ -2316,6 +2332,7 @@ function renderReportOverlay() {
   if (n === 0) box.innerHTML = 'ปี ' + (reportYear + 543) + ' ยังไม่มีรายการ';
   else box.innerHTML = 'ปี ' + (reportYear + 543) + ' มี <b>' + n + '</b> รายการ<br>รายรับรวม <span class="in">' + fmt(tin) + '</span><br>รายจ่ายรวม <span class="out">' + fmt(tout) + '</span>';
   document.getElementById('reportBtn').disabled = (n === 0);
+  document.getElementById('reportImgBtn').disabled = (n === 0);
 }
 
 function niceStep(rough) {
@@ -2510,8 +2527,204 @@ async function makeYearReport() {
     if (done) { closeReport(); showToast('สร้างรายงานปี ' + (reportYear + 543) + ' แล้ว', 3500); }
     else showReportError('บันทึกไฟล์ไม่สำเร็จ ลองอีกครั้ง');
   } finally {
-    reportBusy = false; btn.textContent = 'สร้างไฟล์ Excel'; renderReportOverlay();
+    reportBusy = false; btn.textContent = '📄 ไฟล์ Excel (สำหรับแก้ไขต่อ)'; renderReportOverlay();
   }
+}
+
+/* ================= V1.8: yearly summary as a picture ================= */
+let yearImgBlob = null, yearImgName = '', yearImgBusy = false;
+
+function topCatsForYear(year, type, limit) {
+  const map = new Map();
+  transactions.forEach(t => {
+    if (!t || t.type !== type || typeof t.date !== 'string' || t.date.slice(0, 4) !== String(year)) return;
+    const k = t.category || 'อื่นๆ';
+    map.set(k, (map.get(k) || 0) + (Number(t.amount) || 0));
+  });
+  return [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit);
+}
+function cvRoundRect(g, x, y, w, h, r) {
+  g.beginPath(); g.moveTo(x + r, y); g.lineTo(x + w - r, y); g.quadraticCurveTo(x + w, y, x + w, y + r);
+  g.lineTo(x + w, y + h - r); g.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  g.lineTo(x + r, y + h); g.quadraticCurveTo(x, y + h, x, y + h - r);
+  g.lineTo(x, y + r); g.quadraticCurveTo(x, y, x + r, y); g.closePath();
+}
+// Draws the whole yearly summary on one canvas and returns it.
+async function drawYearSummaryCanvas(year) {
+  try { await Promise.race([document.fonts.load('bold 30px "Noto Sans Thai"'), new Promise(r => setTimeout(r, 1200))]); } catch (e) {}
+  const FONT = "'Noto Sans Thai', 'Sarabun', Tahoma, sans-serif";
+  const months = yearTotals(year);
+  const tin = months.reduce((s, x) => s + x.in, 0), tout = months.reduce((s, x) => s + x.out, 0), net = tin - tout;
+  const topOut = topCatsForYear(year, 'out', 3), topIn = topCatsForYear(year, 'in', 3);
+  const pend = receivables.filter(r => r.status !== 'paid').reduce((s, r) => s + (Number(r.amount) || 0), 0);
+  const W = 1080, P = 48;
+  const yCards = 236, hCards = 132;
+  const yChart = yCards + hCards + 28, hChart = 440;
+  const yTable = yChart + hChart + 24, rowH = 50, hHead = 54;
+  const yTop = yTable + hHead + 12 * rowH + 60 + 36;
+  const hTop = 60 + 3 * 46 + 24;
+  const yFoot = yTop + hTop + 10;
+  const H = yFoot + (pend > 0 ? 130 : 96);
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  const GREEN = '#1B4332', IN = '#1E6B3E', OUT = '#A13E3E', INK = '#2B2B24', SOFT = '#6B6B5E', LINE = '#E2DCCB', CREAM = '#FAF5E8', BRASS = '#B8922F';
+  const txt = (s, x, y, font, color, align) => { g.font = font; g.fillStyle = color; g.textAlign = align || 'left'; g.fillText(s, x, y); };
+  const fit = (s, maxW, size, weight) => { let z = size; g.font = weight + ' ' + z + 'px ' + FONT; while (g.measureText(s).width > maxW && z > 14) { z -= 1; g.font = weight + ' ' + z + 'px ' + FONT; } return z; };
+  g.fillStyle = '#fff'; g.fillRect(0, 0, W, H);
+
+  // header band
+  g.fillStyle = GREEN; g.fillRect(0, 0, W, 196);
+  g.fillStyle = BRASS; g.fillRect(0, 196, W, 6);
+  txt('โรงกลึงต้อการช่างชุมพร', W / 2, 62, '600 26px ' + FONT, '#E8D9A8', 'center');
+  txt('สรุปรายรับ-รายจ่าย ปี พ.ศ. ' + (year + 543), W / 2, 124, 'bold 54px ' + FONT, '#FFFFFF', 'center');
+  txt('บัญชีต้อการช่าง ' + APP_VERSION_LABEL, W / 2, 168, '24px ' + FONT, '#B7C9BE', 'center');
+
+  // three cards
+  const cw = (W - 2 * P - 2 * 20) / 3;
+  [['รายรับรวม', tin, IN, '#EAF4EE'], ['รายจ่ายรวม', tout, OUT, '#FBEDED'], ['คงเหลือสุทธิ', net, net < 0 ? OUT : GREEN, '#F3E9CC']].forEach((cd, i) => {
+    const x = P + i * (cw + 20);
+    g.fillStyle = cd[3]; cvRoundRect(g, x, yCards, cw, hCards, 18); g.fill();
+    txt(cd[0], x + cw / 2, yCards + 42, '600 24px ' + FONT, SOFT, 'center');
+    const s = (cd[1] < 0 ? '−' : '') + fmt(Math.abs(cd[1]));
+    const z = fit(s, cw - 28, 38, 'bold');
+    txt(s, x + cw / 2, yCards + 94, 'bold ' + z + 'px ' + FONT, cd[2], 'center');
+  });
+
+  // chart
+  g.fillStyle = CREAM; cvRoundRect(g, P, yChart, W - 2 * P, hChart, 18); g.fill();
+  txt('รายรับ-รายจ่ายรายเดือน', P + 24, yChart + 44, 'bold 28px ' + FONT, GREEN, 'left');
+  g.fillStyle = IN; g.fillRect(W - P - 250, yChart + 24, 20, 20); txt('รายรับ', W - P - 222, yChart + 42, '22px ' + FONT, INK, 'left');
+  g.fillStyle = OUT; g.fillRect(W - P - 130, yChart + 24, 20, 20); txt('รายจ่าย', W - P - 102, yChart + 42, '22px ' + FONT, INK, 'left');
+  const cL = P + 100, cR = W - P - 20, cT = yChart + 80, cB = yChart + hChart - 54, cH = cB - cT;
+  const maxV = Math.max(1, ...months.map(m => Math.max(m.in, m.out)));
+  const step = niceStep(maxV / 4), top = Math.ceil(maxV / step) * step;
+  g.strokeStyle = LINE; g.lineWidth = 1;
+  for (let v = 0; v <= top + 1e-9; v += step) {
+    const y = cB - (v / top) * cH;
+    g.beginPath(); g.moveTo(cL, y); g.lineTo(cR, y); g.stroke();
+    txt(v >= 1000000 ? (v / 1000000).toLocaleString('th-TH', { maximumFractionDigits: 1 }) + 'M' : v >= 1000 ? (v / 1000).toLocaleString('th-TH', { maximumFractionDigits: 1 }) + 'k' : String(v), cL - 10, y + 7, '20px ' + FONT, SOFT, 'right');
+  }
+  const gw = (cR - cL) / 12, bw = gw * 0.34;
+  months.forEach((m, i) => {
+    const cx = cL + gw * i + gw / 2;
+    const hi = (m.in / top) * cH, ho = (m.out / top) * cH;
+    g.fillStyle = IN; g.fillRect(cx - bw - 2, cB - hi, bw, hi);
+    g.fillStyle = OUT; g.fillRect(cx + 2, cB - ho, bw, ho);
+    txt(THAI_MONTHS_SHORT[i], cx, cB + 32, '20px ' + FONT, INK, 'center');
+  });
+
+  // table
+  const cols = [P + 24, P + 210, P + 500, W - P - 24];   // month(left) | in(right) | out(right) | net(right)
+  g.fillStyle = GREEN; cvRoundRect(g, P, yTable, W - 2 * P, hHead, 12); g.fill();
+  txt('เดือน', cols[0], yTable + 36, 'bold 24px ' + FONT, '#fff', 'left');
+  txt('รายรับ', cols[1] + 150, yTable + 36, 'bold 24px ' + FONT, '#fff', 'right');
+  txt('รายจ่าย', cols[2] + 170, yTable + 36, 'bold 24px ' + FONT, '#fff', 'right');
+  txt('คงเหลือสุทธิ', cols[3], yTable + 36, 'bold 24px ' + FONT, '#fff', 'right');
+  months.forEach((m, i) => {
+    const y = yTable + hHead + 6 + i * rowH;
+    if (i % 2 === 0) { g.fillStyle = CREAM; g.fillRect(P, y, W - 2 * P, rowH); }
+    const empty = m.in === 0 && m.out === 0;
+    txt(THAI_MONTHS[i], cols[0], y + 34, '26px ' + FONT, INK, 'left');
+    if (empty) { ['', ''].forEach(() => {}); txt('-', cols[1] + 150, y + 34, '26px ' + FONT, '#A8A595', 'right'); txt('-', cols[2] + 170, y + 34, '26px ' + FONT, '#A8A595', 'right'); txt('-', cols[3], y + 34, '26px ' + FONT, '#A8A595', 'right'); return; }
+    txt(fmt(m.in), cols[1] + 150, y + 34, '26px ' + FONT, IN, 'right');
+    txt(fmt(m.out), cols[2] + 170, y + 34, '26px ' + FONT, OUT, 'right');
+    const n = m.in - m.out;
+    txt((n < 0 ? '−' : '') + fmt(Math.abs(n)), cols[3], y + 34, 'bold 26px ' + FONT, n < 0 ? OUT : INK, 'right');
+  });
+  const yt = yTable + hHead + 6 + 12 * rowH + 6;
+  g.fillStyle = '#F3E9CC'; cvRoundRect(g, P, yt, W - 2 * P, 54, 12); g.fill();
+  txt('รวมทั้งปี', cols[0], yt + 36, 'bold 27px ' + FONT, GREEN, 'left');
+  txt(fmt(tin), cols[1] + 150, yt + 36, 'bold 26px ' + FONT, IN, 'right');
+  txt(fmt(tout), cols[2] + 170, yt + 36, 'bold 26px ' + FONT, OUT, 'right');
+  txt((net < 0 ? '−' : '') + fmt(Math.abs(net)), cols[3], yt + 36, 'bold 27px ' + FONT, net < 0 ? OUT : GREEN, 'right');
+
+  // top categories
+  const colW = (W - 2 * P - 24) / 2;
+  const topBox = (x, title, color, list, total) => {
+    g.fillStyle = '#fff'; g.strokeStyle = LINE; g.lineWidth = 2; cvRoundRect(g, x, yTop, colW, hTop, 18); g.fill(); g.stroke();
+    txt(title, x + 24, yTop + 44, 'bold 27px ' + FONT, color, 'left');
+    for (let i = 0; i < 3; i++) {
+      const y = yTop + 60 + i * 46 + 30;
+      if (!list[i]) { txt('-', x + 24, y, '25px ' + FONT, '#A8A595', 'left'); continue; }
+      const pct = total > 0 ? Math.round(list[i][1] / total * 100) : 0;
+      const amtStr = fmt(list[i][1]) + ' (' + pct + '%)';
+      const z = fit(amtStr, colW - 48 - 150, 24, 'bold');
+      g.font = 'bold ' + z + 'px ' + FONT;
+      const amtW = g.measureText(amtStr).width;
+      // category name: cut with "…" so it never runs into the amount
+      let name = (i + 1) + '. ' + list[i][0];
+      const maxName = colW - 48 - amtW - 20;
+      g.font = '25px ' + FONT;
+      if (g.measureText(name).width > maxName) {
+        while (name.length > 4 && g.measureText(name + '…').width > maxName) name = name.slice(0, -1);
+        name += '…';
+      }
+      txt(name, x + 24, y, '25px ' + FONT, INK, 'left');
+      txt(amtStr, x + colW - 24, y, 'bold ' + z + 'px ' + FONT, color, 'right');
+    }
+  };
+  // category names can be long: clip the left text so it never runs into the amount
+  g.save();
+  topBox(P, 'รายจ่ายสูงสุด 3 อันดับ', OUT, topOut, tout);
+  topBox(P + colW + 24, 'รายรับสูงสุด 3 อันดับ', IN, topIn, tin);
+  g.restore();
+
+  // footer
+  let fy = yFoot + 30;
+  if (pend > 0) { txt('ยอดค้างรับ (ลูกค้ายังไม่จ่าย) ณ วันที่สร้างภาพ ' + fmt(pend) + ' บาท — ยังไม่นับรวมในตัวเลขข้างบน', W / 2, fy, '22px ' + FONT, SOFT, 'center'); fy += 40; }
+  txt('สร้างจากแอปบัญชีต้อการช่าง เมื่อ ' + formatThaiDateTime(Date.now()), W / 2, fy + 10, '22px ' + FONT, SOFT, 'center');
+  return c;
+}
+
+function showYearImgError(msg) { showReportError(msg); }
+
+async function makeYearImage() {
+  if (yearImgBusy) return;
+  yearImgBusy = true;
+  const btn = document.getElementById('reportImgBtn');
+  btn.disabled = true; btn.textContent = 'กำลังสร้างภาพ...';
+  showReportError('');
+  try {
+    const canvas = await drawYearSummaryCanvas(reportYear);
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    if (!blob) throw new Error('blob');
+    yearImgBlob = blob;
+    yearImgName = 'passbook-summary-' + (reportYear + 543) + '.png';
+    const img = document.getElementById('yearImgPreview');
+    if (img.dataset.url) { try { URL.revokeObjectURL(img.dataset.url); } catch (e) {} }
+    const url = URL.createObjectURL(blob);
+    img.dataset.url = url; img.src = url;
+    closeReport();
+    document.getElementById('yearImgOverlay').classList.add('show');
+  } catch (e) {
+    showReportError('สร้างภาพไม่สำเร็จ ลองอีกครั้ง (ข้อมูลของคุณไม่ได้รับผลกระทบ)');
+  } finally {
+    yearImgBusy = false; btn.disabled = false; btn.textContent = '🖼️ สร้างภาพสรุป (ส่งต่อได้ง่าย)';
+    renderReportOverlay();
+  }
+}
+function closeYearImg() { document.getElementById('yearImgOverlay').classList.remove('show'); }
+async function shareYearImg() {
+  if (!yearImgBlob) return;
+  let done = false;
+  try {
+    const file = new File([yearImgBlob], yearImgName, { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: 'สรุปรายรับ-รายจ่ายรายปี บัญชีต้อการช่าง' });
+      done = true;
+    }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  if (!done) {
+    try {
+      const url = URL.createObjectURL(yearImgBlob);
+      const a = document.createElement('a'); a.href = url; a.download = yearImgName;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 4000);
+      done = true;
+    } catch (e) {}
+  }
+  if (done) showToast('บันทึกภาพแล้ว', 3000);
+  else showToast('บันทึกไม่ได้ ลองกดค้างที่รูปแล้วเลือกบันทึกรูปภาพ', 4000);
 }
 
 /* ----- What's new (release notes) ----- */
@@ -2519,7 +2732,7 @@ async function makeYearReport() {
 const RELEASE_NOTES = [
   { ver: 'V1.8', date: '2026-11-14', items: [
     { e: '💬', t: 'ส่งความคิดเห็นถึงผู้พัฒนาได้แล้ว', d: 'ตั้งค่า › ส่งความคิดเห็น พิมพ์แล้วกดส่ง ไม่ต้องใส่ชื่อก็ได้' },
-    { e: '📊', t: 'สร้างรายงานรายปีเป็น Excel', d: 'ตั้งค่า › รายงานรายปี ได้ตารางรายรับ-รายจ่าย 12 เดือน พร้อมกราฟ (ต้องต่ออินเทอร์เน็ตตอนสร้างครั้งแรก)' },
+    { e: '📊', t: 'สรุปรายปีเป็นภาพ ส่งต่อได้ง่าย', d: 'ตั้งค่า › สรุปรายปี ได้รูปเดียวมีตารางรายเดือน กราฟ และยอดรวม ส่งทาง LINE ได้เลย (ถ้าอยากได้ไฟล์ Excel ก็เลือกได้)' },
     { e: '🔍', t: 'ค้นหาย้อนหลังเก่งขึ้น', d: 'พิมพ์หลายคำพร้อมกันได้ ค้นด้วยวันที่หรือจำนวนเงินได้ มียอดรวมของที่เจอ และรวมยอดค้างรับด้วย' }
   ]},
   { ver: 'V1.7', date: '2026-11-13', items: [
