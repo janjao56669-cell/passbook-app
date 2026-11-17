@@ -790,7 +790,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .actions3 .btn-big { padding: 16px 4px; font-size: 16px; }
   .actions3 .btn-big .icon { font-size: 20px; }
   .btn-scan3 { flex: 0.9; background: rgba(184,146,47,0.14); color: #7A5E1E; border: 1px dashed var(--brass); box-shadow: none; }
-  .recv-fold { margin-top: 10px; border: 1px dashed var(--receivable); background: rgba(28,124,124,0.08); border-radius: 14px; overflow: hidden; }
+  .recv-fold { margin-top: 10px; border: 1px solid var(--line); background: var(--page-cream); box-shadow: 0 2px 10px rgba(15,43,29,.10); border-radius: 14px; overflow: hidden; }
   .recv-head { all: unset; box-sizing: border-box; display: flex; justify-content: space-between; width: 100%; padding: 13px 14px; font-size: 15px; font-weight: 700; color: var(--ink); cursor: pointer; }
   .recv-head .ch { color: var(--brass); transition: transform .2s; }
   .recv-body { display: none; padding: 0 14px 12px; }
@@ -5996,15 +5996,15 @@ function budgetOverview() {
   const t = todayStr(), rows = [], items = [];
   ['day', 'week', 'month', 'year'].forEach(k => {
     const b = budgets[k]; if (!b) return; const r = periodRange(k, t);
-    if (b.total) { const used = sumRange(r.start, r.end, 'out'); const it = { k, name: '💰 รวมทุกหมวด', used, total: b.total, pct: used / b.total * 100 }; rows.push(it); items.push(it); }
+    if (b.total) { const used = sumRange(r.start, r.end, 'out'); const it = { k, name: '💰 รวมทุกหมวด', tot: true, used, total: b.total, pct: used / b.total * 100 }; rows.push(it); items.push(it); }
     Object.keys(b.cats || {}).forEach(c => { if (!(b.cats[c] > 0)) return; const used = sumRange(r.start, r.end, 'out', c); items.push({ k, name: catIconFor('out', c) + ' ' + c, used, total: b.cats[c], pct: used / b.cats[c] * 100 }); });
   });
   return { rows, items, over: items.filter(x => x.pct >= 100).length, warn: items.filter(x => x.pct >= 80 && x.pct < 100).length };
 }
-function budgetMoreBar(all) {
+function budgetMoreBar(all, hidden) {
   if (!all.items.length) return '';
   const st = all.over ? `<b>⚠️ เกินงบ ${all.over} รายการ</b>` : (all.warn ? `ใกล้เต็ม ${all.warn} รายการ` : 'ยังไม่เกินงบ');
-  return `<div class="hc-more" onclick="openBudgetAll()"><span>ดูงบทั้งหมด (${all.items.length} รายการ) · ${st}</span><span>▾</span></div>`;
+  return `<div class="hc-more" onclick="openBudgetAll()"><span>${hidden ? 'ดูงบอื่นๆ อีก ' + hidden + ' รายการ' : 'ดูแยกวัน/สัปดาห์/เดือน/ปี'} · ${st}</span><span>▾</span></div>`;
 }
 function openBudgetAll() {
   const all = budgetOverview(); const body = document.getElementById('baBody');
@@ -6031,12 +6031,12 @@ function homeCardHtml(id) {
   if (id === 'budget') {
     const all = budgetOverview();
     let h = '<div class="hc-t"><span>🎯 งบค่าใช้จ่าย</span><a onclick="openBudget()">ตั้งงบ ›</a></div>';
-    if (!all.rows.length) return h + '<div class="hc-mut">ยังไม่ได้ตั้งงบรวม กด "ตั้งงบ" เพื่อเริ่ม</div>' + (all.items.length ? budgetMoreBar(all) : '');
-    const pri = ['day', 'month', 'year', 'week'];
-    all.rows.slice().sort((x, y) => pri.indexOf(x.k) - pri.indexOf(y.k)).slice(0, 3).forEach(x => {
-      h += `<div class="hc-row"><span>${KIND_NOW[x.k]}</span><span class="${x.pct >= 100 ? 'ov' : ''}">${fmt(x.used)} / ${fmt(x.total)}</span></div><div class="hc-bar"><i class="${budgetClass(x.pct)}" style="width:${Math.min(100, x.pct)}%"></i></div>`;
+    if (!all.items.length) return h + '<div class="hc-mut">ยังไม่ได้ตั้งงบ กด "ตั้งงบ" เพื่อเริ่ม</div>';
+    const MAXB = 6;   // fill the card; anything beyond this is folded into the "see all" bar
+    all.items.slice(0, MAXB).forEach(x => {
+      h += `<div class="hc-row"><span>${KIND_NOW[x.k]}${x.tot ? '' : ' · ' + x.name}</span><span class="${x.pct >= 100 ? 'ov' : ''}">${fmt(x.used)} / ${fmt(x.total)}</span></div><div class="hc-bar"><i class="${budgetClass(x.pct)}" style="width:${Math.min(100, x.pct)}%"></i></div>`;
     });
-    return h + budgetMoreBar(all);
+    return h + budgetMoreBar(all, Math.max(0, all.items.length - MAXB));
   }
   if (id === 'savings') {
     let h = '<div class="hc-t"><span>🐷 กระปุกออม</span><a onclick="openSavings()">จัดการ ›</a></div>';
