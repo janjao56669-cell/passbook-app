@@ -514,10 +514,23 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .ts-title { font-size: 12.5px; font-weight: 700; color: var(--ink-soft); margin-bottom: 6px; }
   .ts-chart { display: flex; align-items: flex-end; gap: 2px; height: 110px; padding-top: 6px; }
   .ts-col { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; }
+  .cd-profit { cursor:pointer; }
+  .cd-profit .pf-list { display:none; margin-top:8px; border-top:1px dashed var(--line); text-align:left; }
+  .cd-profit.open .pf-list { display:block; }
+  .cd-profit.open .pf-chev { display:none; }
+  .pf-row { display:flex; justify-content:space-between; gap:10px; padding:7px 0; font-size:13.5px; border-bottom:1px solid var(--line); color:var(--ink); }
+  .pf-row:last-child { border-bottom:none; }
+  .pf-row .nm { flex:1; min-width:0; overflow-wrap:anywhere; }
+  .pf-row small { display:block; font-size:12px; color:var(--ink-soft); }
+  .pf-row b.gain { color:var(--deposit); } .pf-row b.loss { color:var(--withdraw); }
   .cd-sum { display:flex; gap:8px; margin:6px 0 4px; text-align:center; }
   .cd-sum > div { flex:1; background:#fff; border:1px solid var(--line); border-radius:12px; padding:8px 4px; }
   .cd-sum small { display:block; font-size:12px; color:var(--ink-soft); }
   .cd-sum b { font-size:16px; }
+  .cd-profit { text-align:center; font-size:13px; margin:6px 0; padding:6px 10px; border-radius:10px; background:#fff; border:1px solid var(--line); }
+  .cd-profit.gain b { color:var(--deposit); } .cd-profit.loss b { color:var(--withdraw); }
+  .pay-hint { min-height:24px; text-align:center; font-weight:700; margin:6px 0; color:var(--ink-soft); }
+  .pay-hint.gain { color:var(--deposit); } .pay-hint.loss { color:var(--withdraw); }
   .cd-sub { margin:16px 0 2px; font-weight:700; font-size:14px; display:flex; justify-content:space-between; }
   .dv-row { display:flex; align-items:center; gap:8px; margin:8px 0; font-size:13px; }
   .dv-row > span:first-child { width:56px; }
@@ -648,6 +661,10 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     display: flex; align-items: center; justify-content: center; gap: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   }
+  .update-banner { animation: updPulse 1.6s ease-in-out 3; }
+  @keyframes updPulse { 0%,100% { background: var(--brass); } 50% { background: #D9A93A; } }
+  .update-banner button.later { background: transparent; color: #fff; font-size: 16px; padding: 2px 8px; }
+  .settings-btn.has-update::after { content: ''; position: absolute; top: 4px; right: 4px; width: 11px; height: 11px; border-radius: 50%; background: #FF4B14; border: 2px solid #fff; }
   .update-banner button {
     background: #fff; color: var(--brass); border: none; border-radius: 8px;
     padding: 5px 12px; font-size: 12.5px; font-weight: 700; cursor: pointer;
@@ -1267,6 +1284,23 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     <div class="row">
       <button class="confirm-cancel" onclick="closeDeleteConfirm()">ยกเลิก</button>
       <button class="confirm-delete" onclick="confirmDelete()">ลบรายการ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Receive payment on a receivable (V1.9) -->
+<div class="overlay" id="payOverlay">
+  <div class="sheet">
+    <div class="sheet-title">💰 รับเงินแล้ว</div>
+    <div class="set-note" style="margin:-6px 0 8px;"><b id="payName"></b><br>ยอดที่ลงไว้ <b id="payListed"></b> บาท</div>
+    <div class="field-label"><span>ได้รับจริงเท่าไร (บาท)</span></div>
+    <input type="text" class="text-input" id="payAmount" inputmode="decimal" autocomplete="off" oninput="updatePayHint()" onkeydown="if(event.key==='Enter')confirmPaid()">
+    <div class="pay-hint" id="payHint"></div>
+    <div class="fb-error" id="payError"></div>
+    <div class="set-note">ถ้าได้มากกว่าที่ลงไว้ ส่วนต่างคือกำไร ถ้าน้อยกว่าคือขาดทุน ยอดที่บันทึกเป็นรายรับคือยอดที่ได้รับจริง</div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" onclick="closePaidSheet()">ยกเลิก</button>
+      <button class="btn-save in" onclick="confirmPaid()">ยืนยันรับเงิน</button>
     </div>
   </div>
 </div>
@@ -2009,18 +2043,20 @@ async function saveReceivable() {
   showToast('บันทึกยอดค้างรับเรียบร้อย');
 }
 
-async function markReceivablePaid(id) {
+async function markReceivablePaid(id, received) {
   const r = receivables.find(x => x.id === id);
-  if (!r) return;
+  if (!r || r.status === 'paid') return;
+  const got = (typeof received === 'number' && isFinite(received) && received > 0) ? Math.round(received * 100) / 100 : r.amount;
 
   r.status = 'paid';
   r.paidDate = todayStr();
+  r.received = got;
   await saveReceivables();
 
   transactions.push({
     id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
     type: 'in',
-    amount: r.amount,
+    amount: got,
     date: todayStr(),
     category: 'รับชำระค้างรับ',
     note: r.name,
@@ -2029,7 +2065,55 @@ async function markReceivablePaid(id) {
   await saveTransactions();
 
   render();
-  showToast('บันทึกรับเงินแล้ว: ' + r.name);
+  const pf = Math.round((got - r.amount) * 100) / 100;
+  showToast('บันทึกรับเงินแล้ว: ' + r.name + (pf > 0 ? ' · กำไร ' + fmt(pf) : (pf < 0 ? ' · ขาดทุน ' + fmt(-pf) : '')), pf !== 0 ? 4000 : undefined);
+}
+
+/* ---- paid-on-receivable: how much was really received (profit / loss) ---- */
+let payTargetId = null;
+function openPaidSheet(id) {
+  const r = receivables.find(x => x.id === id); if (!r || r.status === 'paid') return;
+  payTargetId = id;
+  document.getElementById('payName').textContent = r.name;
+  document.getElementById('payListed').textContent = fmt(r.amount);
+  const inp = document.getElementById('payAmount'); inp.value = String(r.amount);
+  document.getElementById('payError').className = 'fb-error'; document.getElementById('payError').textContent = '';
+  updatePayHint();
+  document.getElementById('payOverlay').classList.add('show');
+  setTimeout(() => { inp.focus(); inp.select(); }, 150);
+}
+function closePaidSheet() { document.getElementById('payOverlay').classList.remove('show'); payTargetId = null; }
+function updatePayHint() {
+  const r = receivables.find(x => x.id === payTargetId); const h = document.getElementById('payHint');
+  if (!r) { h.textContent = ''; return; }
+  const v = parseMoney(document.getElementById('payAmount').value);
+  if (v === null) { h.className = 'pay-hint'; h.textContent = ''; return; }
+  const d = Math.round((v - r.amount) * 100) / 100;
+  if (d > 0) { h.className = 'pay-hint gain'; h.textContent = '📈 กำไร ' + fmt(d) + ' บาท'; }
+  else if (d < 0) { h.className = 'pay-hint loss'; h.textContent = '📉 ขาดทุน ' + fmt(-d) + ' บาท'; }
+  else { h.className = 'pay-hint'; h.textContent = 'เท่ากับยอดที่ลงไว้'; }
+}
+async function confirmPaid() {
+  const r = receivables.find(x => x.id === payTargetId); if (!r) { closePaidSheet(); return; }
+  const v = parseMoney(document.getElementById('payAmount').value);
+  if (v === null) { const e = document.getElementById('payError'); e.className = 'fb-error show'; e.textContent = 'กรุณาใส่จำนวนเงินที่ได้รับจริงให้ถูกต้อง'; return; }
+  const id = payTargetId; closePaidSheet();
+  await markReceivablePaid(id, v);
+}
+function profitBetween(start, end) {
+  let sum = 0, n = 0; const items = [];
+  receivables.forEach(r => {
+    if (r.status !== 'paid' || typeof r.received !== 'number' || !r.paidDate || r.paidDate < start || r.paidDate > end) return;
+    const d = Math.round((r.received - r.amount) * 100) / 100; if (Math.abs(d) >= 0.005) { sum += d; n++; items.push({ name: r.name, date: r.paidDate, listed: r.amount, got: r.received, diff: d }); }
+  });
+  items.sort((x, y) => Math.abs(y.diff) - Math.abs(x.diff));
+  return { sum: Math.round(sum * 100) / 100, n, items };
+}
+function profitLineHtml(r) {
+  const p = profitBetween(r.start, r.end); if (!p.n) return '';
+  const pos = p.sum >= 0;
+  const rows = p.items.map(x => '<div class="pf-row"><span class="nm">' + escapeHtml(x.name) + '<small>' + thaiDateLabel(x.date) + ' · ลงไว้ ' + fmt(x.listed) + ' → ได้จริง ' + fmt(x.got) + '</small></span><b class="' + (x.diff > 0 ? 'gain' : 'loss') + '">' + (x.diff > 0 ? '+' : '−') + fmt(Math.abs(x.diff)) + '</b></div>').join('');
+  return '<div class="cd-profit ' + (pos ? 'gain' : 'loss') + '" onclick="this.classList.toggle(\'open\')"><div class="pf-head">' + (pos ? '📈 กำไรจากงานค้างรับ ' : '📉 ขาดทุนจากงานค้างรับ ') + '<b>' + (pos ? '+' : '−') + fmt(Math.abs(p.sum)) + '</b> <small>(' + p.n + ' งาน) <span class="pf-chev">▾ ดูว่ามาจากไหน</span></small></div><div class="pf-list">' + rows + '</div></div>';
 }
 
 function toggleReceivableHistory() {
@@ -2859,6 +2943,7 @@ function renderChartDetailBar(r) {
   document.getElementById('cdTitle').textContent = 'รายรับ-รายจ่าย';
   const tin = sumRange(r.start, r.end, 'in'), tout = sumRange(r.start, r.end, 'out'), net = Math.round((tin - tout) * 100) / 100;
   let html = `<div class="cd-sum"><div><small>รายรับ</small><b style="color:var(--deposit)">${fmt(tin)}</b></div><div><small>รายจ่าย</small><b style="color:var(--withdraw)">${fmt(tout)}</b></div><div><small>ส่วนต่าง</small><b style="color:${net < 0 ? 'var(--withdraw)' : 'var(--deposit)'}">${net > 0 ? '+' : (net < 0 ? '−' : '')}${fmt(Math.abs(net))}</b></div></div>`;
+  html += profitLineHtml(r);
   const mx0 = Math.max(tin, tout) || 1;
   if (cdKind === 'day') {
     html += `<div class="ts-box"><div class="dv-row"><span>รายรับ</span><span class="tr"><i style="width:${tin / mx0 * 100}%;background:var(--deposit)"></i></span></div><div class="dv-row"><span>รายจ่าย</span><span class="tr"><i style="width:${tout / mx0 * 100}%;background:var(--withdraw)"></i></span></div></div>`;
@@ -2892,11 +2977,11 @@ function renderChartDetail() {
   const items = catTotals(r.start, r.end, cdType);
   const total = items.reduce((s, x) => s + x[1], 0);
   const box = document.getElementById('cdBody');
-  if (!items.length) { box.innerHTML = '<div class="empty-state" style="padding:26px 10px;"><div class="big-emoji">📭</div>ไม่มี' + (cdType === 'out' ? 'รายจ่าย' : 'รายรับ') + 'ในช่วงนี้</div>'; return; }
+  if (!items.length) { box.innerHTML = profitLineHtml(r) + '<div class="empty-state" style="padding:26px 10px;"><div class="big-emoji">📭</div>ไม่มี' + (cdType === 'out' ? 'รายจ่าย' : 'รายรับ') + 'ในช่วงนี้</div>'; return; }
   let shown = items;
   if (items.length > 8) { const rest = items.slice(7).reduce((s, x) => s + x[1], 0); shown = items.slice(0, 7).concat([['หมวดอื่นๆ รวม', Math.round(rest * 100) / 100]]); }
   const colorFor = i => CHART_COLORS[i % CHART_COLORS.length];
-  let html = `<div class="cd-total">${cdType === 'out' ? 'ใช้ไปทั้งหมด' : 'ได้รับทั้งหมด'}<b>${fmt(total)}</b></div>`;
+  let html = `<div class="cd-total">${cdType === 'out' ? 'ใช้ไปทั้งหมด' : 'ได้รับทั้งหมด'}<b>${fmt(total)}</b></div>` + profitLineHtml(r);
   if (chartStyle === 'pie') {
     let acc = 0; const stops = shown.map(([, v], i) => { const a = acc / total * 100; acc += v; return colorFor(i) + ' ' + a.toFixed(2) + '% ' + (acc / total * 100).toFixed(2) + '%'; });
     html += `<div class="cd-pie" style="background: conic-gradient(${stops.join(', ')});"></div>`;
@@ -4329,6 +4414,7 @@ async function shareYearImg() {
 // Newest first. Every new release: add a new entry at the TOP and bump APP_VERSION_LABEL + sw.js.
 const RELEASE_NOTES = [
   { ver: 'V1.9', date: '2026-11-17', items: [
+    { e: '📈', t: 'กำไร/ขาดทุนจากงานค้างรับ', d: 'ตอนกด ✓ รับเงินค้างรับ แอปถามว่าได้รับจริงเท่าไร ถ้าได้มากกว่าที่ลงไว้คือกำไร น้อยกว่าคือขาดทุน ดูยอดรวมได้ในหน้ากราฟ (แตะกราฟวงกลม)' },
     { e: '📊', t: 'แตะกราฟวงกลมเพื่อดูละเอียด', d: 'ดูว่าใช้เงินกับหมวดไหนเท่าไร เลือกดูเป็น วัน / สัปดาห์ / เดือน / ปี ย้อนกลับไปดูช่วงก่อนหน้าได้ และมีกราฟแท่งแยกตามวัน/เดือน' },
     { e: '🎯', t: 'ตั้งงบค่าใช้จ่าย', d: 'ตั้งงบต่อวัน/สัปดาห์/เดือน/ปี รวมหรือแยกหมวด แอปบอกว่าเหลือเท่าไร และเตือนเมื่อเกินงบ ตั้งค่า › งบค่าใช้จ่าย' },
     { e: '🐷', t: 'เงินออม', d: 'หยอดเงินเข้ากระปุก (หักจากยอดคงเหลือ) ถอนคืนได้ ตั้งเป้าหมายได้ เพิ่มกระปุกได้หลายอัน ตั้งค่า › เงินออม' },
@@ -4417,6 +4503,7 @@ const MORE_HELP = [
   ['วางแผนเงิน', [
     ['🎯', 'งบค่าใช้จ่าย', '<b>ตั้งค่า › งบค่าใช้จ่าย</b> ตั้งตัวเลขเองได้ต่อวัน/สัปดาห์/เดือน/ปี ทั้งรวมและแยกหมวด (ช่องไหนไม่ตั้งก็เว้นว่าง) แถบงบจะอยู่ใต้ปุ่มรายรับ/รายจ่าย แตะเพื่อกางดู และเตือนเมื่อเกินงบ'],
     ['🐷', 'เงินออม', '<b>ตั้งค่า › เงินออม</b> หรือแตะบรรทัด "เงินออมที่แยกไว้" ใต้ยอดเงิน กด <b>หยอด</b> เพื่อแยกเงินออกจากยอดคงเหลือ กด <b>ถอน</b> เพื่อคืน ตั้งเป้าหมายและเพิ่มกระปุกได้ เงินออมไม่นับเป็นรายจ่าย'],
+    ['📈', 'กำไร / ขาดทุนจากค้างรับ', 'ในแท็บ <b>ค้างรับ</b> กดปุ่ม ✓ เมื่อลูกค้าจ่าย แล้วใส่ <b>ยอดที่ได้รับจริง</b> ถ้าได้มากกว่าที่ลงไว้ = กำไร น้อยกว่า = ขาดทุน (ระบุให้ทันที) ดูยอดกำไรรวมได้ในหน้ากราฟ (แตะกราฟวงกลม)'],
     ['🔁', 'รายการประจำ', '<b>ตั้งค่า › รายการประจำ</b> ตั้งรายการที่เกิดซ้ำทุกเดือน เช่น ค่าเช่า แล้วแอปจะถามให้ยืนยันเมื่อถึงวัน']
   ]],
   ['ดูแลข้อมูล', [
@@ -4788,11 +4875,11 @@ function renderReceivableList(ledgerBox) {
       <div class="recv-row ${isPaid ? 'paid' : ''}">
         <div class="recv-desc">
           <div class="recv-name">${escapeHtml(r.name)}</div>
-          <div class="recv-date">${dateLabel}${isPaid ? ' · รับแล้ว' : ''}</div>
+          <div class="recv-date">${dateLabel}${isPaid ? ' · รับแล้ว' : ''}${(isPaid && typeof r.received === 'number' && Math.abs(r.received - r.amount) >= 0.005) ? ' · <b style="color:' + (r.received > r.amount ? 'var(--deposit)' : 'var(--withdraw)') + '">รับจริง ' + fmt(r.received) + (r.received > r.amount ? ' (กำไร ' : ' (ขาดทุน ') + fmt(Math.abs(r.received - r.amount)) + ')</b>' : ''}</div>
         </div>
         <div class="recv-amt">${fmt(r.amount)}</div>
         <div class="recv-actions">
-          ${!isPaid ? `<button class="recv-btn paid-btn" onclick="markReceivablePaid('${r.id}')" title="รับเงินแล้ว">✓</button>` : ''}
+          ${!isPaid ? `<button class="recv-btn paid-btn" onclick="openPaidSheet('${r.id}')" title="รับเงินแล้ว">✓</button>` : ''}
           <button class="recv-btn del-btn" onclick="askDeleteReceivable('${r.id}')" title="ลบ">✕</button>
         </div>
       </div>
@@ -4956,7 +5043,10 @@ async function analyzeSlip(base64, mediaType) {
 }
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').then(reg => {
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
+    window._swReg = reg;
+    // a new version may already be downloaded and waiting from an earlier visit (no "updatefound" fires for it)
+    if (reg.waiting && navigator.serviceWorker.controller) showUpdateBanner(reg);
     reg.addEventListener('updatefound', () => {
       const newWorker = reg.installing;
       if (!newWorker) return;
@@ -4967,6 +5057,20 @@ if ('serviceWorker' in navigator) {
       });
     });
   }).catch(() => {});
+
+  // people who leave the app open in the background never "open" it again, so look for a new version
+  // whenever they come back to it, when the internet returns, and every 20 minutes while it is open
+  let lastQuietCheck = 0;
+  const quietCheck = () => {
+    const now = Date.now();
+    if (now - lastQuietCheck < 60000 || !navigator.onLine || !window._swReg) return;
+    lastQuietCheck = now;
+    window._swReg.update().then(() => { if (!window._updDismissed && window._swReg.waiting && navigator.serviceWorker.controller) showUpdateBanner(window._swReg); }).catch(() => {});
+  };
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') quietCheck(); });
+  window.addEventListener('focus', quietCheck);
+  window.addEventListener('online', quietCheck);
+  setInterval(quietCheck, 20 * 60 * 1000);
 
   let refreshing = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -4981,11 +5085,13 @@ function showUpdateBanner(reg) {
   const banner = document.createElement('div');
   banner.id = 'updateBanner';
   banner.className = 'update-banner';
-  banner.innerHTML = '<span>มีเวอร์ชันใหม่ของแอปแล้ว</span><button onclick="applyUpdate()">อัปเดตเลย</button>';
+  banner.innerHTML = '<span>🎉 มีเวอร์ชันใหม่ของแอปแล้ว</span><button onclick="applyUpdate()">อัปเดตเลย</button><button class="later" onclick="dismissUpdateBanner()" aria-label="ไว้ทีหลัง">✕</button>';
   document.body.appendChild(banner);
+  const g = document.getElementById('settingsBtn'); if (g) g.classList.add('has-update');
   window._pendingReg = reg;
 }
 
+function dismissUpdateBanner() { window._updDismissed = true; const b = document.getElementById('updateBanner'); if (b) b.remove(); }
 function applyUpdate() {
   if (window._pendingReg && window._pendingReg.waiting) {
     window._pendingReg.waiting.postMessage({ type: 'SKIP_WAITING' });
