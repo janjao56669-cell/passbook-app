@@ -40,7 +40,8 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   body {
     margin: 0;
     font-family: 'Noto Sans Thai', sans-serif;
-    background: linear-gradient(180deg, var(--cover-green-dark) 0%, var(--cover-green) var(--band, 120px), #EDE6D2 var(--band, 120px), #EDE6D2 100%);
+    background: linear-gradient(180deg, var(--cover-green-dark) 0%, var(--cover-green) var(--band, 120px), transparent var(--band, 120px)), var(--surface-bg, linear-gradient(#EDE6D2, #EDE6D2));
+    background-attachment: scroll, fixed;
     color: var(--ink);
     min-height: 100vh;
     padding-bottom: 40px;
@@ -79,6 +80,16 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .prof-photo { width: 84px; height: 84px; border-radius: 50%; border: 2px solid var(--line); background: var(--page-cream-2) center / cover no-repeat; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 8px; }
   .theme-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 10px; }
   .theme-sw { width: 44px; height: 44px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; padding: 0; }
+  .theme-sw.custom { background: conic-gradient(#d33, #e90, #cc3, #3a3, #39c, #63c, #d33) !important; }
+  .color-pair { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 4px 0 10px; }
+  .color-pair label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--ink-soft); }
+  .color-pair input[type=color] { width: 64px; height: 44px; padding: 0; border: 2px solid var(--line); border-radius: 10px; background: #fff; }
+  .look-prev { height: 64px; border-radius: 12px; border: 1px solid var(--line); margin-bottom: 8px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 13px; text-shadow: 0 1px 3px rgba(0,0,0,.5); text-align: center; padding: 0 10px; }
+  .look-prev.sf { color: var(--ink); text-shadow: none; }
+  .look-prev.img { background-size: cover; background-position: center; }
+  .theme-sw.sf { border-color: var(--line); }
+  .theme-sw.sf.on { border-color: var(--brass); }
+  .theme-sw { position: relative; }
   .theme-sw.on { border-color: var(--brass); box-shadow: 0 0 0 2px #fff inset; }
   .bg-prev { height: 70px; border-radius: 12px; border: 1px solid var(--line); background: var(--page-cream-2) center / cover no-repeat; margin-bottom: 8px; }
   .settings-btn {
@@ -768,7 +779,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .passbook { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
   .pg { display: none; } .pg.on { display: block; }
   #pgList.pg.on, #pgSum.pg.on { padding-top: 6px; }
-  .swipe { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 8px 2px 10px; margin: 0 -2px; scrollbar-width: none; align-items: stretch; }
+  .swipe { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 8px 14px 22px; margin: 0 -14px -10px; scroll-padding: 0 14px; scrollbar-width: none; align-items: stretch; }
   .swipe::-webkit-scrollbar { display: none; }
   .swipe > .balance-card, .swipe > .pie-card { flex: 0 0 92%; scroll-snap-align: center; margin-top: 0; box-sizing: border-box; }
   .swipe > .pie-card { padding: 16px 16px 14px; }
@@ -809,6 +820,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .app-header .brand { font-size: 11px; letter-spacing: 5px; margin-bottom: 0; }
   .app-header h1 { font-size: 21px; }
   .swipe { padding-top: 12px; }
+  .swipe > .balance-card, .swipe > .pie-card { box-shadow: 0 2px 10px rgba(15,43,29,.10); }
   .swipe > .balance-card { padding: 14px 16px 12px; margin-top: 0; }
   .swipe > .balance-card .balance-amount { font-size: 32px; }
   .swipe > .balance-card .balance-sub { margin-top: 8px; padding-top: 8px; }
@@ -816,7 +828,8 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .swipe > .balance-card .receivable-line { display: none; }
   .swipe > .balance-card .grand-total-line { margin-top: 8px; padding-top: 8px; font-size: 13px; }
   .swipe > .pie-card { padding: 12px 14px; margin-top: 0; }
-  .swipe > .pie-card .rank-section { display: none; }
+  .swipe > .pie-card .rank-section { margin-top: 12px; padding-top: 10px; gap: 10px; }
+  .swipe > .pie-card .rank-row { font-size: 13px; }
 
   .pick-cards { all: unset; cursor: pointer; font-size: 12.5px; color: var(--brass); padding: 4px 8px; font-family: 'Noto Sans Thai', sans-serif; }
   .hcard { flex: 0 0 92%; scroll-snap-align: center; box-sizing: border-box; background: var(--page-cream); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 12px 28px var(--shadow); padding: 14px 16px; }
@@ -824,6 +837,15 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .hcard .hc-t a { font-weight: 400; font-size: 12.5px; color: var(--brass); text-decoration: none; cursor: pointer; }
   .hcard .hc-bar { height: 12px; border-radius: 6px; background: var(--line); overflow: hidden; margin: 4px 0 10px; } .hcard .hc-bar i { display: block; height: 100%; background: var(--deposit); } .hcard .hc-bar i.warn { background: #C98A1B; } .hcard .hc-bar i.over { background: var(--withdraw); }
   .hcard .hc-row { display: flex; justify-content: space-between; font-size: 13.5px; margin-top: 3px; } .hcard .hc-big { font-size: 26px; font-weight: 700; font-family: 'Noto Serif Thai', serif; }
+  .hcard .hc-bar i.warn { background: var(--brass); } .hcard .hc-bar i.over { background: var(--withdraw); }
+  .hcard .hc-row .ov { color: var(--withdraw); font-weight: 700; }
+  .hc-more { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; padding: 9px 12px; border-radius: 10px; background: rgba(184,146,47,.10); border: 1px dashed var(--line); color: var(--ink-soft); font-size: 13px; cursor: pointer; }
+  .hc-more b { color: var(--withdraw); }
+  .ba-sec { margin-top: 12px; } .ba-sec h4 { margin: 0 0 4px; font-size: 14.5px; display: flex; justify-content: space-between; }
+  .ba-sec h4 em { font-style: normal; font-weight: 600; font-size: 12.5px; color: var(--withdraw); }
+  .ba-row { padding: 6px 0; border-bottom: 1px dashed var(--line); font-size: 13.5px; } .ba-row .top { display: flex; justify-content: space-between; gap: 8px; }
+  .ba-st { font-size: 11.5px; font-weight: 700; padding: 1px 7px; border-radius: 8px; margin-left: 6px; white-space: nowrap; }
+  .ba-st.over { background: #f3d6d6; color: var(--withdraw); } .ba-st.warn { background: #f4e6c0; color: #8a6a1f; } .ba-st.ok { background: #d9ecdd; color: var(--deposit); }
   .hcard .hc-mut { font-size: 12.5px; color: var(--ink-soft); }
   .pick-row { display: flex; align-items: center; gap: 10px; padding: 11px 4px; border-bottom: 1px solid var(--line); font-size: 15px; } .pick-row input { width: 20px; height: 20px; } .pick-row small { display: block; color: var(--ink-soft); font-size: 12px; }
 
@@ -1129,15 +1151,32 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     <input type="text" class="text-input" id="pfBiz" maxlength="50" autocomplete="off">
     <div class="field-label"><span>เบอร์โทร</span></div>
     <input type="tel" class="text-input" id="pfPhone" maxlength="20" autocomplete="off">
-    <div class="field-label"><span>สีธีมหน้าปก</span></div>
+    <div class="field-label"><span>🎨 สีหน้าปก (แถบด้านบน)</span></div>
+    <div class="look-prev" id="pfCoverPrev">ตัวอย่างแถบหัวแอป</div>
     <div class="theme-row" id="pfThemes"></div>
-    <div class="field-label"><span>รูปพื้นหลังหน้าปก</span></div>
-    <div class="bg-prev" id="pfBgPrev"></div>
+    <div class="set-note" style="margin:0 0 6px;">เลือกสีสำเร็จรูป หรือ "เลือกสีเอง" ด้านล่างเพื่อเลือกเฉดสีและไล่สีได้ตามใจ (ระบบจะปรับสีให้ไม่สว่างเกินไป เพื่อให้ตัวหนังสือสีขาวอ่านออก)</div>
+    <div class="color-pair">
+      <label>สีด้านบน<input type="color" id="pfC1" value="#0f2b1d" oninput="pfCustomCover()"></label>
+      <label>สีด้านล่าง<input type="color" id="pfC2" value="#1b4332" oninput="pfCustomCover()"></label>
+      <button type="button" class="attach-btn" onclick="pfCoverSingle()">ใช้สีเดียว (ไม่ไล่สี)</button>
+    </div>
+    <div class="field-label"><span>🖼️ รูปพื้นหลังหน้าปก</span></div>
+    <div class="look-prev img" id="pfBgPrev">ยังไม่มีรูป</div>
+    <div class="set-note" style="margin:0 0 6px;">รูปนี้จะแสดงเป็นฉากหลังของ <b>แถบหัวแอปด้านบน</b> (ตรงที่เขียนว่า PASSBOOK และชื่อบัญชี) โดยจะถูกทำให้มืดลงเล็กน้อยเพื่อให้ตัวหนังสืออ่านง่าย รูปแนวนอนจะสวยที่สุด</div>
     <div class="attach-row">
       <button type="button" class="attach-btn" onclick="document.getElementById('pfBgPick').click()">🖼️ เลือกรูปพื้นหลัง</button>
       <button type="button" class="attach-btn" onclick="pfClearBg()">เอารูปออก</button>
     </div>
     <input type="file" id="pfBgPick" accept="image/*" style="display:none" onchange="pfChooseBg(this)">
+    <div class="field-label"><span>🌈 สีพื้นหลังแอป (พื้นที่ด้านหลังการ์ดและรายการ)</span></div>
+    <div class="look-prev sf" id="pfSurfPrev">ตัวอย่างพื้นหลังแอป</div>
+    <div class="theme-row" id="pfSurfs"></div>
+    <div class="color-pair">
+      <label>สีด้านบน<input type="color" id="pfS1" value="#ede6d2" oninput="pfCustomSurf()"></label>
+      <label>สีด้านล่าง<input type="color" id="pfS2" value="#ede6d2" oninput="pfCustomSurf()"></label>
+      <button type="button" class="attach-btn" onclick="pfSurfSingle()">ใช้สีเดียว (ไม่ไล่สี)</button>
+    </div>
+    <div class="set-note" style="margin:0 0 6px;">ระบบจะปรับสีพื้นหลังให้ไม่เข้มเกินไป เพื่อให้ตัวหนังสือสีเข้มอ่านออก</div>
     <div class="set-note" style="margin-top:8px;">รูปโปรไฟล์และรูปพื้นหลังเก็บในเครื่องนี้เท่านั้น ไม่รวมอยู่ในไฟล์สำรอง ส่วนชื่อ ข้อมูลพื้นฐาน และสีธีมจะอยู่ในไฟล์สำรองด้วย ชื่อและไอคอนแอปบนหน้าจอโฮมยังเป็นชื่อเดิม</div>
     <div class="fb-error" id="pfError"></div>
     <div class="sheet-actions">
@@ -1284,6 +1323,14 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     <div class="cd-total" id="bgRange" style="margin-top:8px;"></div>
     <div id="bgBody"></div>
     <div class="sheet-actions"><button class="btn-cancel" style="width:100%;" onclick="closeBudget()">ปิด</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="budgetAllOverlay">
+  <div class="sheet">
+    <div class="sheet-title">🎯 งบทั้งหมดที่ตั้งไว้</div>
+    <div id="baBody"></div>
+    <div class="sheet-actions"><button class="btn-cancel" onclick="closeBudgetAll()">ปิด</button><button class="btn-save in" onclick="closeBudgetAll();openBudget()">ตั้งค่างบ</button></div>
   </div>
 </div>
 
@@ -3102,7 +3149,7 @@ async function checkForUpdate() {
     await reg.update();
     // give a freshly found worker a moment to finish installing
     for (let i = 0; i < 12 && !reg.waiting && reg.installing; i++) await new Promise(r => setTimeout(r, 250));
-    if (reg.waiting) {
+    if (reg.waiting && !(await pageIsCurrent())) {
       closeSettings();
       showUpdateBanner(reg);
       showToast('พบเวอร์ชันใหม่! กด "อัปเดตเลย" ด้านล่าง', 3500);
@@ -3198,21 +3245,42 @@ const PROFILE_KEY = 'profile', PHOTO_KEY = 'profilePhoto', COVERBG_KEY = 'coverB
 const DEFAULT_TITLE = 'บัญชีต้อการช่าง';
 const THEMES = {
   green: ['#1B4332', '#0F2B1D', 'เขียวเข้ม'], navy: ['#1F3A5F', '#122338', 'น้ำเงิน'], burgundy: ['#6B2737', '#43151F', 'แดงเลือดหมู'],
-  brown: ['#5A4130', '#3A2A1F', 'น้ำตาล'], teal: ['#1C5F63', '#103C3F', 'เขียวน้ำทะเล'], purple: ['#4B3470', '#2E2046', 'ม่วง'], charcoal: ['#37393D', '#212326', 'เทาเข้ม']
+  brown: ['#5A4130', '#3A2A1F', 'น้ำตาล'], teal: ['#1C5F63', '#103C3F', 'เขียวน้ำทะเล'], purple: ['#4B3470', '#2E2046', 'ม่วง'], charcoal: ['#37393D', '#212326', 'เทาเข้ม'],
+  forest: ['#2E7D32', '#14401A', 'เขียวสด'], ocean: ['#1565C0', '#0A3469', 'ฟ้าเข้ม'], wine: ['#8E2455', '#4A0F2B', 'ชมพูเข้ม'], orange: ['#B35A12', '#6B3207', 'ส้มเข้ม'],
+  g_sunset: ['#B23A48', '#3D1C5A', 'ไล่สี ม่วง→แดง'], g_sea: ['#1C7C7C', '#14305F', 'ไล่สี น้ำเงิน→เขียวทะเล'], g_gold: ['#8A6A1F', '#2E2210', 'ไล่สี ทอง'], g_forest: ['#3E8E5A', '#102B1C', 'ไล่สี เขียว'], g_night: ['#3A4A7A', '#10131F', 'ไล่สี กรมท่า']
 };
-let profile = { title: '', name: '', biz: '', phone: '', theme: 'green' };
+// page surface (the background behind the cards): [top, bottom, label]
+const SURFACES = {
+  cream: ['#EDE6D2', '#EDE6D2', 'ครีม (เดิม)'], white: ['#F7F7F4', '#F7F7F4', 'ขาวนวล'], gray: ['#E6E8EA', '#E6E8EA', 'เทาอ่อน'], sky: ['#DCEAF6', '#DCEAF6', 'ฟ้าอ่อน'],
+  mint: ['#DDEFE0', '#DDEFE0', 'เขียวอ่อน'], rose: ['#F6DDE2', '#F6DDE2', 'ชมพูอ่อน'], lilac: ['#E6DEF3', '#E6DEF3', 'ม่วงอ่อน'], sand: ['#F1DFC2', '#F1DFC2', 'ทรายอ่อน'],
+  g_dawn: ['#F6E3D0', '#E4D8F0', 'ไล่สี ส้ม→ม่วงอ่อน'], g_lake: ['#DCEAF6', '#DDEFE0', 'ไล่สี ฟ้า→เขียวอ่อน'], g_peach: ['#F8E4DA', '#F6DDE2', 'ไล่สี พีช→ชมพู'], g_meadow: ['#EDE6D2', '#D6EBD3', 'ไล่สี ครีม→เขียวอ่อน']
+};
+const HEX_RE = /^#[0-9a-fA-F]{6}$/;
+function hexToHsl(h) { const r = parseInt(h.slice(1, 3), 16) / 255, g = parseInt(h.slice(3, 5), 16) / 255, b = parseInt(h.slice(5, 7), 16) / 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2; let hh = 0, ss = 0; if (mx !== mn) { const d = mx - mn; ss = l > .5 ? d / (2 - mx - mn) : d / (mx + mn); hh = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; hh *= 60; } return [hh, ss, l]; }
+function hslToHex(h, s, l) { const f = n => { const k = (n + h / 30) % 12, a = s * Math.min(l, 1 - l); const v = l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)); return Math.round(v * 255).toString(16).padStart(2, '0'); }; return '#' + f(0) + f(8) + f(4); }
+// keep the cover dark enough for its white text, and the page surface light enough for dark text
+function relLum(h) { const c = [1, 3, 5].map(i => { const v = parseInt(h.slice(i, i + 2), 16) / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
+function clampCover(h) { let [a, s, l] = hexToHsl(h), out = h.toLowerCase(); for (let i = 0; i < 40 && relLum(out) > 0.16; i++) { l = Math.max(0, l - 0.025); out = hslToHex(a, s, l); } return out; }
+function clampSurface(h) { let [a, s, l] = hexToHsl(h), out = h.toLowerCase(); for (let i = 0; i < 40 && relLum(out) < 0.6; i++) { l = Math.min(1, l + 0.025); out = hslToHex(a, s, l); } return out; }
+let profile = { title: '', name: '', biz: '', phone: '', theme: 'green', c1: '', c2: '', surf: 'cream', s1: '', s2: '' };
 function sanitizeProfile(o) {
-  const out = { title: '', name: '', biz: '', phone: '', theme: 'green' };
+  const out = { title: '', name: '', biz: '', phone: '', theme: 'green', c1: '', c2: '', surf: 'cream', s1: '', s2: '' };
   if (!o || typeof o !== 'object') return out;
   const t = (v, n) => typeof v === 'string' ? v.replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, n) : '';
   out.title = t(o.title, 30); out.name = t(o.name, 40); out.biz = t(o.biz, 50); out.phone = t(o.phone, 20);
-  out.theme = Object.prototype.hasOwnProperty.call(THEMES, o.theme) ? o.theme : 'green';
+  if (o.theme === 'custom' && HEX_RE.test(o.c1 || '') && HEX_RE.test(o.c2 || '')) { out.theme = 'custom'; out.c1 = clampCover(o.c1); out.c2 = clampCover(o.c2); }
+  else out.theme = Object.prototype.hasOwnProperty.call(THEMES, o.theme) ? o.theme : 'green';
+  if (o.surf === 'custom' && HEX_RE.test(o.s1 || '') && HEX_RE.test(o.s2 || '')) { out.surf = 'custom'; out.s1 = clampSurface(o.s1); out.s2 = clampSurface(o.s2); }
+  else out.surf = Object.prototype.hasOwnProperty.call(SURFACES, o.surf) ? o.surf : 'cream';
   return out;
 }
+function coverPair(p) { return p.theme === 'custom' ? [p.c2, p.c1] : (THEMES[p.theme] || THEMES.green); }   // [main (lower), dark (top)]
+function surfPair(p) { return p.surf === 'custom' ? [p.s1, p.s2] : (SURFACES[p.surf] || SURFACES.cream); }
 function loadProfile() { try { profile = sanitizeProfile(JSON.parse(localStorage.getItem(PROFILE_KEY) || 'null')); } catch (e) { profile = sanitizeProfile(null); } }
 function lsGetStr(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }
 function applyProfile() {
-  const th = THEMES[profile.theme] || THEMES.green, root = document.documentElement.style;
+  const th = coverPair(profile), root = document.documentElement.style;
+  const sf = surfPair(profile); root.setProperty('--surface-bg', 'linear-gradient(180deg, ' + sf[0] + ', ' + sf[1] + ')');
   root.setProperty('--cover-green', th[0]); root.setProperty('--cover-green-dark', th[1]);
   const meta = document.querySelector('meta[name=theme-color]'); if (meta) meta.setAttribute('content', th[0]);
   const ti = document.getElementById('appTitle'); if (ti) ti.textContent = profile.title || DEFAULT_TITLE;
@@ -3236,21 +3304,47 @@ function pfBlobToDataUrl(file, maxDim, q) {
 }
 function openProfile() {
   closeSettings();
-  pfDraft = { photo: lsGetStr(PHOTO_KEY), bg: lsGetStr(COVERBG_KEY), theme: profile.theme };
+  pfDraft = { photo: lsGetStr(PHOTO_KEY), bg: lsGetStr(COVERBG_KEY), theme: profile.theme, c1: profile.c1, c2: profile.c2, surf: profile.surf, s1: profile.s1, s2: profile.s2 };
   document.getElementById('pfTitle').value = profile.title; document.getElementById('pfName').value = profile.name;
   document.getElementById('pfBiz').value = profile.biz; document.getElementById('pfPhone').value = profile.phone;
   document.getElementById('pfError').className = 'fb-error'; document.getElementById('pfError').textContent = '';
   renderProfileDraft();
   document.getElementById('profileOverlay').classList.add('show');
 }
+function swStyle(pair, top) { return pair[0] === pair[1] ? 'background:' + pair[0] : 'background:linear-gradient(135deg,' + pair[0] + ',' + pair[1] + ')'; }
 function renderProfileDraft() {
   const ph = document.getElementById('pfPhoto'), has = !!pfDraft.photo;
   ph.style.backgroundImage = has ? 'url(' + pfDraft.photo + ')' : 'none'; ph.textContent = has ? '' : '👤';
   document.getElementById('pfPhotoRm').style.display = has ? '' : 'none';
-  document.getElementById('pfBgPrev').style.backgroundImage = pfDraft.bg ? 'url(' + pfDraft.bg + ')' : 'none';
-  document.getElementById('pfThemes').innerHTML = Object.keys(THEMES).map(k => `<button type="button" class="theme-sw ${k === pfDraft.theme ? 'on' : ''}" title="${THEMES[k][2]}" style="background:${THEMES[k][0]}" onclick="pfSetTheme('${k}')"></button>`).join('');
+  const cp = coverPair(pfDraft);   // [main, dark]
+  const cv = document.getElementById('pfCoverPrev');
+  cv.style.background = 'linear-gradient(180deg,' + cp[1] + ',' + cp[0] + ')';
+  const bgp = document.getElementById('pfBgPrev');
+  if (pfDraft.bg) { bgp.style.backgroundImage = 'linear-gradient(rgba(0,0,0,.38),rgba(0,0,0,.5)),url(' + pfDraft.bg + ')'; bgp.textContent = 'PASSBOOK'; }
+  else { bgp.style.backgroundImage = 'none'; bgp.style.background = 'var(--page-cream-2)'; bgp.style.color = 'var(--ink-soft)'; bgp.style.textShadow = 'none'; bgp.textContent = 'ยังไม่มีรูป — กด "เลือกรูปพื้นหลัง" ด้านล่าง'; }
+  if (pfDraft.bg) { bgp.style.color = '#fff'; bgp.style.textShadow = ''; bgp.style.backgroundSize = 'cover'; }
+  document.getElementById('pfThemes').innerHTML = Object.keys(THEMES).map(k => `<button type="button" class="theme-sw ${k === pfDraft.theme ? 'on' : ''}" title="${THEMES[k][2]}" style="background:${THEMES[k][0] === THEMES[k][1] ? THEMES[k][0] : 'linear-gradient(180deg,' + THEMES[k][1] + ',' + THEMES[k][0] + ')'}" onclick="pfSetTheme('${k}')"></button>`).join('')
+    + `<button type="button" class="theme-sw custom ${pfDraft.theme === 'custom' ? 'on' : ''}" title="เลือกสีเอง" onclick="pfCustomCover()"></button>`;
+  document.getElementById('pfC1').value = cp[1]; document.getElementById('pfC2').value = cp[0];
+  const sp = surfPair(pfDraft);
+  document.getElementById('pfSurfPrev').style.background = 'linear-gradient(180deg,' + sp[0] + ',' + sp[1] + ')';
+  document.getElementById('pfSurfs').innerHTML = Object.keys(SURFACES).map(k => `<button type="button" class="theme-sw sf ${k === pfDraft.surf ? 'on' : ''}" title="${SURFACES[k][2]}" style="background:${SURFACES[k][0] === SURFACES[k][1] ? SURFACES[k][0] : 'linear-gradient(135deg,' + SURFACES[k][0] + ',' + SURFACES[k][1] + ')'}" onclick="pfSetSurf('${k}')"></button>`).join('')
+    + `<button type="button" class="theme-sw sf custom ${pfDraft.surf === 'custom' ? 'on' : ''}" title="เลือกสีเอง" onclick="pfCustomSurf()"></button>`;
+  document.getElementById('pfS1').value = sp[0]; document.getElementById('pfS2').value = sp[1];
 }
 function pfSetTheme(k) { pfDraft.theme = k; renderProfileDraft(); }
+function pfSetSurf(k) { pfDraft.surf = k; renderProfileDraft(); }
+function pfCustomCover() { pfDraft.c1 = clampCover(document.getElementById('pfC1').value); pfDraft.c2 = clampCover(document.getElementById('pfC2').value); pfDraft.theme = 'custom'; renderProfileDraftKeepPickers('c'); }
+function pfCoverSingle() { const c = clampCover(document.getElementById('pfC2').value); pfDraft.c1 = c; pfDraft.c2 = c; pfDraft.theme = 'custom'; renderProfileDraft(); }
+function pfCustomSurf() { pfDraft.s1 = clampSurface(document.getElementById('pfS1').value); pfDraft.s2 = clampSurface(document.getElementById('pfS2').value); pfDraft.surf = 'custom'; renderProfileDraftKeepPickers('s'); }
+function pfSurfSingle() { const c = clampSurface(document.getElementById('pfS1').value); pfDraft.s1 = c; pfDraft.s2 = c; pfDraft.surf = 'custom'; renderProfileDraft(); }
+// while a colour picker is being dragged, do not rewrite its own value (that would fight the user's finger)
+function renderProfileDraftKeepPickers(which) {
+  const a = document.getElementById('pfC1').value, b = document.getElementById('pfC2').value, c = document.getElementById('pfS1').value, d = document.getElementById('pfS2').value;
+  renderProfileDraft();
+  if (which === 'c') { document.getElementById('pfC1').value = a; document.getElementById('pfC2').value = b; }
+  else { document.getElementById('pfS1').value = c; document.getElementById('pfS2').value = d; }
+}
 async function pfChoosePhoto(inp) { const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return; try { pfDraft.photo = await pfBlobToDataUrl(f, 256, 0.8); renderProfileDraft(); } catch (e) { showToast('อ่านรูปนี้ไม่ได้ ลองรูปอื่น', 3500); } }
 async function pfChooseBg(inp) { const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return; try { pfDraft.bg = await pfBlobToDataUrl(f, 800, 0.6); renderProfileDraft(); } catch (e) { showToast('อ่านรูปนี้ไม่ได้ ลองรูปอื่น', 3500); } }
 function pfClearPhoto() { pfDraft.photo = ''; renderProfileDraft(); }
@@ -3258,7 +3352,7 @@ function pfClearBg() { pfDraft.bg = ''; renderProfileDraft(); }
 function closeProfile() { document.getElementById('profileOverlay').classList.remove('show'); pfDraft = null; }
 function saveProfile() {
   if (!pfDraft) return;
-  const np = sanitizeProfile({ title: document.getElementById('pfTitle').value, name: document.getElementById('pfName').value, biz: document.getElementById('pfBiz').value, phone: document.getElementById('pfPhone').value, theme: pfDraft.theme });
+  const np = sanitizeProfile({ title: document.getElementById('pfTitle').value, name: document.getElementById('pfName').value, biz: document.getElementById('pfBiz').value, phone: document.getElementById('pfPhone').value, theme: pfDraft.theme, c1: pfDraft.c1, c2: pfDraft.c2, surf: pfDraft.surf, s1: pfDraft.s1, s2: pfDraft.s2 });
   try {
     localStorage.setItem(PROFILE_KEY, JSON.stringify(np));
     if (pfDraft.photo) localStorage.setItem(PHOTO_KEY, pfDraft.photo); else localStorage.removeItem(PHOTO_KEY);
@@ -5672,7 +5766,20 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-function showUpdateBanner(reg) {
+// Must equal BUILD_ID in sw.js for the same release. If the newest sw.js on the server has this same build,
+// this page IS the newest version (the page is always loaded fresh), so there is nothing to update to.
+const PAGE_BUILD = '20261117220000';
+async function pageIsCurrent() {
+  try {
+    const r = await fetch('sw.js?c=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return false;
+    const m = /BUILD_ID\s*=\s*'([^']+)'/.exec(await r.text());
+    return !!m && m[1] === PAGE_BUILD;
+  } catch (e) { return false; }
+}
+async function showUpdateBanner(reg) {
+  if (document.getElementById('updateBanner')) return;
+  if (await pageIsCurrent()) return;
   if (document.getElementById('updateBanner')) return;
   const banner = document.createElement('div');
   banner.id = 'updateBanner';
@@ -5884,15 +5991,52 @@ function toggleHomeCard(id, on) {
   homeCards.sort((a, b) => HOME_CARD_DEFS.findIndex(d => d[0] === a) - HOME_CARD_DEFS.findIndex(d => d[0] === b));
   saveHomeCards(); renderHomeCards();
 }
+// every budget that is set (overall + per category) for day / week / month / year, with how far each one is used
+function budgetOverview() {
+  const t = todayStr(), rows = [], items = [];
+  ['day', 'week', 'month', 'year'].forEach(k => {
+    const b = budgets[k]; if (!b) return; const r = periodRange(k, t);
+    if (b.total) { const used = sumRange(r.start, r.end, 'out'); const it = { k, name: '💰 รวมทุกหมวด', used, total: b.total, pct: used / b.total * 100 }; rows.push(it); items.push(it); }
+    Object.keys(b.cats || {}).forEach(c => { if (!(b.cats[c] > 0)) return; const used = sumRange(r.start, r.end, 'out', c); items.push({ k, name: catIconFor('out', c) + ' ' + c, used, total: b.cats[c], pct: used / b.cats[c] * 100 }); });
+  });
+  return { rows, items, over: items.filter(x => x.pct >= 100).length, warn: items.filter(x => x.pct >= 80 && x.pct < 100).length };
+}
+function budgetMoreBar(all) {
+  if (!all.items.length) return '';
+  const st = all.over ? `<b>⚠️ เกินงบ ${all.over} รายการ</b>` : (all.warn ? `ใกล้เต็ม ${all.warn} รายการ` : 'ยังไม่เกินงบ');
+  return `<div class="hc-more" onclick="openBudgetAll()"><span>ดูงบทั้งหมด (${all.items.length} รายการ) · ${st}</span><span>▾</span></div>`;
+}
+function openBudgetAll() {
+  const all = budgetOverview(); const body = document.getElementById('baBody');
+  if (!all.items.length) { body.innerHTML = '<div class="hc-mut">ยังไม่ได้ตั้งงบ</div>'; }
+  else {
+    let h = `<div class="cd-total" style="margin-bottom:2px;">${all.over ? '⚠️ เกินงบ ' + all.over + ' รายการ' : '✅ ยังไม่มีรายการไหนเกินงบ'}${all.warn ? ' · ใกล้เต็ม ' + all.warn : ''}</div>`;
+    ['day', 'week', 'month', 'year'].forEach(k => {
+      const its = all.items.filter(x => x.k === k); if (!its.length) return;
+      const ov = its.filter(x => x.pct >= 100).length;
+      h += `<div class="ba-sec"><h4><span>งบ${KIND_NAMES[k] === 'วัน' ? 'รายวัน' : KIND_NAMES[k] === 'สัปดาห์' ? 'รายสัปดาห์' : KIND_NAMES[k] === 'เดือน' ? 'รายเดือน' : 'รายปี'} (${KIND_NOW[k]})</span>${ov ? '<em>เกิน ' + ov + '</em>' : ''}</h4>`;
+      its.slice().sort((x, y) => y.pct - x.pct).forEach(x => {
+        const stt = x.pct >= 100 ? '<span class="ba-st over">เกินงบ</span>' : x.pct >= 80 ? '<span class="ba-st warn">ใกล้เต็ม</span>' : '<span class="ba-st ok">ปกติ</span>';
+        h += `<div class="ba-row"><div class="top"><span>${x.name}${stt}</span><span class="${x.pct >= 100 ? 'bg-over' : ''}">${fmt(x.used)} / ${fmt(x.total)}</span></div><div class="bg-bar"><i class="${budgetClass(x.pct)}" style="width:${Math.min(100, x.pct)}%"></i></div></div>`;
+      });
+      h += '</div>';
+    });
+    body.innerHTML = h;
+  }
+  document.getElementById('budgetAllOverlay').classList.add('show');
+}
+function closeBudgetAll() { document.getElementById('budgetAllOverlay').classList.remove('show'); }
 function homeCardHtml(id) {
   const t = todayStr();
   if (id === 'budget') {
-    const rows = [];
-    ['day', 'week', 'month', 'year'].forEach(k => { const b = budgets[k]; if (!b || !b.total) return; const r = periodRange(k, t); const used = sumRange(r.start, r.end, 'out'); rows.push({ k, used, total: b.total, pct: used / b.total * 100 }); });
+    const all = budgetOverview();
     let h = '<div class="hc-t"><span>🎯 งบค่าใช้จ่าย</span><a onclick="openBudget()">ตั้งงบ ›</a></div>';
-    if (!rows.length) return h + '<div class="hc-mut">ยังไม่ได้ตั้งงบรวม กด "ตั้งงบ" เพื่อเริ่ม</div>';
-    rows.slice(0, 2).forEach(x => { h += `<div class="hc-row"><span>${KIND_NOW[x.k]}</span><span>${fmt(x.used)} / ${fmt(x.total)}</span></div><div class="hc-bar"><i class="${budgetClass(x.pct)}" style="width:${Math.min(100, x.pct)}%"></i></div>`; });
-    return h;
+    if (!all.rows.length) return h + '<div class="hc-mut">ยังไม่ได้ตั้งงบรวม กด "ตั้งงบ" เพื่อเริ่ม</div>' + (all.items.length ? budgetMoreBar(all) : '');
+    const pri = ['day', 'month', 'year', 'week'];
+    all.rows.slice().sort((x, y) => pri.indexOf(x.k) - pri.indexOf(y.k)).slice(0, 3).forEach(x => {
+      h += `<div class="hc-row"><span>${KIND_NOW[x.k]}</span><span class="${x.pct >= 100 ? 'ov' : ''}">${fmt(x.used)} / ${fmt(x.total)}</span></div><div class="hc-bar"><i class="${budgetClass(x.pct)}" style="width:${Math.min(100, x.pct)}%"></i></div>`;
+    });
+    return h + budgetMoreBar(all);
   }
   if (id === 'savings') {
     let h = '<div class="hc-t"><span>🐷 กระปุกออม</span><a onclick="openSavings()">จัดการ ›</a></div>';
