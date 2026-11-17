@@ -3822,7 +3822,7 @@ function cmpPhrase(type, cur, prev, partial) {
   const when = partial ? 'ช่วงเดียวกันของเดือนก่อน' : 'เดือนก่อน';
   if (Math.abs(diff) < 0.005) return { html: word + 'เท่ากับ' + when, cls: '' };
   const more = diff > 0;
-  const good = more;
+  const good = type === 'out' ? !more : more;
   const pct = Math.round(Math.abs(diff) / prev * 100);
   return { html: word + (more ? 'มากกว่า' : 'น้อยกว่า') + when + ' <span class="' + (good ? 'down-good' : 'up-bad') + '">' + (more ? '▲ ' : '▼ ') + fmt(Math.abs(diff)) + ' บาท (' + (more ? '+' : '−') + pct + '%)</span>' };
 }
@@ -3838,14 +3838,14 @@ function renderCompareLine() {
 function openCompare() {
   const d = compareData();
   const row = (label, c, p, type) => {
-    const diff = c - p, good = diff >= 0;
+    const diff = c - p, good = type === 'out' ? diff <= 0 : diff >= 0;
     const val = Math.abs(diff) < 0.005 ? '<b>—</b>' : '<b class="' + (good ? 'cmp-good' : 'cmp-bad') + '">' + (diff > 0 ? '+' : '−') + fmt(Math.abs(diff)) + '</b>';
     return '<div class="cmp-row"><span class="nm">' + label + '<small>' + fmt(p) + ' → ' + fmt(c) + '</small></span><span class="vl">' + val + '</span></div>';
   };
   const catBlock = (title, list, type) => {
     if (!list.length) return '';
     return '<div class="cmp-h">' + title + '</div>' + list.map(x => {
-      const good = x.diff > 0;
+      const good = type === 'out' ? x.diff < 0 : x.diff > 0;
       return '<div class="cmp-row"><span class="nm">' + escapeHtml(x.cat) + '</span><span class="vl"><b class="' + (good ? 'cmp-good' : 'cmp-bad') + '">' + (x.diff > 0 ? '+' : '−') + fmt(Math.abs(x.diff)) + '</b><small>' + fmt(x.prev) + ' → ' + fmt(x.cur) + '</small></span></div>';
     }).join('');
   };
