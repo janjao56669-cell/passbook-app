@@ -80,6 +80,12 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .prof-photo { width: 84px; height: 84px; border-radius: 50%; border: 2px solid var(--line); background: var(--page-cream-2) center / cover no-repeat; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 8px; }
   .theme-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 10px; }
   .theme-sw { width: 44px; height: 44px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; padding: 0; }
+  .fold-t { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; user-select: none; -webkit-tap-highlight-color: transparent; }
+  .fold-t .tri { display: inline-block; width: 26px; height: 26px; line-height: 26px; text-align: center; font-size: 13px; border-radius: 8px; background: rgba(184,146,47,.16); color: var(--brass); transition: transform .18s; }
+  .fold-t.closed .tri { transform: rotate(-90deg); }
+  .fold-sum { display: none; font-size: 13px; font-weight: 600; color: var(--ink); margin-left: 4px; }
+  .fold-t.closed .fold-sum { display: inline; }
+  .chip-row.folded { display: none; }
   .theme-sw.custom { background: conic-gradient(#d33, #e90, #cc3, #3a3, #39c, #63c, #d33) !important; }
   .color-pair { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 4px 0 10px; }
   .color-pair label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--ink-soft); }
@@ -1068,7 +1074,6 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     <div class="sheet-actions" style="flex-direction:column;gap:10px;">
       <button class="btn-save in" style="width:100%;" onclick="document.getElementById('exitOverlay').classList.remove('show');openAddMenu()">➕ ยังไม่ครบ จดเพิ่ม</button>
       <button class="btn-cancel" style="width:100%;" onclick="leaveApp()">✔ ครบแล้ว ออกจากแอป</button>
-      <button class="btn-cancel" style="width:100%;background:none;" onclick="document.getElementById('exitOverlay').classList.remove('show')">อยู่ต่อ</button>
     </div>
   </div>
 </div>
@@ -1094,12 +1099,12 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     <input type="text" inputmode="decimal" class="amount-input" id="amountInput" placeholder="0.00" autocomplete="off">
 
     <div class="field-label">
-      <span>หมวดหมู่</span>
+      <span class="fold-t" onclick="toggleEntryFold('cat')"><b class="tri" id="triCat">▼</b> หมวดหมู่ <small class="fold-sum" id="sumCat"></small></span>
       <span class="manage-cat-link" onclick="openCategoryManage()">แก้ไข/เพิ่มหมวดหมู่</span>
     </div>
     <div class="chip-row" id="categoryChips"></div>
 
-    <div class="field-label"><span>บัญชีที่ใช้ (ไม่ใส่ก็ได้)</span><span class="manage-cat-link" onclick="openAcctManage()">จัดการบัญชี</span></div>
+    <div class="field-label"><span class="fold-t" onclick="toggleEntryFold('acct')"><b class="tri" id="triAcct">▼</b> บัญชีที่ใช้ (ไม่ใส่ก็ได้) <small class="fold-sum" id="sumAcct"></small></span><span class="manage-cat-link" onclick="openAcctManage()">จัดการบัญชี</span></div>
     <div class="chip-row" id="acctChips"></div>
 
     <div class="field-label"><span>วันที่</span><span class="date-hint" id="dateHint"></span></div>
@@ -1829,6 +1834,24 @@ function showToast(msg, duration) {
   setTimeout(() => t.remove(), duration || 2600);
 }
 
+// fold / unfold the category and account lists in the entry sheet (the choice is remembered)
+let entryFold = { cat: false, acct: false };
+try { const f = JSON.parse(localStorage.getItem('entryFold') || '{}'); entryFold = { cat: f.cat === true, acct: f.acct === true }; } catch (e) {}
+function applyEntryFolds() {
+  [['cat', 'categoryChips', 'triCat', 'sumCat'], ['acct', 'acctChips', 'triAcct', 'sumAcct']].forEach(([k, box, tri, sum]) => {
+    const b = document.getElementById(box), t = document.getElementById(tri), m = document.getElementById(sum);
+    if (!b || !t) return;
+    b.classList.toggle('folded', entryFold[k]);
+    t.parentElement.classList.toggle('closed', entryFold[k]);
+    const sel = b.querySelector('.chip.selected');
+    m.textContent = entryFold[k] ? (sel ? '· ' + sel.textContent.trim() : '· ยังไม่ได้เลือก') : '';
+  });
+}
+function toggleEntryFold(k) {
+  entryFold[k] = !entryFold[k];
+  try { localStorage.setItem('entryFold', JSON.stringify(entryFold)); } catch (e) {}
+  applyEntryFolds();
+}
 function renderCategoryChips(mode, preselect) {
   const cats = categories[mode];
   const chipBox = document.getElementById('categoryChips');
@@ -1842,6 +1865,7 @@ function renderCategoryChips(mode, preselect) {
       selectedCategory = c.name;
       [...chipBox.children].forEach(ch => ch.classList.remove('selected'));
       chip.classList.add('selected');
+      applyEntryFolds();
     };
     chipBox.appendChild(chip);
   });
@@ -1884,6 +1908,7 @@ function openSheet(mode, prefill, isEdit) {
 
   renderCategoryChips(mode, prefill ? prefill.category : null);
   renderAcctChips(prefill && prefill.acct ? prefill.acct : (editingTransactionId ? '' : lastAcct()));
+  applyEntryFolds();
 
   document.getElementById('timeInput').value = prefill ? (prefill.time || '') : nowHM();
   document.getElementById('paidForChk').checked = false;
@@ -2957,6 +2982,7 @@ function renderAcctChips(preselect) {
       selectedAcct = (selectedAcct === n) ? '' : n;
       [...box.children].forEach(c => c.classList.remove('selected'));
       if (selectedAcct) chip.classList.add('selected');
+      applyEntryFolds();
     };
     box.appendChild(chip);
   });
@@ -5211,7 +5237,7 @@ function onClearInput() {
 async function doClearAll() {
   if (document.getElementById('clearInput').value.replace(/\s+/g, '') !== 'ลบทั้งหมด') return;
   try { await new Promise(r => { try { const q = indexedDB.deleteDatabase(SLIP_DB); q.onsuccess = q.onerror = q.onblocked = () => r(); setTimeout(r, 1500); } catch (e) { r(); } }); } catch (e) {}
-  [TX_KEY, RECV_KEY, CAT_KEY, CAT_TRASH_KEY, CUSTOM_EMOJI_KEY, LAST_BACKUP_KEY, FB_NAME_KEY, FB_DRAFT_KEY, RECUR_KEY, SNOOZE_KEY, BANK_KEY, BANK_SEEN_KEY, BUDGET_KEY, SAVE_KEY, STYLE_KEY, 'budgetOpen', PROFILE_KEY, PHOTO_KEY, COVERBG_KEY, ACCT_KEY, ACCT_LAST_KEY, CATIMG_KEY, HOME_CARDS_KEY].forEach(k => {
+  [TX_KEY, RECV_KEY, CAT_KEY, CAT_TRASH_KEY, CUSTOM_EMOJI_KEY, LAST_BACKUP_KEY, FB_NAME_KEY, FB_DRAFT_KEY, RECUR_KEY, SNOOZE_KEY, BANK_KEY, BANK_SEEN_KEY, BUDGET_KEY, SAVE_KEY, STYLE_KEY, 'budgetOpen', 'entryFold', PROFILE_KEY, PHOTO_KEY, COVERBG_KEY, ACCT_KEY, ACCT_LAST_KEY, CATIMG_KEY, HOME_CARDS_KEY].forEach(k => {
     try { localStorage.removeItem(k); } catch (e) {}
   });
   window.location.reload();
@@ -5886,7 +5912,7 @@ checkNewMonthBanner();
     now.forEach(o => { if (!stack.includes(o)) stack.push(o); });
   }
   function settle() {
-    if (busy) return;
+    if (busy || leaving) return;
     sync();
     try {
       if (stack.length && !holds) { history.pushState({ pbOv: 1 }, ''); holds = true; }
@@ -5902,9 +5928,8 @@ checkNewMonthBanner();
     if (o.classList.contains('show')) o.classList.remove('show');   // make sure it is really closed
     return true;
   }
-  let leaving = false;
   window.addEventListener('popstate', () => {
-    if (leaving) return;
+    if (leaving) { unwind(); return; }
     if (busy) { busy = false; settle(); return; }
     if (holds) {
       holds = false;
@@ -5919,11 +5944,28 @@ checkNewMonthBanner();
     try { history.pushState({ pbGuard: 1 }, ''); } catch (e) {}
     document.getElementById('exitOverlay').classList.add('show');
   });
+  // "Done, leave": step back through every history entry the app added until the first one, then ask the phone to close
+  // the window. A web app is not always allowed to close itself, so if it is still here we say so, and the very next
+  // Back press leaves natively because no guard entry is left on top.
+  function atBase() { return !!(history.state && history.state.pbBase); }
+  let unwindTimer = null;
+  function finishLeave() {
+    clearTimeout(unwindTimer);
+    document.getElementById('exitOverlay').classList.remove('show');
+    stack.length = 0; holds = false; busy = false;
+    try { window.close(); } catch (e) {}
+    setTimeout(() => {
+      leaving = false;
+      if (!document.hidden) showToast('กดปุ่มย้อนกลับอีกครั้ง หรือปัดแอปทิ้ง เพื่อออกจากแอป', 4500);
+    }, 700);
+  }
+  function unwind() { if (atBase()) finishLeave(); else try { history.back(); } catch (e) { finishLeave(); } }
   window.leaveApp = function () {
     leaving = true;
-    try { history.go(holds ? -3 : -2); } catch (e) {}
-    setTimeout(() => { leaving = false; document.getElementById('exitOverlay').classList.remove('show'); }, 800);
+    unwindTimer = setTimeout(finishLeave, 1500);   // safety: never get stuck
+    unwind();
   };
+  let leaving = false;
   try { history.replaceState({ pbBase: 1 }, ''); history.pushState({ pbGuard: 1 }, ''); } catch (e) {}
   new MutationObserver(() => setTimeout(settle, 0)).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
 })();
