@@ -473,11 +473,6 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .overlay { position: fixed; inset: 0; background: rgba(15,43,29,0.55); display: none; align-items: flex-end; justify-content: center; z-index: 50; }
   .overlay.show { display: flex; }
   #cropOverlay { z-index: 75; }
-  #heicBusy { position: fixed; inset: 0; z-index: 90; background: rgba(15,43,29,0.6); display: none; align-items: center; justify-content: center; padding: 24px; }
-  #heicBusy.show { display: flex; }
-  #heicBusy .box { background: var(--page-cream); border-radius: 18px; padding: 22px 20px; max-width: 320px; text-align: center; font-size: 15px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
-  #heicBusy .spin { width: 38px; height: 38px; margin: 0 auto 12px; border: 4px solid var(--line); border-top-color: var(--cover-green); border-radius: 50%; animation: heicSpin 0.9s linear infinite; }
-  @keyframes heicSpin { to { transform: rotate(360deg); } }
   .crop-stage { position: relative; margin: 10px auto 12px; overflow: hidden; background: #fff repeating-conic-gradient(#e4e0d3 0 25%, #f6f2e6 0 50%) 0 0 / 16px 16px; border: 2px solid var(--brass, #C9A24A); border-radius: 14px; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
   .crop-stage.round { border-radius: 50%; }
   .crop-stage img { position: absolute; left: 0; top: 0; transform-origin: 0 0; max-width: none !important; pointer-events: none; -webkit-user-drag: none; }
@@ -955,7 +950,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
       <button class="btn-big btn-expense" onclick="openSheet('out')"><span class="icon">−</span> รายจ่าย</button>
       <label class="btn-big btn-scan3" id="scanBtn" for="slipInput">📷 สแกน</label>
     </div>
-    <input type="file" id="slipInput" accept="image/*,.heic,.heif" multiple style="display:none">
+    <input type="file" id="slipInput" accept="image/*" multiple style="display:none">
 
   <div id="budgetCard"></div>
 
@@ -1092,8 +1087,6 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   </div>
 </div>
 
-<div id="heicBusy"><div class="box"><div class="spin"></div><b>แปลงรูป HEIC</b><br><span id="heicMsg" style="font-size:14px">กำลังโหลดตัวแปลง…</span><br><span style="font-size:12.5px;color:var(--ink-soft)">ปกติไม่เกินครึ่งนาที</span><br><button type="button" class="btn-cancel" style="margin-top:12px;width:100%;" onclick="if(heicJob)heicJob.cancel()">ยกเลิก</button></div></div>
-
 <div class="overlay" id="cropOverlay">
   <div class="sheet">
     <div class="sheet-title" style="text-align:center;" id="cropTitle">เลือกพื้นที่ของรูป</div>
@@ -1167,8 +1160,8 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     <div class="field-label"><span>📎 แนบรูปสลิป / ใบเสร็จ (ไม่บังคับ)</span></div>
     <div id="slipBox"></div>
     <div class="set-note" style="margin-top:6px;">รูปเก็บไว้ในเครื่องนี้เท่านั้น ไม่รวมอยู่ในไฟล์สำรองข้อมูล</div>
-    <input type="file" id="attachCam" accept="image/*,.heic,.heif" capture="environment" style="display:none" onchange="onAttachChosen(this)">
-    <input type="file" id="attachPick" accept="image/*,.heic,.heif" multiple style="display:none" onchange="onAttachChosen(this)">
+    <input type="file" id="attachCam" accept="image/*" capture="environment" style="display:none" onchange="onAttachChosen(this)">
+    <input type="file" id="attachPick" accept="image/*" multiple style="display:none" onchange="onAttachChosen(this)">
 
     <div class="sheet-actions">
       <button class="btn-cancel" onclick="cancelSheet()">ยกเลิก</button>
@@ -1187,7 +1180,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
       <button type="button" class="attach-btn" onclick="document.getElementById('pfPhotoPick').click()">🖼️ เลือกรูปโปรไฟล์</button>
       <button type="button" class="attach-btn" id="pfPhotoRm" onclick="pfClearPhoto()">เอารูปออก</button>
     </div>
-    <input type="file" id="pfPhotoPick" accept="image/*,.heic,.heif" style="display:none" onchange="pfChoosePhoto(this)">
+    <input type="file" id="pfPhotoPick" accept="image/*" style="display:none" onchange="pfChoosePhoto(this)">
     <div class="field-label"><span>ชื่อบัญชี (แสดงที่หัวแอป)</span></div>
     <input type="text" class="text-input" id="pfTitle" maxlength="30" placeholder="บัญชีต้อการช่าง" autocomplete="off">
     <div class="field-label"><span>ชื่อ</span></div>
@@ -1212,7 +1205,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
       <button type="button" class="attach-btn" onclick="document.getElementById('pfBgPick').click()">🖼️ เลือกรูปพื้นหลัง</button>
       <button type="button" class="attach-btn" onclick="pfClearBg()">เอารูปออก</button>
     </div>
-    <input type="file" id="pfBgPick" accept="image/*,.heic,.heif" style="display:none" onchange="pfChooseBg(this)">
+    <input type="file" id="pfBgPick" accept="image/*" style="display:none" onchange="pfChooseBg(this)">
     <div class="field-label"><span>🌈 สีพื้นหลังแอป (พื้นที่ด้านหลังการ์ดและรายการ)</span></div>
     <div class="look-prev sf" id="pfSurfPrev">ตัวอย่างพื้นหลังแอป</div>
     <div class="theme-row" id="pfSurfs"></div>
@@ -1262,7 +1255,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     <div class="emoji-reset-row">
       <button type="button" class="emoji-reset-btn" onclick="openCatImgWarn()">🖼️ ใช้รูปภาพ / GIF แทนอีโมจิ</button>
     </div>
-    <input type="file" id="catImgInput" accept="image/*,.heic,.heif" style="display:none" onchange="onCatImageChosen(this)">
+    <input type="file" id="catImgInput" accept="image/*" style="display:none" onchange="onCatImageChosen(this)">
     <div class="emoji-section-title"><span>⭐ อีโมจิของฉัน</span><button type="button" class="emoji-mini-btn" id="emojiDelToggle" onclick="toggleEmojiDeleteMode()" style="display:none;">🗑️ ลบ</button></div>
     <div class="emoji-add-row" id="emojiAddRow">
       <input type="text" id="emojiAddInput" placeholder="พิมพ์/วางอีโมจิ" autocomplete="off">
@@ -3396,17 +3389,13 @@ function applyProfile() {
   setTimeout(() => { if (typeof setBand === "function") setBand(); }, 0);
 }
 let pfDraft = null;   // { photo, bg, theme }
+// one place for "this picture failed": say why
+function imgFail(f, e, retry) { showToast(imgErrMsg(f, e), 9000); }
 // tell the person WHY a picture could not be used, and what to do about it
 function imgErrMsg(f, e) {
-  if (e && e.message === 'HEIC_CANCELLED') return 'ยกเลิกการแปลงรูปแล้ว';
-  const mb = f && f.size ? (f.size / 1048576).toFixed(1) + 'MB' : '?';
-  const code = ' [' + IMG_BUILD + ' ' + ((e && e.message) || '?').slice(0, 40) + ' ' + ((e && e.diag) || '') + ' ' + ((f && f.type) || '-') + ' ' + mb + ']';
-  if (e && e.message === 'HEIC_TIMEOUT') return 'แปลงรูปนานเกินไป เครื่องอาจไม่ไหว ลองตั้งกล้องเป็น JPG หรือจับหน้าจอรูปนั้นแทน' + code;
-  if (e && e.message === 'HEIC_FAIL:TOO_BIG') return 'รูป HEIC ใหญ่เกินไปสำหรับเครื่องนี้ ลองบันทึกเป็น JPG ก่อน' + code;
-  if (e && e.message === 'HEIC_LIB_OFFLINE') return 'แปลงรูป HEIC ต้องต่ออินเทอร์เน็ตครั้งแรก ลองใหม่เมื่อมีเน็ต หรือบันทึกรูปเป็น JPG ก่อน' + code;
-  if (e && e.heic) return 'แปลงรูป HEIC นี้ไม่สำเร็จ ลองบันทึกเป็น JPG หรือจับหน้าจอรูปนั้นแทน' + code;
-  if (f && f.type && !/^image\//.test(f.type)) return 'ไฟล์นี้ไม่ใช่รูปภาพ เลือกไฟล์ JPG, PNG, WebP หรือ GIF' + code;
-  return 'อ่านรูปนี้ไม่ได้ ลองรูปอื่น หรือบันทึกรูปเป็น JPG/PNG ก่อน' + code;
+  if (e && e.rejected) return e.message;   // already a plain-language reason
+  const mb = f && f.size ? (f.size / 1048576).toFixed(1) + ' MB' : '';
+  return 'ใช้ภาพนี้ไม่ได้ เครื่องอ่านไฟล์รูปนี้ไม่ออก (ไฟล์อาจเสียหรือใหญ่เกินไป ' + mb + ') ลองใช้รูป JPG หรือ PNG อื่น';
 }
 /* ---- picture cropper: every place that takes a picture lets the person choose which area is used ---- */
 let cropJob = null;
@@ -3512,8 +3501,10 @@ function renderProfileDraftKeepPickers(which) {
   if (which === 'c') { document.getElementById('pfC1').value = a; document.getElementById('pfC2').value = b; }
   else { document.getElementById('pfS1').value = c; document.getElementById('pfS2').value = d; }
 }
-async function pfChoosePhoto(inp) { const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return; try { const b = await cropImage(f, { aspect: 1, outW: 256, q: 0.8, round: true, title: 'เลือกพื้นที่ของรูปโปรไฟล์' }); if (!b) return; pfDraft.photo = await fileToDataUrl(b); renderProfileDraft(); } catch (e) { showToast(imgErrMsg(f, e), 9000); } }
-async function pfChooseBg(inp) { const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return; try { const b = await cropImage(f, { aspect: 13 / 4, outW: 800, q: 0.7, title: 'เลือกพื้นที่ของภาพปก' }); if (!b) return; pfDraft.bg = await fileToDataUrl(b); renderProfileDraft(); } catch (e) { showToast(imgErrMsg(f, e), 9000); } }
+async function pfChoosePhoto(inp) { const f = inp.files && inp.files[0]; inp.value = ''; if (f) return pfPhotoFromFile(f); }
+async function pfPhotoFromFile(f) { try { const b = await cropImage(f, { aspect: 1, outW: 256, q: 0.8, round: true, title: 'เลือกพื้นที่ของรูปโปรไฟล์' }); if (!b) return; pfDraft.photo = await fileToDataUrl(b); renderProfileDraft(); } catch (e) { imgFail(f, e, pfPhotoFromFile); } }
+async function pfChooseBg(inp) { const f = inp.files && inp.files[0]; inp.value = ''; if (f) return pfBgFromFile(f); }
+async function pfBgFromFile(f) { try { const b = await cropImage(f, { aspect: 13 / 4, outW: 800, q: 0.7, title: 'เลือกพื้นที่ของภาพปก' }); if (!b) return; pfDraft.bg = await fileToDataUrl(b); renderProfileDraft(); } catch (e) { imgFail(f, e, pfBgFromFile); } }
 function pfClearPhoto() { pfDraft.photo = ''; renderProfileDraft(); }
 function pfClearBg() { pfDraft.bg = ''; renderProfileDraft(); }
 function closeProfile() { document.getElementById('profileOverlay').classList.remove('show'); pfDraft = null; }
@@ -4179,80 +4170,52 @@ function resizeToBlobRaw(file, maxDim, quality, keepAlpha) {
     img.src = url;
   });
 }
-// ---- HEIC / HEIF (iPhone & some Android cameras): browsers that cannot open them natively get a converter, loaded only when needed ----
-const HEIC_LIB_URL = window.HEIC_LIB_URL || 'https://cdn.jsdelivr.net/npm/libheif-js@1.23.5/libheif-wasm/libheif-bundle.js';
-const IMG_BUILD = 'i4';
-async function heicBrand(f) {   // '' = not a HEIF file; otherwise the brand (or 'type:<first bytes>' when only the file type says so)
-  let t = '', hex = '';
-  try {
-    const h = new Uint8Array(await f.slice(0, 16).arrayBuffer());
-    t = String.fromCharCode(...h.slice(4, 12)); hex = [...h.slice(0, 12)].map(x => x.toString(16).padStart(2, '0')).join('');
-  } catch (e) {}
-  const m = /^ftyp(.{4})/.exec(t);
-  if (m) return m[1].replace(/[^\x20-\x7e]/g, '?');
-  if (/heic|heif|avif/i.test((f && f.type) || '')) return 'type:' + hex;   // phone says it is HEIF even though the signature looks unusual: let the converter try
-  return '';
-}
-// The converter (libheif, ~2 MB, loaded from the internet the first time) runs in a background worker so the page never freezes.
-let heicJob = null;
-function heicConvert(file) {
-  return new Promise(async (resolve, reject) => {
-    let w = null, timer = null, done = false;
-    const end = (fn, v) => { if (done) return; done = true; clearTimeout(timer); heicJob = null; try { w && w.terminate(); } catch (_) {} fn(v); };
-    heicJob = { cancel: () => end(reject, new Error('HEIC_CANCELLED')) };
-    try {
-      const buf = await file.arrayBuffer();
-      const src = 'importScripts(' + JSON.stringify(HEIC_LIB_URL) + ');' +
-        'self.onmessage=async(e)=>{try{let L=self.libheif;if(typeof L==="function")L=L();if(L&&typeof L.then==="function")L=await L;' +
-        'const d=new L.HeifDecoder();const im=d.decode(new Uint8Array(e.data));if(!im||!im.length)throw new Error("NO_IMAGE");' +
-        'const a=im[0],W=a.get_width(),H=a.get_height();if(W*H>64e6)throw new Error("TOO_BIG");' +
-        'const id={data:new Uint8ClampedArray(W*H*4),width:W,height:H};' +
-        'await new Promise((res,rej)=>a.display(id,r=>r?res():rej(new Error("DISPLAY_FAILED"))));' +
-        'const M=1600,sc=Math.min(1,M/Math.max(W,H));let ow=W,oh=H,od=id.data;' +
-        'if(sc<1){ow=Math.max(1,Math.round(W*sc));oh=Math.max(1,Math.round(H*sc));od=new Uint8ClampedArray(ow*oh*4);const fx=W/ow,fy=H/oh,kx=Math.max(1,Math.min(4,Math.floor(fx))),ky=Math.max(1,Math.min(4,Math.floor(fy)));' +
-        'for(let y=0;y<oh;y++){for(let x=0;x<ow;x++){let r=0,g=0,b=0,al=0,n=0;for(let j=0;j<ky;j++){const sy=Math.min(H-1,Math.floor(y*fy+j*fy/ky));for(let i=0;i<kx;i++){const sx=Math.min(W-1,Math.floor(x*fx+i*fx/kx));const p=(sy*W+sx)*4;r+=id.data[p];g+=id.data[p+1];b+=id.data[p+2];al+=id.data[p+3];n++;}}const q=(y*ow+x)*4;od[q]=r/n;od[q+1]=g/n;od[q+2]=b/n;od[q+3]=al/n;}}}' +
-        'postMessage({ok:1,w:ow,h:oh,buf:od.buffer},[od.buffer]);}catch(x){postMessage({ok:0,err:String(x&&x.message||x)})}};' +
-        'postMessage({ready:1});';
-      w = new Worker(URL.createObjectURL(new Blob([src], { type: 'application/javascript' })));
-      timer = setTimeout(() => end(reject, new Error('HEIC_TIMEOUT')), 90000);
-      w.onerror = () => end(reject, new Error('HEIC_LIB_OFFLINE'));
-      w.onmessage = (ev) => {
-        const m = ev.data || {};
-        if (m.ready) { const bz = document.getElementById('heicMsg'); if (bz) bz.textContent = 'กำลังแปลงรูป…'; w.postMessage(buf, [buf]); return; }
-        if (!m.ok) { end(reject, new Error('HEIC_FAIL:' + (m.err || ''))); return; }
-        const c = document.createElement('canvas'); c.width = m.w; c.height = m.h;
-        c.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(m.buf), m.w, m.h), 0, 0);
-        c.toBlob(b => b ? end(resolve, b) : end(reject, new Error('IMAGE_ENCODE_FAILED')), 'image/jpeg', 0.9);
-      };
-    } catch (e) { end(reject, e); }
-  });
+const IMG_BUILD = 'i6';
+// Only JPG, PNG, WebP and GIF pictures are accepted. Anything else is refused with a plain reason (judged by the file's own first bytes, not its name).
+function imgReject(msg) { const er = new Error(msg); er.rejected = true; return er; }
+async function imgGate(file) {
+  const type = (file && file.type) || '';
+  if (file && file.size > 40 * 1024 * 1024) throw imgReject('ใช้ภาพนี้ไม่ได้ ไฟล์ใหญ่เกินไป (' + (file.size / 1048576).toFixed(0) + ' MB) เครื่องอ่านไม่ไหว ลองรูปที่เล็กกว่า 40 MB');
+  let h = null;
+  try { h = new Uint8Array(await file.slice(0, 16).arrayBuffer()); } catch (e) {}
+  if (!h) {   // the phone will not hand the file over
+    if (/^image\/(jpeg|png|webp|gif)$/.test(type)) return;
+    throw imgReject('ใช้ภาพนี้ไม่ได้ เครื่องไม่ยอมให้แอปอ่านไฟล์นี้' + (/heic|heif/i.test(type) ? ' (เป็นรูป HEIC/HEIF ที่บางเครื่องไม่ให้เปิด)' : '') + ' ลองถ่ายรูปใหม่ หรือแคปหน้าจอรูปนั้นแล้วเลือกรูปที่แคป');
+  }
+  const a = (i, n) => String.fromCharCode(...h.slice(i, i + n));
+  if (h[0] === 0xFF && h[1] === 0xD8 && h[2] === 0xFF) return;                         // JPEG
+  if (h[0] === 0x89 && a(1, 3) === 'PNG') return;                                        // PNG
+  if (a(0, 4) === 'GIF8') return;                                                        // GIF
+  if (a(0, 4) === 'RIFF' && a(8, 4) === 'WEBP') return;                                  // WebP
+  const how = ' ใช้ได้เฉพาะรูป JPG หรือ PNG (ถ่ายใหม่ด้วยกล้อง หรือแคปหน้าจอรูปนั้นแล้วเลือกรูปที่แคป)';
+  if (a(4, 4) === 'ftyp') {
+    const br = a(8, 4);
+    if (/^(heic|heix|hevc|hevx|heim|heis|mif1|msf1)$/.test(br)) throw imgReject('ใช้ภาพนี้ไม่ได้ เพราะเป็นรูปแบบ HEIC/HEIF ที่เบราว์เซอร์ในมือถือหลายรุ่นเปิดไม่ได้.' + how);
+    if (/^avi[fs]$/.test(br)) throw imgReject('ใช้ภาพนี้ไม่ได้ เพราะเป็นรูปแบบ AVIF ที่ยังไม่รองรับ.' + how);
+    throw imgReject('ใช้ไฟล์นี้ไม่ได้ เพราะเป็นไฟล์วิดีโอ ไม่ใช่รูปภาพ.' + how);
+  }
+  if (a(0, 2) === 'BM') throw imgReject('ใช้ภาพนี้ไม่ได้ เพราะเป็นรูปแบบ BMP ที่ไม่รองรับ.' + how);
+  if (a(0, 2) === 'II' || a(0, 2) === 'MM') throw imgReject('ใช้ภาพนี้ไม่ได้ เพราะเป็นรูปแบบ TIFF ที่ไม่รองรับ.' + how);
+  if (a(0, 4) === '%PDF') throw imgReject('ใช้ไฟล์นี้ไม่ได้ เพราะเป็นไฟล์ PDF ไม่ใช่รูปภาพ.' + how);
+  if (/^\s*(<\?xml|<svg)/i.test(a(0, 16))) throw imgReject('ใช้ไฟล์นี้ไม่ได้ เพราะเป็นไฟล์ภาพเวกเตอร์ (SVG) ที่ไม่รองรับ.' + how);
+  throw imgReject('ใช้ไฟล์นี้ไม่ได้ เพราะไม่ใช่ไฟล์รูปภาพ JPG/PNG (ชนิดไฟล์ที่เครื่องแจ้ง: ' + (type || 'ไม่ทราบ') + ').' + how);
 }
 async function resizeToBlob(file, maxDim, quality, keepAlpha) {
-  const diag = [];
-  try { return await resizeToBlobRaw(file, maxDim, quality, keepAlpha); } catch (e1) { diag.push('img'); }
-  try {   // second route: decode through ImageBitmap (some phones manage this when <img> fails)
+  await imgGate(file);
+  try { return await resizeToBlobRaw(file, maxDim, quality, keepAlpha); } catch (e1) {}
+  try {   // second route: ImageBitmap
     if (window.createImageBitmap) {
       const bm = await createImageBitmap(file);
       const ratio = Math.min(1, maxDim / Math.max(bm.width, bm.height));
-      const w = Math.max(1, Math.round(bm.width * ratio)), h = Math.max(1, Math.round(bm.height * ratio));
-      const c = document.createElement('canvas'); c.width = w; c.height = h; const cx = c.getContext('2d');
-      if (!keepAlpha) { cx.fillStyle = '#ffffff'; cx.fillRect(0, 0, w, h); }
-      cx.drawImage(bm, 0, 0, w, h); try { bm.close(); } catch (_) {}
+      const w = Math.max(1, Math.round(bm.width * ratio)), hh = Math.max(1, Math.round(bm.height * ratio));
+      const c = document.createElement('canvas'); c.width = w; c.height = hh; const cx = c.getContext('2d');
+      if (!keepAlpha) { cx.fillStyle = '#ffffff'; cx.fillRect(0, 0, w, hh); }
+      cx.drawImage(bm, 0, 0, w, hh); try { bm.close(); } catch (_) {}
       const b = await new Promise(r => keepAlpha ? c.toBlob(r, 'image/png') : c.toBlob(r, 'image/jpeg', quality));
       if (b) return b;
-      diag.push('bmpenc');
     }
-  } catch (e2) { diag.push('bmp:' + (e2 && e2.name || '?')); }
-  const brand = await heicBrand(file);
-  const fail = (m, brandInfo) => { const er = new Error(m); er.diag = diag.join(',') + (brand ? ' b=' + brand : ' b=-'); er.heic = !!brand; return er; };
-  if (!brand) throw fail('IMAGE_DECODE_FAILED');
-  const bz = document.getElementById('heicBusy'); document.getElementById('heicMsg').textContent = 'กำลังโหลดตัวแปลง (ครั้งแรกต้องใช้เน็ต)…'; bz.classList.add('show');
-  try {
-    await new Promise(r => setTimeout(r, 60));
-    let jpg;
-    try { jpg = await heicConvert(file); } catch (e3) { diag.push('heic'); const er = fail(e3.message); throw er; }
-    try { return await resizeToBlobRaw(jpg, maxDim, quality, keepAlpha); } catch (e4) { diag.push('afterconv'); throw fail('IMAGE_DECODE_FAILED'); }
-  } finally { bz.classList.remove('show'); }
+  } catch (e2) {}
+  throw new Error('IMAGE_DECODE_FAILED');
 }
 async function setSlipDraftFromFile(file, silent) {
   if (slipItems.length >= MAX_SLIPS) { if (!silent) showToast('แนบได้สูงสุด ' + MAX_SLIPS + ' รูป', 3000); return false; }
@@ -4265,7 +4228,7 @@ async function setSlipDraftFromFile(file, silent) {
     try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
     return true;
   } catch (e) {
-    if (!silent) showToast('อ่านรูปนี้ไม่ได้ ลองรูปอื่น (JPG/PNG)', 4000);
+    if (!silent) showToast(e && e.rejected ? e.message : 'อ่านรูปนี้ไม่ได้ ลองรูปอื่น (JPG/PNG)', 7000);
     return false;
   }
 }
@@ -5675,6 +5638,9 @@ async function onCatImageChosen(input) {
   const f = input.files && input.files[0]; input.value = '';
   const btn = emojiPickerTargetBtn; const acctN = acctImgTarget; input.dataset.busy = ''; acctImgTarget = '';
   if (!f || (!btn && !acctN)) return;
+  return catImageFromFile(f, btn, acctN);
+}
+async function catImageFromFile(f, btn, acctN) {
   if (!/^image\//.test(f.type)) { showToast('เลือกได้เฉพาะไฟล์รูปภาพ'); return; }
   let dataUrl = '';
   try {
@@ -5685,7 +5651,7 @@ async function onCatImageChosen(input) {
       dataUrl = await fileToDataUrl(blob);
       if (f.type === 'image/gif') showToast('GIF ใหญ่เกิน 200 KB จึงใช้เป็นรูปนิ่งแทน', 3800);
     }
-  } catch (e) { showToast(imgErrMsg(f, e), 9000); return; }
+  } catch (e) { imgFail(f, e, nf => catImageFromFile(nf, btn, acctN)); return; }
   if (dataUrl.length > 330000) { showToast('รูปนี้ใหญ่เกินไป ลองรูปอื่น', 3000); return; }
   const id = 'ci' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
   catImages[id] = dataUrl;
@@ -6018,7 +5984,7 @@ async function processSlipFile(file) {
   await setSlipDraftFromFile(file, true);
 }
 
-async function resizeAndEncode(file) {   // same pipeline as every other picture (handles HEIC, see-through PNG)
+async function resizeAndEncode(file) {   // same pipeline as every other picture
   const blob = await resizeToBlob(file, 1200, 0.85);
   const dataUrl = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result)); fr.onerror = () => rej(new Error('FILE_READ_FAILED')); fr.readAsDataURL(blob); });
   return { base64: dataUrl.split(',')[1], mediaType: 'image/jpeg' };
