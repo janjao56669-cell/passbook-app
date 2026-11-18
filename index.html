@@ -473,6 +473,11 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .overlay { position: fixed; inset: 0; background: rgba(15,43,29,0.55); display: none; align-items: flex-end; justify-content: center; z-index: 50; }
   .overlay.show { display: flex; }
   #cropOverlay { z-index: 75; }
+  #heicBusy { position: fixed; inset: 0; z-index: 90; background: rgba(15,43,29,0.6); display: none; align-items: center; justify-content: center; padding: 24px; }
+  #heicBusy.show { display: flex; }
+  #heicBusy .box { background: var(--page-cream); border-radius: 18px; padding: 22px 20px; max-width: 320px; text-align: center; font-size: 15px; line-height: 1.6; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+  #heicBusy .spin { width: 38px; height: 38px; margin: 0 auto 12px; border: 4px solid var(--line); border-top-color: var(--cover-green); border-radius: 50%; animation: heicSpin 0.9s linear infinite; }
+  @keyframes heicSpin { to { transform: rotate(360deg); } }
   .crop-stage { position: relative; margin: 10px auto 12px; overflow: hidden; background: #fff repeating-conic-gradient(#e4e0d3 0 25%, #f6f2e6 0 50%) 0 0 / 16px 16px; border: 2px solid var(--brass, #C9A24A); border-radius: 14px; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
   .crop-stage.round { border-radius: 50%; }
   .crop-stage img { position: absolute; left: 0; top: 0; transform-origin: 0 0; max-width: none !important; pointer-events: none; -webkit-user-drag: none; }
@@ -1086,6 +1091,8 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     <div class="sheet-actions"><button class="btn-cancel" onclick="closeAddMenu()">ปิด</button></div>
   </div>
 </div>
+
+<div id="heicBusy"><div class="box"><div class="spin"></div><b>แปลงรูป HEIC</b><br><span id="heicMsg" style="font-size:14px">กำลังโหลดตัวแปลง…</span><br><span style="font-size:12.5px;color:var(--ink-soft)">ปกติไม่เกินครึ่งนาที</span><br><button type="button" class="btn-cancel" style="margin-top:12px;width:100%;" onclick="if(heicJob)heicJob.cancel()">ยกเลิก</button></div></div>
 
 <div class="overlay" id="cropOverlay">
   <div class="sheet">
@@ -3391,6 +3398,10 @@ function applyProfile() {
 let pfDraft = null;   // { photo, bg, theme }
 // tell the person WHY a picture could not be used, and what to do about it
 function imgErrMsg(f, e) {
+  if (e && e.message === 'HEIC_CANCELLED') return 'ยกเลิกการแปลงรูปแล้ว';
+  if (e && e.message === 'HEIC_TIMEOUT') return 'แปลงรูปนานเกินไป เครื่องอาจไม่ไหว ลองตั้งกล้องเป็น JPG หรือจับหน้าจอรูปนั้นแทน';
+  if (e && e.message === 'HEIC_FAIL:TOO_BIG') return 'รูป HEIC ใหญ่เกินไปสำหรับเครื่องนี้ ลองบันทึกเป็น JPG ก่อน';
+  if (e && /^HEIC_FAIL/.test(e.message)) return 'แปลงรูป HEIC นี้ไม่สำเร็จ (' + e.message.slice(10, 60) + ') ลองบันทึกเป็น JPG หรือจับหน้าจอรูปนั้นแทน';
   if (e && e.message === 'HEIC_LIB_OFFLINE') return 'แปลงรูป HEIC ต้องต่ออินเทอร์เน็ตครั้งแรก ลองใหม่เมื่อมีเน็ต หรือบันทึกรูปเป็น JPG ก่อน';
   const n = ((f && f.type) || '') + ' ' + ((f && f.name) || '');
   if (/heic|heif/i.test(n)) return 'รูปแบบ HEIC/HEIF เครื่องนี้เปิดไม่ได้ ลองบันทึกเป็น JPG หรือ PNG ก่อน หรือใช้ภาพจับหน้าจอแทน';
@@ -4170,7 +4181,7 @@ function resizeToBlobRaw(file, maxDim, quality, keepAlpha) {
   });
 }
 // ---- HEIC / HEIF (iPhone & some Android cameras): browsers that cannot open them natively get a converter, loaded only when needed ----
-const HEIC_LIB_URL = window.HEIC_LIB_URL || 'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
+const HEIC_LIB_URL = window.HEIC_LIB_URL || 'https://cdn.jsdelivr.net/npm/libheif-js@1.23.5/libheif-wasm/libheif-bundle.js';
 async function isHeicFile(f) {
   if (/heic|heif/i.test((f.type || '') + ' ' + (f.name || ''))) return true;
   try {   // some phones give no type/name: look at the file's own signature ("ftyp" + heic/heif brand)
@@ -4179,26 +4190,47 @@ async function isHeicFile(f) {
     return /^ftyp(heic|heix|hevc|hevx|heim|heis|mif1|msf1)/.test(t);
   } catch (e) { return false; }
 }
-let heicLibP = null;
-function loadHeicLib() {
-  if (window.heic2any) return Promise.resolve();
-  if (!heicLibP) heicLibP = new Promise((res, rej) => {
-    const sc = document.createElement('script'); sc.src = HEIC_LIB_URL;
-    sc.onload = () => window.heic2any ? res() : rej(new Error('HEIC_LIB_MISSING'));
-    sc.onerror = () => { heicLibP = null; rej(new Error('HEIC_LIB_OFFLINE')); };
-    document.head.appendChild(sc);
+// The converter (libheif, ~2 MB, loaded from the internet the first time) runs in a background worker so the page never freezes.
+let heicJob = null;
+function heicConvert(file) {
+  return new Promise(async (resolve, reject) => {
+    let w = null, timer = null, done = false;
+    const end = (fn, v) => { if (done) return; done = true; clearTimeout(timer); heicJob = null; try { w && w.terminate(); } catch (_) {} fn(v); };
+    heicJob = { cancel: () => end(reject, new Error('HEIC_CANCELLED')) };
+    try {
+      const buf = await file.arrayBuffer();
+      const src = 'importScripts(' + JSON.stringify(HEIC_LIB_URL) + ');' +
+        'self.onmessage=async(e)=>{try{let L=self.libheif;if(typeof L==="function")L=L();if(L&&typeof L.then==="function")L=await L;' +
+        'const d=new L.HeifDecoder();const im=d.decode(new Uint8Array(e.data));if(!im||!im.length)throw new Error("NO_IMAGE");' +
+        'const a=im[0],W=a.get_width(),H=a.get_height();if(W*H>64e6)throw new Error("TOO_BIG");' +
+        'const id={data:new Uint8ClampedArray(W*H*4),width:W,height:H};' +
+        'await new Promise((res,rej)=>a.display(id,r=>r?res():rej(new Error("DISPLAY_FAILED"))));' +
+        'postMessage({ok:1,w:W,h:H,buf:id.data.buffer},[id.data.buffer]);}catch(x){postMessage({ok:0,err:String(x&&x.message||x)})}};' +
+        'postMessage({ready:1});';
+      w = new Worker(URL.createObjectURL(new Blob([src], { type: 'application/javascript' })));
+      timer = setTimeout(() => end(reject, new Error('HEIC_TIMEOUT')), 90000);
+      w.onerror = () => end(reject, new Error('HEIC_LIB_OFFLINE'));
+      w.onmessage = (ev) => {
+        const m = ev.data || {};
+        if (m.ready) { const bz = document.getElementById('heicMsg'); if (bz) bz.textContent = 'กำลังแปลงรูป…'; w.postMessage(buf, [buf]); return; }
+        if (!m.ok) { end(reject, new Error('HEIC_FAIL:' + (m.err || ''))); return; }
+        const c = document.createElement('canvas'); c.width = m.w; c.height = m.h;
+        c.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(m.buf), m.w, m.h), 0, 0);
+        c.toBlob(b => b ? end(resolve, b) : end(reject, new Error('IMAGE_ENCODE_FAILED')), 'image/jpeg', 0.9);
+      };
+    } catch (e) { end(reject, e); }
   });
-  return heicLibP;
 }
 async function resizeToBlob(file, maxDim, quality, keepAlpha) {
   try { return await resizeToBlobRaw(file, maxDim, quality, keepAlpha); }
   catch (e) {
     if (!(await isHeicFile(file))) throw e;
-    try { showToast('กำลังแปลงรูป HEIC…', 2500); } catch (_) {}
-    await loadHeicLib();
-    let out = await window.heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 });
-    if (Array.isArray(out)) out = out[0];
-    return resizeToBlobRaw(out, maxDim, quality, keepAlpha);
+    const bz = document.getElementById('heicBusy'); document.getElementById('heicMsg').textContent = 'กำลังโหลดตัวแปลง (ครั้งแรกต้องใช้เน็ต)…'; bz.classList.add('show');
+    try {
+      await new Promise(r => setTimeout(r, 60));
+      const jpg = await heicConvert(file);
+      return await resizeToBlobRaw(jpg, maxDim, quality, keepAlpha);
+    } finally { bz.classList.remove('show'); }
   }
 }
 async function setSlipDraftFromFile(file, silent) {
