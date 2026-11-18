@@ -950,7 +950,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
       <button class="btn-big btn-expense" onclick="openSheet('out')"><span class="icon">−</span> รายจ่าย</button>
       <label class="btn-big btn-scan3" id="scanBtn" for="slipInput">📷 สแกน</label>
     </div>
-    <input type="file" id="slipInput" accept="image/*" multiple style="display:none">
+    <input type="file" id="slipInput" accept="image/*,.heic,.heif" multiple style="display:none">
 
   <div id="budgetCard"></div>
 
@@ -1160,8 +1160,8 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     <div class="field-label"><span>📎 แนบรูปสลิป / ใบเสร็จ (ไม่บังคับ)</span></div>
     <div id="slipBox"></div>
     <div class="set-note" style="margin-top:6px;">รูปเก็บไว้ในเครื่องนี้เท่านั้น ไม่รวมอยู่ในไฟล์สำรองข้อมูล</div>
-    <input type="file" id="attachCam" accept="image/*" capture="environment" style="display:none" onchange="onAttachChosen(this)">
-    <input type="file" id="attachPick" accept="image/*" multiple style="display:none" onchange="onAttachChosen(this)">
+    <input type="file" id="attachCam" accept="image/*,.heic,.heif" capture="environment" style="display:none" onchange="onAttachChosen(this)">
+    <input type="file" id="attachPick" accept="image/*,.heic,.heif" multiple style="display:none" onchange="onAttachChosen(this)">
 
     <div class="sheet-actions">
       <button class="btn-cancel" onclick="cancelSheet()">ยกเลิก</button>
@@ -1180,7 +1180,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
       <button type="button" class="attach-btn" onclick="document.getElementById('pfPhotoPick').click()">🖼️ เลือกรูปโปรไฟล์</button>
       <button type="button" class="attach-btn" id="pfPhotoRm" onclick="pfClearPhoto()">เอารูปออก</button>
     </div>
-    <input type="file" id="pfPhotoPick" accept="image/*" style="display:none" onchange="pfChoosePhoto(this)">
+    <input type="file" id="pfPhotoPick" accept="image/*,.heic,.heif" style="display:none" onchange="pfChoosePhoto(this)">
     <div class="field-label"><span>ชื่อบัญชี (แสดงที่หัวแอป)</span></div>
     <input type="text" class="text-input" id="pfTitle" maxlength="30" placeholder="บัญชีต้อการช่าง" autocomplete="off">
     <div class="field-label"><span>ชื่อ</span></div>
@@ -1205,7 +1205,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
       <button type="button" class="attach-btn" onclick="document.getElementById('pfBgPick').click()">🖼️ เลือกรูปพื้นหลัง</button>
       <button type="button" class="attach-btn" onclick="pfClearBg()">เอารูปออก</button>
     </div>
-    <input type="file" id="pfBgPick" accept="image/*" style="display:none" onchange="pfChooseBg(this)">
+    <input type="file" id="pfBgPick" accept="image/*,.heic,.heif" style="display:none" onchange="pfChooseBg(this)">
     <div class="field-label"><span>🌈 สีพื้นหลังแอป (พื้นที่ด้านหลังการ์ดและรายการ)</span></div>
     <div class="look-prev sf" id="pfSurfPrev">ตัวอย่างพื้นหลังแอป</div>
     <div class="theme-row" id="pfSurfs"></div>
@@ -1255,7 +1255,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     <div class="emoji-reset-row">
       <button type="button" class="emoji-reset-btn" onclick="openCatImgWarn()">🖼️ ใช้รูปภาพ / GIF แทนอีโมจิ</button>
     </div>
-    <input type="file" id="catImgInput" accept="image/*" style="display:none" onchange="onCatImageChosen(this)">
+    <input type="file" id="catImgInput" accept="image/*,.heic,.heif" style="display:none" onchange="onCatImageChosen(this)">
     <div class="emoji-section-title"><span>⭐ อีโมจิของฉัน</span><button type="button" class="emoji-mini-btn" id="emojiDelToggle" onclick="toggleEmojiDeleteMode()" style="display:none;">🗑️ ลบ</button></div>
     <div class="emoji-add-row" id="emojiAddRow">
       <input type="text" id="emojiAddInput" placeholder="พิมพ์/วางอีโมจิ" autocomplete="off">
@@ -3394,8 +3394,10 @@ function imgFail(f, e, retry) { showToast(imgErrMsg(f, e), 9000); }
 // tell the person WHY a picture could not be used, and what to do about it
 function imgErrMsg(f, e) {
   if (e && e.rejected) return e.message;   // already a plain-language reason
-  const mb = f && f.size ? (f.size / 1048576).toFixed(1) + ' MB' : '';
-  return 'ใช้ภาพนี้ไม่ได้ เครื่องอ่านไฟล์รูปนี้ไม่ออก (ไฟล์อาจเสียหรือใหญ่เกินไป ' + mb + ') ลองใช้รูป JPG หรือ PNG อื่น';
+  const mb = f && f.size ? (f.size / 1048576).toFixed(1) + ' MB' : '?';
+  const code = ' [i8 ' + ((e && e.diag) || (e && e.message) || '?') + ' ' + ((f && f.type) || '-') + ' ' + mb + ']';
+  if (e && e.unreadable) return 'ใช้ภาพนี้ไม่ได้ เครื่องไม่ยอมให้แอปอ่านไฟล์นี้ ลองเลือกรูปนี้ใหม่อีกครั้ง หรือถ่ายรูปใหม่ / แคปหน้าจอรูปนั้นแล้วเลือกรูปที่แคป' + code;
+  return 'ใช้ภาพนี้ไม่ได้ เครื่องเปิดไฟล์รูปนี้ไม่ได้ (ไฟล์อาจเสียหาย) ลองรูปอื่น หรือแคปหน้าจอรูปนั้นแล้วเลือกรูปที่แคป' + code;
 }
 /* ---- picture cropper: every place that takes a picture lets the person choose which area is used ---- */
 let cropJob = null;
@@ -3501,9 +3503,9 @@ function renderProfileDraftKeepPickers(which) {
   if (which === 'c') { document.getElementById('pfC1').value = a; document.getElementById('pfC2').value = b; }
   else { document.getElementById('pfS1').value = c; document.getElementById('pfS2').value = d; }
 }
-async function pfChoosePhoto(inp) { const f = inp.files && inp.files[0]; inp.value = ''; if (f) return pfPhotoFromFile(f); }
+async function pfChoosePhoto(inp) { const f = (await snapshotFiles(inp))[0]; if (f) return pfPhotoFromFile(f); }
 async function pfPhotoFromFile(f) { try { const b = await cropImage(f, { aspect: 1, outW: 256, q: 0.8, round: true, title: 'เลือกพื้นที่ของรูปโปรไฟล์' }); if (!b) return; pfDraft.photo = await fileToDataUrl(b); renderProfileDraft(); } catch (e) { imgFail(f, e, pfPhotoFromFile); } }
-async function pfChooseBg(inp) { const f = inp.files && inp.files[0]; inp.value = ''; if (f) return pfBgFromFile(f); }
+async function pfChooseBg(inp) { const f = (await snapshotFiles(inp))[0]; if (f) return pfBgFromFile(f); }
 async function pfBgFromFile(f) { try { const b = await cropImage(f, { aspect: 13 / 4, outW: 800, q: 0.7, title: 'เลือกพื้นที่ของภาพปก' }); if (!b) return; pfDraft.bg = await fileToDataUrl(b); renderProfileDraft(); } catch (e) { imgFail(f, e, pfBgFromFile); } }
 function pfClearPhoto() { pfDraft.photo = ''; renderProfileDraft(); }
 function pfClearBg() { pfDraft.bg = ''; renderProfileDraft(); }
@@ -4170,12 +4172,21 @@ function resizeToBlobRaw(file, maxDim, quality, keepAlpha) {
     img.src = url;
   });
 }
-const IMG_BUILD = 'i6';
+const IMG_BUILD = 'i8';
 // Only JPG, PNG, WebP and GIF pictures are accepted. Anything else is refused with a plain reason (judged by the file's own first bytes, not its name).
+// Copy the picked files into memory right away, before anything else touches them: on some phones the gallery's file handle stops working after the first read or once the input is cleared.
+async function snapshotFiles(inp) {
+  const list = [...(inp.files || [])], out = [];
+  for (const f of list) {
+    try { const buf = await f.arrayBuffer(); out.push(new File([buf], f.name || 'image', { type: f.type || '', lastModified: f.lastModified })); }
+    catch (e) { out.push(f); }   // cannot copy: hand over the original, the checks later will say why
+  }
+  inp.value = '';
+  return out;
+}
 function imgReject(msg) { const er = new Error(msg); er.rejected = true; return er; }
 async function imgGate(file) {
   const type = (file && file.type) || '';
-  if (file && file.size > 40 * 1024 * 1024) throw imgReject('ใช้ภาพนี้ไม่ได้ ไฟล์ใหญ่เกินไป (' + (file.size / 1048576).toFixed(0) + ' MB) เครื่องอ่านไม่ไหว ลองรูปที่เล็กกว่า 40 MB');
   let h = null;
   try { h = new Uint8Array(await file.slice(0, 16).arrayBuffer()); } catch (e) {}
   if (!h) {   // the phone will not hand the file over
@@ -4202,20 +4213,40 @@ async function imgGate(file) {
 }
 async function resizeToBlob(file, maxDim, quality, keepAlpha) {
   await imgGate(file);
-  try { return await resizeToBlobRaw(file, maxDim, quality, keepAlpha); } catch (e1) {}
-  try {   // second route: ImageBitmap
-    if (window.createImageBitmap) {
-      const bm = await createImageBitmap(file);
-      const ratio = Math.min(1, maxDim / Math.max(bm.width, bm.height));
-      const w = Math.max(1, Math.round(bm.width * ratio)), hh = Math.max(1, Math.round(bm.height * ratio));
-      const c = document.createElement('canvas'); c.width = w; c.height = hh; const cx = c.getContext('2d');
-      if (!keepAlpha) { cx.fillStyle = '#ffffff'; cx.fillRect(0, 0, w, hh); }
-      cx.drawImage(bm, 0, 0, w, hh); try { bm.close(); } catch (_) {}
-      const b = await new Promise(r => keepAlpha ? c.toBlob(r, 'image/png') : c.toBlob(r, 'image/jpeg', quality));
-      if (b) return b;
-    }
-  } catch (e2) {}
-  throw new Error('IMAGE_DECODE_FAILED');
+  const diag = [];
+  const errName = e => ((e && (e.name || e.message)) || '?').toString().slice(0, 24);
+  const viaBitmap = async (src, opt) => {
+    const bm = opt ? await createImageBitmap(src, opt) : await createImageBitmap(src);
+    const ratio = Math.min(1, maxDim / Math.max(bm.width, bm.height));
+    const w = Math.max(1, Math.round(bm.width * ratio)), hh = Math.max(1, Math.round(bm.height * ratio));
+    const c = document.createElement('canvas'); c.width = w; c.height = hh; const cx = c.getContext('2d');
+    if (!keepAlpha) { cx.fillStyle = '#ffffff'; cx.fillRect(0, 0, w, hh); }
+    cx.drawImage(bm, 0, 0, w, hh); try { bm.close(); } catch (_) {}
+    const b = await new Promise(r => keepAlpha ? c.toBlob(r, 'image/png') : c.toBlob(r, 'image/jpeg', quality));
+    if (!b) throw new Error('encode');
+    return b;
+  };
+  // 1: normal decode
+  try { return await resizeToBlobRaw(file, maxDim, quality, keepAlpha); } catch (e) { diag.push('img'); }
+  // 2: ImageBitmap straight from the file
+  try { if (window.createImageBitmap) return await viaBitmap(file); } catch (e) { diag.push('bmp:' + errName(e)); }
+  // 3: copy the bytes into memory first (gets round phones whose file handle misbehaves), then decode the copy
+  let copy = null;
+  try {
+    const buf = await file.arrayBuffer();
+    const h = new Uint8Array(buf, 0, 4);
+    const mime = h[0] === 0x89 ? 'image/png' : (h[0] === 0x47 ? 'image/gif' : (h[0] === 0x52 ? 'image/webp' : 'image/jpeg'));
+    copy = new Blob([buf], { type: mime });
+  } catch (e) { diag.push('read:' + errName(e)); }
+  if (copy) {
+    try { return await resizeToBlobRaw(copy, maxDim, quality, keepAlpha); } catch (e) { diag.push('copy-img'); }
+    try { if (window.createImageBitmap) return await viaBitmap(copy); } catch (e) { diag.push('copy-bmp:' + errName(e)); }
+    // 4: very large pictures: let the browser shrink while decoding
+    try { if (window.createImageBitmap) return await viaBitmap(copy, { resizeWidth: maxDim, resizeQuality: 'high' }); } catch (e) { diag.push('shrink:' + errName(e)); }
+  }
+  const er = new Error('IMAGE_DECODE_FAILED'); er.diag = diag.join(',');
+  er.unreadable = diag.some(d => d.indexOf('read:') === 0);
+  throw er;
 }
 async function setSlipDraftFromFile(file, silent) {
   if (slipItems.length >= MAX_SLIPS) { if (!silent) showToast('แนบได้สูงสุด ' + MAX_SLIPS + ' รูป', 3000); return false; }
@@ -4233,8 +4264,7 @@ async function setSlipDraftFromFile(file, silent) {
   }
 }
 async function onAttachChosen(input) {
-  const files = [...(input.files || [])];
-  input.value = '';
+  const files = await snapshotFiles(input);
   let skipped = 0;
   for (const f of files) { if (slipItems.length >= MAX_SLIPS) { skipped++; continue; } await setSlipDraftFromFile(f, false); }
   if (skipped) showToast('แนบได้สูงสุด ' + MAX_SLIPS + ' รูป เลยข้ามอีก ' + skipped + ' รูป', 3500);
@@ -5635,8 +5665,8 @@ function openCatImgWarn() { acctImgTarget = ''; openImgWarn(); }
 function closeImgWarn() { document.getElementById('imgWarnOverlay').classList.remove('show'); if (!document.getElementById('catImgInput').dataset.busy) acctImgTarget = ''; }
 function chooseCatImage() { const el = document.getElementById('catImgInput'); el.dataset.busy = '1'; closeImgWarn(); el.value = ''; el.click(); }
 async function onCatImageChosen(input) {
-  const f = input.files && input.files[0]; input.value = '';
   const btn = emojiPickerTargetBtn; const acctN = acctImgTarget; input.dataset.busy = ''; acctImgTarget = '';
+  const f = (await snapshotFiles(input))[0];
   if (!f || (!btn && !acctN)) return;
   return catImageFromFile(f, btn, acctN);
 }
@@ -5951,8 +5981,7 @@ async function processNextShared() {
   await processSlipFile(f);
 }
 document.getElementById('slipInput').addEventListener('change', async (e) => {
-  const files = [...(e.target.files || [])];
-  e.target.value = '';
+  const files = await snapshotFiles(e.target);
   if (files.length) await startSlipBatch(files);
 });
 
