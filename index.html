@@ -472,6 +472,14 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
 
   .overlay { position: fixed; inset: 0; background: rgba(15,43,29,0.55); display: none; align-items: flex-end; justify-content: center; z-index: 50; }
   .overlay.show { display: flex; }
+  #cropOverlay { z-index: 75; }
+  .crop-stage { position: relative; margin: 10px auto 12px; overflow: hidden; background: #fff repeating-conic-gradient(#e4e0d3 0 25%, #f6f2e6 0 50%) 0 0 / 16px 16px; border: 2px solid var(--brass, #C9A24A); border-radius: 14px; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+  .crop-stage.round { border-radius: 50%; }
+  .crop-stage img { position: absolute; left: 0; top: 0; transform-origin: 0 0; max-width: none !important; pointer-events: none; -webkit-user-drag: none; }
+  .crop-stage .crop-grid { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to right, transparent 33.2%, rgba(255,255,255,.55) 33.3%, transparent 33.5%, transparent 66.5%, rgba(255,255,255,.55) 66.6%, transparent 66.8%), linear-gradient(to bottom, transparent 33.2%, rgba(255,255,255,.55) 33.3%, transparent 33.5%, transparent 66.5%, rgba(255,255,255,.55) 66.6%, transparent 66.8%); }
+  .crop-zoom { display: flex; align-items: center; gap: 10px; margin: 0 4px 6px; font-size: 18px; color: var(--ink-soft); }
+  .crop-zoom input { flex: 1; min-width: 0; }
+  .crop-hint { text-align: center; font-size: 12.5px; color: var(--ink-soft); margin: 2px 0 12px; line-height: 1.5; }
   .sheet { background: var(--page-cream); width: 100%; max-width: 480px; border-radius: 20px 20px 0 0; padding: 22px 20px 28px; box-shadow: 0 -10px 30px rgba(0,0,0,0.3); animation: slideUp 0.22s ease; overflow-y: auto; }
   @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
@@ -942,7 +950,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
       <button class="btn-big btn-expense" onclick="openSheet('out')"><span class="icon">−</span> รายจ่าย</button>
       <label class="btn-big btn-scan3" id="scanBtn" for="slipInput">📷 สแกน</label>
     </div>
-    <input type="file" id="slipInput" accept="image/*" multiple style="display:none">
+    <input type="file" id="slipInput" accept="image/*,.heic,.heif" multiple style="display:none">
 
   <div id="budgetCard"></div>
 
@@ -1079,6 +1087,19 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   </div>
 </div>
 
+<div class="overlay" id="cropOverlay">
+  <div class="sheet">
+    <div class="sheet-title" style="text-align:center;" id="cropTitle">เลือกพื้นที่ของรูป</div>
+    <div class="crop-stage" id="cropStage"><img id="cropImg" alt=""><div class="crop-grid"></div></div>
+    <div class="crop-zoom"><span>🔍−</span><input type="range" id="cropZoom" min="0" max="1000" value="0" aria-label="ซูม"><span>🔍+</span></div>
+    <div class="crop-hint" id="cropHint">ลากรูปเพื่อเลื่อน · บีบนิ้วหรือเลื่อนแถบเพื่อซูม</div>
+    <div class="sheet-actions">
+      <button type="button" class="btn-cancel" id="cropCancel">ยกเลิก</button>
+      <button type="button" class="btn-save in" id="cropOk">✔ ใช้พื้นที่นี้</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="exitOverlay">
   <div class="sheet">
     <div class="sheet-title" style="text-align:center;">ก่อนออกจากแอป</div>
@@ -1139,8 +1160,8 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     <div class="field-label"><span>📎 แนบรูปสลิป / ใบเสร็จ (ไม่บังคับ)</span></div>
     <div id="slipBox"></div>
     <div class="set-note" style="margin-top:6px;">รูปเก็บไว้ในเครื่องนี้เท่านั้น ไม่รวมอยู่ในไฟล์สำรองข้อมูล</div>
-    <input type="file" id="attachCam" accept="image/*" capture="environment" style="display:none" onchange="onAttachChosen(this)">
-    <input type="file" id="attachPick" accept="image/*" multiple style="display:none" onchange="onAttachChosen(this)">
+    <input type="file" id="attachCam" accept="image/*,.heic,.heif" capture="environment" style="display:none" onchange="onAttachChosen(this)">
+    <input type="file" id="attachPick" accept="image/*,.heic,.heif" multiple style="display:none" onchange="onAttachChosen(this)">
 
     <div class="sheet-actions">
       <button class="btn-cancel" onclick="cancelSheet()">ยกเลิก</button>
@@ -1159,7 +1180,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
       <button type="button" class="attach-btn" onclick="document.getElementById('pfPhotoPick').click()">🖼️ เลือกรูปโปรไฟล์</button>
       <button type="button" class="attach-btn" id="pfPhotoRm" onclick="pfClearPhoto()">เอารูปออก</button>
     </div>
-    <input type="file" id="pfPhotoPick" accept="image/*" style="display:none" onchange="pfChoosePhoto(this)">
+    <input type="file" id="pfPhotoPick" accept="image/*,.heic,.heif" style="display:none" onchange="pfChoosePhoto(this)">
     <div class="field-label"><span>ชื่อบัญชี (แสดงที่หัวแอป)</span></div>
     <input type="text" class="text-input" id="pfTitle" maxlength="30" placeholder="บัญชีต้อการช่าง" autocomplete="off">
     <div class="field-label"><span>ชื่อ</span></div>
@@ -1184,7 +1205,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
       <button type="button" class="attach-btn" onclick="document.getElementById('pfBgPick').click()">🖼️ เลือกรูปพื้นหลัง</button>
       <button type="button" class="attach-btn" onclick="pfClearBg()">เอารูปออก</button>
     </div>
-    <input type="file" id="pfBgPick" accept="image/*" style="display:none" onchange="pfChooseBg(this)">
+    <input type="file" id="pfBgPick" accept="image/*,.heic,.heif" style="display:none" onchange="pfChooseBg(this)">
     <div class="field-label"><span>🌈 สีพื้นหลังแอป (พื้นที่ด้านหลังการ์ดและรายการ)</span></div>
     <div class="look-prev sf" id="pfSurfPrev">ตัวอย่างพื้นหลังแอป</div>
     <div class="theme-row" id="pfSurfs"></div>
@@ -1234,7 +1255,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     <div class="emoji-reset-row">
       <button type="button" class="emoji-reset-btn" onclick="openCatImgWarn()">🖼️ ใช้รูปภาพ / GIF แทนอีโมจิ</button>
     </div>
-    <input type="file" id="catImgInput" accept="image/*" style="display:none" onchange="onCatImageChosen(this)">
+    <input type="file" id="catImgInput" accept="image/*,.heic,.heif" style="display:none" onchange="onCatImageChosen(this)">
     <div class="emoji-section-title"><span>⭐ อีโมจิของฉัน</span><button type="button" class="emoji-mini-btn" id="emojiDelToggle" onclick="toggleEmojiDeleteMode()" style="display:none;">🗑️ ลบ</button></div>
     <div class="emoji-add-row" id="emojiAddRow">
       <input type="text" id="emojiAddInput" placeholder="พิมพ์/วางอีโมจิ" autocomplete="off">
@@ -3368,6 +3389,73 @@ function applyProfile() {
   setTimeout(() => { if (typeof setBand === "function") setBand(); }, 0);
 }
 let pfDraft = null;   // { photo, bg, theme }
+// tell the person WHY a picture could not be used, and what to do about it
+function imgErrMsg(f, e) {
+  if (e && e.message === 'HEIC_LIB_OFFLINE') return 'แปลงรูป HEIC ต้องต่ออินเทอร์เน็ตครั้งแรก ลองใหม่เมื่อมีเน็ต หรือบันทึกรูปเป็น JPG ก่อน';
+  const n = ((f && f.type) || '') + ' ' + ((f && f.name) || '');
+  if (/heic|heif/i.test(n)) return 'รูปแบบ HEIC/HEIF เครื่องนี้เปิดไม่ได้ ลองบันทึกเป็น JPG หรือ PNG ก่อน หรือใช้ภาพจับหน้าจอแทน';
+  if (f && f.size > 40 * 1024 * 1024) return 'รูปใหญ่มาก (' + (f.size / 1048576).toFixed(0) + ' MB) เครื่องอ่านไม่ไหว ลองรูปที่เล็กลง';
+  if (f && f.type && !/^image\//.test(f.type)) return 'ไฟล์นี้ไม่ใช่รูปภาพ เลือกไฟล์ JPG, PNG, WebP หรือ GIF';
+  return 'อ่านรูปนี้ไม่ได้ ลองรูปอื่น หรือบันทึกรูปเป็น JPG/PNG ก่อน';
+}
+/* ---- picture cropper: every place that takes a picture lets the person choose which area is used ---- */
+let cropJob = null;
+function cropImage(file, o) {
+  return new Promise(async (resolve, reject) => {
+    let src;
+    try { src = await resizeToBlob(file, 1600, 0.92, !!o.keepAlpha); } catch (e) { reject(e); return; }
+    const url = URL.createObjectURL(src);
+    const img = document.getElementById('cropImg');
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('IMAGE_DECODE_FAILED')); };
+    img.onload = () => {
+      const ov = document.getElementById('cropOverlay'), st = document.getElementById('cropStage'), zm = document.getElementById('cropZoom');
+      document.getElementById('cropTitle').textContent = o.title || 'เลือกพื้นที่ของรูป';
+      st.classList.toggle('round', !!o.round);
+      const fw = Math.min(320, Math.max(200, Math.min(window.innerWidth, 480) - 76)), fh = Math.round(fw / o.aspect);
+      st.style.width = fw + 'px'; st.style.height = fh + 'px';
+      const iw = img.naturalWidth, ih = img.naturalHeight;
+      const cover = Math.max(fw / iw, fh / ih), minS = Math.min(fw / iw, fh / ih), maxS = Math.max(cover * 4, minS);
+      let s = cover, x = (fw - iw * s) / 2, y = (fh - ih * s) / 2;
+      const lim = (v, full, size) => full >= size ? Math.min(0, Math.max(size - full, v)) : (size - full) / 2;
+      function apply() {
+        s = Math.min(maxS, Math.max(minS, s));
+        x = lim(x, iw * s, fw); y = lim(y, ih * s, fh);
+        img.style.width = iw * s + 'px'; img.style.height = ih * s + 'px'; img.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+        zm.value = maxS > minS ? Math.round((Math.log(s / minS) / Math.log(maxS / minS)) * 1000) : 0;
+      }
+      function zoomAt(ns, cx, cy) { ns = Math.min(maxS, Math.max(minS, ns)); const k = ns / s; x = cx - (cx - x) * k; y = cy - (cy - y) * k; s = ns; apply(); }
+      zm.oninput = () => zoomAt(minS * Math.pow(maxS / minS, zm.value / 1000), fw / 2, fh / 2);
+      const pts = new Map(); let d0 = 0, s0 = 1;
+      st.onpointerdown = e => { try { st.setPointerCapture(e.pointerId); } catch (_) {} pts.set(e.pointerId, [e.clientX, e.clientY]); if (pts.size === 2) { const a = [...pts.values()]; d0 = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]); s0 = s; } };
+      st.onpointermove = e => {
+        if (!pts.has(e.pointerId)) return;
+        const prev = pts.get(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]);
+        if (pts.size === 1) { x += e.clientX - prev[0]; y += e.clientY - prev[1]; apply(); }
+        else if (pts.size === 2 && d0) { const a = [...pts.values()], r = st.getBoundingClientRect(); zoomAt(s0 * Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]) / d0, (a[0][0] + a[1][0]) / 2 - r.left, (a[0][1] + a[1][1]) / 2 - r.top); }
+      };
+      st.onpointerup = st.onpointercancel = e => { pts.delete(e.pointerId); d0 = 0; };
+      st.onwheel = e => { e.preventDefault(); const r = st.getBoundingClientRect(); zoomAt(s * (e.deltaY < 0 ? 1.12 : 1 / 1.12), e.clientX - r.left, e.clientY - r.top); };
+      let done = false;
+      const finish = (blob) => {
+        if (done) return; done = true; obs.disconnect(); cropJob = null;
+        ov.classList.remove('show'); img.removeAttribute('src'); URL.revokeObjectURL(url); resolve(blob);
+      };
+      const obs = new MutationObserver(() => { if (!ov.classList.contains('show')) finish(null); });   // closed by ✕ / back button
+      document.getElementById('cropCancel').onclick = () => finish(null);
+      document.getElementById('cropOk').onclick = () => {
+        const W = o.outW, H = Math.max(1, Math.round(W / o.aspect)), k = W / fw;
+        const c = document.createElement('canvas'); c.width = W; c.height = H; const cx = c.getContext('2d');
+        if (!o.keepAlpha) { cx.fillStyle = '#ffffff'; cx.fillRect(0, 0, W, H); }
+        cx.imageSmoothingQuality = 'high'; cx.drawImage(img, x * k, y * k, iw * s * k, ih * s * k);
+        const cb = b => b ? finish(b) : (finish(null), showToast('บันทึกรูปไม่สำเร็จ ลองใหม่', 3000));
+        if (o.keepAlpha) c.toBlob(cb, 'image/png'); else c.toBlob(cb, 'image/jpeg', o.q || 0.8);
+      };
+      apply(); cropJob = { finish };
+      ov.classList.add('show'); obs.observe(ov, { attributes: true, attributeFilter: ['class'] });
+    };
+    img.src = url;
+  });
+}
 function pfBlobToDataUrl(file, maxDim, q) {
   return resizeToBlob(file, maxDim, q).then(b => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(new Error('READ')); r.readAsDataURL(b); }));
 }
@@ -3414,8 +3502,8 @@ function renderProfileDraftKeepPickers(which) {
   if (which === 'c') { document.getElementById('pfC1').value = a; document.getElementById('pfC2').value = b; }
   else { document.getElementById('pfS1').value = c; document.getElementById('pfS2').value = d; }
 }
-async function pfChoosePhoto(inp) { const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return; try { pfDraft.photo = await pfBlobToDataUrl(f, 256, 0.8); renderProfileDraft(); } catch (e) { showToast('อ่านรูปนี้ไม่ได้ ลองรูปอื่น', 3500); } }
-async function pfChooseBg(inp) { const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return; try { pfDraft.bg = await pfBlobToDataUrl(f, 800, 0.6); renderProfileDraft(); } catch (e) { showToast('อ่านรูปนี้ไม่ได้ ลองรูปอื่น', 3500); } }
+async function pfChoosePhoto(inp) { const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return; try { const b = await cropImage(f, { aspect: 1, outW: 256, q: 0.8, round: true, title: 'เลือกพื้นที่ของรูปโปรไฟล์' }); if (!b) return; pfDraft.photo = await fileToDataUrl(b); renderProfileDraft(); } catch (e) { showToast(imgErrMsg(f, e), 5000); } }
+async function pfChooseBg(inp) { const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return; try { const b = await cropImage(f, { aspect: 13 / 4, outW: 800, q: 0.7, title: 'เลือกพื้นที่ของภาพปก' }); if (!b) return; pfDraft.bg = await fileToDataUrl(b); renderProfileDraft(); } catch (e) { showToast(imgErrMsg(f, e), 5000); } }
 function pfClearPhoto() { pfDraft.photo = ''; renderProfileDraft(); }
 function pfClearBg() { pfDraft.bg = ''; renderProfileDraft(); }
 function closeProfile() { document.getElementById('profileOverlay').classList.remove('show'); pfDraft = null; }
@@ -4061,7 +4149,7 @@ function removeSlipAt(i) {
   try { URL.revokeObjectURL(x.url); } catch (e) {}
   slipItems.splice(i, 1); slipDirty = true; renderSlipBox();
 }
-function resizeToBlob(file, maxDim, quality) {
+function resizeToBlobRaw(file, maxDim, quality, keepAlpha) {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
     const img = new Image();
@@ -4071,12 +4159,47 @@ function resizeToBlob(file, maxDim, quality) {
       const ratio = Math.min(1, maxDim / Math.max(width, height));
       width = Math.max(1, Math.round(width * ratio)); height = Math.max(1, Math.round(height * ratio));
       const c = document.createElement('canvas'); c.width = width; c.height = height;
-      c.getContext('2d').drawImage(img, 0, 0, width, height);
+      const cx = c.getContext('2d');
+      if (!keepAlpha) { cx.fillStyle = '#ffffff'; cx.fillRect(0, 0, width, height); }   // JPEG has no transparency: without this, see-through PNGs turn black
+      cx.drawImage(img, 0, 0, width, height);
       URL.revokeObjectURL(url);
-      c.toBlob(b => b ? resolve(b) : reject(new Error('IMAGE_ENCODE_FAILED')), 'image/jpeg', quality);
+      if (keepAlpha) c.toBlob(b => b ? resolve(b) : reject(new Error('IMAGE_ENCODE_FAILED')), 'image/png');
+      else c.toBlob(b => b ? resolve(b) : reject(new Error('IMAGE_ENCODE_FAILED')), 'image/jpeg', quality);
     };
     img.src = url;
   });
+}
+// ---- HEIC / HEIF (iPhone & some Android cameras): browsers that cannot open them natively get a converter, loaded only when needed ----
+const HEIC_LIB_URL = window.HEIC_LIB_URL || 'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
+async function isHeicFile(f) {
+  if (/heic|heif/i.test((f.type || '') + ' ' + (f.name || ''))) return true;
+  try {   // some phones give no type/name: look at the file's own signature ("ftyp" + heic/heif brand)
+    const h = new Uint8Array(await f.slice(0, 16).arrayBuffer());
+    const t = String.fromCharCode(...h.slice(4, 12));
+    return /^ftyp(heic|heix|hevc|hevx|heim|heis|mif1|msf1)/.test(t);
+  } catch (e) { return false; }
+}
+let heicLibP = null;
+function loadHeicLib() {
+  if (window.heic2any) return Promise.resolve();
+  if (!heicLibP) heicLibP = new Promise((res, rej) => {
+    const sc = document.createElement('script'); sc.src = HEIC_LIB_URL;
+    sc.onload = () => window.heic2any ? res() : rej(new Error('HEIC_LIB_MISSING'));
+    sc.onerror = () => { heicLibP = null; rej(new Error('HEIC_LIB_OFFLINE')); };
+    document.head.appendChild(sc);
+  });
+  return heicLibP;
+}
+async function resizeToBlob(file, maxDim, quality, keepAlpha) {
+  try { return await resizeToBlobRaw(file, maxDim, quality, keepAlpha); }
+  catch (e) {
+    if (!(await isHeicFile(file))) throw e;
+    try { showToast('กำลังแปลงรูป HEIC…', 2500); } catch (_) {}
+    await loadHeicLib();
+    let out = await window.heic2any({ blob: file, toType: 'image/jpeg', quality: 0.85 });
+    if (Array.isArray(out)) out = out[0];
+    return resizeToBlobRaw(out, maxDim, quality, keepAlpha);
+  }
 }
 async function setSlipDraftFromFile(file, silent) {
   if (slipItems.length >= MAX_SLIPS) { if (!silent) showToast('แนบได้สูงสุด ' + MAX_SLIPS + ' รูป', 3000); return false; }
@@ -5504,11 +5627,12 @@ async function onCatImageChosen(input) {
   try {
     if (f.type === 'image/gif' && f.size <= 200 * 1024) dataUrl = await fileToDataUrl(f);
     else {
-      const blob = await resizeToBlob(f, 96, 0.8);
+      const blob = await cropImage(f, { aspect: 1, outW: 112, q: 0.85, keepAlpha: /png|webp|gif/.test(f.type), title: 'เลือกพื้นที่ของไอคอน' });   // keep see-through pictures see-through
+      if (!blob) return;
       dataUrl = await fileToDataUrl(blob);
       if (f.type === 'image/gif') showToast('GIF ใหญ่เกิน 200 KB จึงใช้เป็นรูปนิ่งแทน', 3800);
     }
-  } catch (e) { showToast('อ่านรูปนี้ไม่ได้ ลองรูปอื่น', 3000); return; }
+  } catch (e) { showToast(imgErrMsg(f, e), 5000); return; }
   if (dataUrl.length > 330000) { showToast('รูปนี้ใหญ่เกินไป ลองรูปอื่น', 3000); return; }
   const id = 'ci' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
   catImages[id] = dataUrl;
@@ -5841,32 +5965,10 @@ async function processSlipFile(file) {
   await setSlipDraftFromFile(file, true);
 }
 
-function resizeAndEncode(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error('FILE_READ_FAILED'));
-    reader.onload = () => {
-      const img = new Image();
-      img.onerror = () => reject(new Error('IMAGE_DECODE_FAILED'));
-      img.onload = () => {
-        const maxDim = 1200;
-        let { width, height } = img;
-        if (width > maxDim || height > maxDim) {
-          const ratio = Math.min(maxDim / width, maxDim / height);
-          width = Math.round(width * ratio);
-          height = Math.round(height * ratio);
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = width; canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-        resolve({ base64: dataUrl.split(',')[1], mediaType: 'image/jpeg' });
-      };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
-  });
+async function resizeAndEncode(file) {   // same pipeline as every other picture (handles HEIC, see-through PNG)
+  const blob = await resizeToBlob(file, 1200, 0.85);
+  const dataUrl = await new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result)); fr.onerror = () => rej(new Error('FILE_READ_FAILED')); fr.readAsDataURL(blob); });
+  return { base64: dataUrl.split(',')[1], mediaType: 'image/jpeg' };
 }
 
 async function analyzeSlip(base64, mediaType) {
