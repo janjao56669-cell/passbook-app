@@ -4181,14 +4181,17 @@ function resizeToBlobRaw(file, maxDim, quality, keepAlpha) {
 }
 // ---- HEIC / HEIF (iPhone & some Android cameras): browsers that cannot open them natively get a converter, loaded only when needed ----
 const HEIC_LIB_URL = window.HEIC_LIB_URL || 'https://cdn.jsdelivr.net/npm/libheif-js@1.23.5/libheif-wasm/libheif-bundle.js';
-const IMG_BUILD = 'i3';
-async function heicBrand(f) {   // reads the file's own signature; returns e.g. 'heic' / 'mif1', or '' when it is not HEIF
+const IMG_BUILD = 'i4';
+async function heicBrand(f) {   // '' = not a HEIF file; otherwise the brand (or 'type:<first bytes>' when only the file type says so)
+  let t = '', hex = '';
   try {
     const h = new Uint8Array(await f.slice(0, 16).arrayBuffer());
-    const t = String.fromCharCode(...h.slice(4, 12));
-    const m = /^ftyp(heic|heix|hevc|hevx|heim|heis|mif1|msf1|avif)/.exec(t);
-    return m ? m[1] : '';
-  } catch (e) { return ''; }
+    t = String.fromCharCode(...h.slice(4, 12)); hex = [...h.slice(0, 12)].map(x => x.toString(16).padStart(2, '0')).join('');
+  } catch (e) {}
+  const m = /^ftyp(.{4})/.exec(t);
+  if (m) return m[1].replace(/[^\x20-\x7e]/g, '?');
+  if (/heic|heif|avif/i.test((f && f.type) || '')) return 'type:' + hex;   // phone says it is HEIF even though the signature looks unusual: let the converter try
+  return '';
 }
 // The converter (libheif, ~2 MB, loaded from the internet the first time) runs in a background worker so the page never freezes.
 let heicJob = null;
