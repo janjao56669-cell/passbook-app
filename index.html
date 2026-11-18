@@ -80,6 +80,18 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .prof-photo { width: 84px; height: 84px; border-radius: 50%; border: 2px solid var(--line); background: var(--page-cream-2) center / cover no-repeat; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 8px; }
   .theme-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 10px; }
   .theme-sw { width: 44px; height: 44px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; padding: 0; }
+  .eye-btn { border: 0; background: rgba(184,146,47,.16); border-radius: 10px; width: 36px; height: 32px; font-size: 17px; line-height: 1; cursor: pointer; vertical-align: middle; margin-left: 8px; -webkit-tap-highlight-color: transparent; }
+  .hc-big .eye-btn { font-size: 16px; }
+  .sv-mask { letter-spacing: 2px; color: var(--ink-soft); }
+  .pin-dots { display: flex; justify-content: center; gap: 14px; margin: 10px 0 14px; }
+  .pin-dots i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--brass); background: transparent; }
+  .pin-dots i.on { background: var(--brass); }
+  .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 300px; margin: 0 auto; }
+  .pin-pad button { height: 54px; font-size: 22px; font-weight: 700; border-radius: 14px; border: 1px solid var(--line); background: var(--page-cream); color: var(--ink); font-family: inherit; }
+  .pin-pad button:active { background: rgba(184,146,47,.2); }
+  .pin-pad button.ghost { border-color: transparent; background: none; font-size: 15px; font-weight: 600; color: var(--ink-soft); }
+  .pin-links { display: flex; justify-content: center; gap: 18px; margin-top: 12px; font-size: 13.5px; }
+  .pin-links a { color: var(--brass); text-decoration: underline; cursor: pointer; }
   .fold-t { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; user-select: none; -webkit-tap-highlight-color: transparent; }
   .fold-t .tri { display: inline-block; width: 26px; height: 26px; line-height: 26px; text-align: center; font-size: 13px; border-radius: 8px; background: rgba(184,146,47,.16); color: var(--brass); transition: transform .18s; }
   .fold-t.closed .tri { transform: rotate(-90deg); }
@@ -1342,13 +1354,44 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
 <!-- Savings (V1.9) -->
 <div class="overlay" id="savingsOverlay">
   <div class="sheet">
-    <div class="sheet-title">🐷 เงินออม</div>
+    <div class="sheet-title">🐷 เงินออม <button type="button" class="eye-btn" id="svEye" onclick="toggleSavEye()" title="ซ่อน/แสดงยอดเงินออม"></button> <button type="button" class="eye-btn" id="svLockBtn" onclick="openPinMenu()" title="ตั้งค่ารหัส" style="display:none;">🔐</button></div>
     <div class="set-note" id="svNote" style="margin:-6px 0 8px;"></div>
     <div id="svBody"></div>
     <div class="sheet-actions">
       <button class="btn-cancel" onclick="closeSavings()">ปิด</button>
       <button class="btn-save in" onclick="openJarEdit(null)">+ เพิ่มกระปุก</button>
     </div>
+  </div>
+</div>
+<div class="overlay" id="pinOverlay">
+  <div class="sheet">
+    <div class="sheet-title" id="pinTitle">ใส่รหัสผ่าน</div>
+    <div class="set-note" id="pinSub" style="margin:-6px 0 0;text-align:center;"></div>
+    <div class="pin-dots" id="pinDots"></div>
+    <div class="fb-error" id="pinError" style="text-align:center;"></div>
+    <div class="pin-pad" id="pinPad"></div>
+    <div class="pin-links" id="pinLinks"></div>
+  </div>
+</div>
+<div class="overlay" id="pinResetOverlay">
+  <div class="sheet">
+    <div class="sheet-title">ลืมรหัส</div>
+    <div class="set-note" style="margin:-6px 0 8px;">การล้างรหัสจะไม่ลบเงินออมของคุณ แต่ใครถือมือถือเครื่องนี้ก็จะเห็นยอดออมได้ ถ้าต้องการล้างรหัส พิมพ์คำว่า <b>รีเซ็ต</b> แล้วกดยืนยัน</div>
+    <input type="text" class="text-input" id="pinResetInput" autocomplete="off" placeholder="พิมพ์ รีเซ็ต">
+    <div class="fb-error" id="pinResetError"></div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" onclick="closePinReset()">ยกเลิก</button>
+      <button class="btn-save out" onclick="confirmPinReset()">ยืนยันล้างรหัส</button>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="pinMenuOverlay">
+  <div class="sheet">
+    <div class="sheet-title">🔐 รหัสปิดยอดเงินออม</div>
+    <div class="set-note" style="margin:-6px 0 8px;">ยอดออมจะถูกซ่อนไว้เป็น •••• จนกว่าจะใส่รหัส 6 หลัก และซ่อนกลับเองใน 30 วินาที หรือเมื่อออกจากแอป</div>
+    <div class="set-row" onclick="pinChange()"><div class="set-ic">🔑</div><div class="set-txt"><b>เปลี่ยนรหัส</b></div><div class="set-go">›</div></div>
+    <div class="set-row" onclick="pinTurnOff()"><div class="set-ic">👁️</div><div class="set-txt"><b>เลิกใช้รหัส (แสดงยอดตลอด)</b></div><div class="set-go">›</div></div>
+    <div class="sheet-actions"><button class="btn-cancel" onclick="document.getElementById('pinMenuOverlay').classList.remove('show')">ปิด</button></div>
   </div>
 </div>
 <div class="overlay" id="svMoveOverlay">
@@ -3728,10 +3771,104 @@ function jarAmount(id) {
 function savedTotal() { let s = 0; savings.moves.forEach(m => { s += m.type === 'dep' ? m.amount : -m.amount; }); return Math.round(s * 100) / 100; }
 function txNetTotal() { let s = 0; transactions.forEach(t => { s += t.type === 'in' ? t.amount : -t.amount; }); return Math.round(s * 100) / 100; }
 function availableBalance() { return Math.round((txNetTotal() - savedTotal()) * 100) / 100; }
+/* ---- hide the savings amounts behind a 6-digit code ---- */
+const SAVLOCK_KEY = 'savLock';
+let savLock = null;   // { salt, hash } once a code has been set
+let savRevealUntil = 0, savRevealTimer = null;
+try { const o = JSON.parse(localStorage.getItem(SAVLOCK_KEY) || 'null'); if (o && typeof o.salt === 'string' && typeof o.hash === 'string') savLock = o; } catch (e) {}
+function savMasked() { return !!savLock && Date.now() >= savRevealUntil; }
+function svFmt(n) { return savMasked() ? '<span class="sv-mask">••••••</span>' : fmt(n); }
+function svTxt(n) { return savMasked() ? '••••••' : fmt(n); }
+async function pinHash(pin, salt) {
+  const data = new TextEncoder().encode(salt + ':' + pin);
+  if (window.crypto && crypto.subtle) { const b = await crypto.subtle.digest('SHA-256', data); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); }
+  let h = 5381; for (const c of data) h = ((h << 5) + h + c) >>> 0; return 'f' + h.toString(16);   // very old browsers only
+}
+function savLockSave() { try { if (savLock) localStorage.setItem(SAVLOCK_KEY, JSON.stringify(savLock)); else localStorage.removeItem(SAVLOCK_KEY); } catch (e) {} }
+function refreshSavViews() {
+  try { render(); } catch (e) {}
+  if (document.getElementById('savingsOverlay').classList.contains('show')) renderSavings();
+  updateEyeButtons();
+}
+function updateEyeButtons() {
+  const b = document.getElementById('svEye'); if (b) b.textContent = savMasked() ? '🙈' : '👁️';
+  const l = document.getElementById('svLockBtn'); if (l) l.style.display = savLock ? '' : 'none';
+}
+function savHideNow() { savRevealUntil = 0; clearTimeout(savRevealTimer); refreshSavViews(); }
+function savReveal() {
+  savRevealUntil = Date.now() + 30000; clearTimeout(savRevealTimer);
+  savRevealTimer = setTimeout(savHideNow, 30000);
+  refreshSavViews();
+}
+function toggleSavEye() {
+  if (!savLock) { pinOpen('set'); return; }               // first time: choose a code, then hide
+  if (savMasked()) pinOpen('verify'); else savHideNow();   // hidden: ask for the code; shown: hide at once
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden && savLock) savHideNow(); });
+window.addEventListener('pagehide', () => { savRevealUntil = 0; });
+
+let pinMode = 'verify', pinBuf = '', pinFirst = '', pinAfter = null, pinFails = 0, pinBlockedUntil = 0;
+function pinOpen(mode, after) {
+  pinMode = mode; pinBuf = ''; pinFirst = ''; pinAfter = after || null;
+  const t = document.getElementById('pinTitle'), sub = document.getElementById('pinSub'), links = document.getElementById('pinLinks');
+  t.textContent = mode === 'set' ? 'ตั้งรหัสใหม่ 6 หลัก' : mode === 'set2' ? 'ใส่รหัสอีกครั้งเพื่อยืนยัน' : 'ใส่รหัสเพื่อดูยอดเงินออม';
+  sub.textContent = mode === 'set' ? 'รหัสนี้ใช้เปิดดูยอดเงินออม จำให้ได้นะ' : '';
+  links.innerHTML = mode === 'verify' ? '<a onclick="openPinReset()">ลืมรหัส?</a>' : '';
+  pinPaint(); pinErr('');
+  document.getElementById('pinOverlay').classList.add('show');
+}
+function pinClose() { document.getElementById('pinOverlay').classList.remove('show'); pinBuf = ''; }
+function pinErr(m) { const e = document.getElementById('pinError'); e.className = m ? 'fb-error show' : 'fb-error'; e.textContent = m || ''; }
+function pinPaint() {
+  document.getElementById('pinDots').innerHTML = Array.from({ length: 6 }, (_, i) => '<i class="' + (i < pinBuf.length ? 'on' : '') + '"></i>').join('');
+  const pad = document.getElementById('pinPad'); if (pad.dataset.ready) return; pad.dataset.ready = '1';
+  ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'ยกเลิก', '0', '⌫'].forEach(k => {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = k; if (k === 'ยกเลิก' || k === '⌫') b.className = 'ghost';
+    b.onclick = () => k === 'ยกเลิก' ? pinClose() : k === '⌫' ? (pinBuf = pinBuf.slice(0, -1), pinErr(''), pinPaint()) : pinKey(k);
+    pad.appendChild(b);
+  });
+}
+async function pinKey(d) {
+  if (pinBuf.length >= 6) return;
+  if (Date.now() < pinBlockedUntil) { pinErr('ใส่ผิดหลายครั้ง รออีก ' + Math.ceil((pinBlockedUntil - Date.now()) / 1000) + ' วินาที'); return; }
+  pinBuf += d; pinErr(''); pinPaint();
+  if (pinBuf.length < 6) return;
+  const entered = pinBuf;
+  if (pinMode === 'set') { pinFirst = entered; pinBuf = ''; pinMode = 'set2'; document.getElementById('pinTitle').textContent = 'ใส่รหัสอีกครั้งเพื่อยืนยัน'; pinPaint(); return; }
+  if (pinMode === 'set2') {
+    if (entered !== pinFirst) { pinBuf = ''; pinFirst = ''; pinMode = 'set'; document.getElementById('pinTitle').textContent = 'ตั้งรหัสใหม่ 6 หลัก'; pinPaint(); pinErr('รหัสสองครั้งไม่ตรงกัน ลองใหม่'); return; }
+    const salt = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    savLock = { salt, hash: await pinHash(entered, salt) }; savLockSave();
+    pinClose(); savRevealUntil = 0; refreshSavViews(); showToast('ตั้งรหัสแล้ว ยอดเงินออมถูกซ่อนไว้');
+    return;
+  }
+  // verify
+  const ok = savLock && (await pinHash(entered, savLock.salt)) === savLock.hash;
+  if (ok) {
+    pinFails = 0; const after = pinAfter; pinClose();
+    if (after) after(); else savReveal();
+  } else {
+    pinFails++; pinBuf = ''; pinPaint();
+    if (pinFails >= 5) { pinFails = 0; pinBlockedUntil = Date.now() + 30000; pinErr('ใส่ผิดครบ 5 ครั้ง รอ 30 วินาที'); }
+    else pinErr('รหัสไม่ถูกต้อง (' + pinFails + '/5)');
+  }
+}
+function openPinMenu() { if (savLock && !savMasked()) document.getElementById('pinMenuOverlay').classList.add('show'); else if (savLock) pinOpen('verify', () => { savReveal(); document.getElementById('pinMenuOverlay').classList.add('show'); }); }
+function pinChange() { document.getElementById('pinMenuOverlay').classList.remove('show'); pinOpen('verify', () => pinOpen('set')); }
+function pinTurnOff() {
+  document.getElementById('pinMenuOverlay').classList.remove('show');
+  pinOpen('verify', () => { savLock = null; savLockSave(); savRevealUntil = 0; refreshSavViews(); showToast('เลิกใช้รหัสแล้ว ยอดออมแสดงตามปกติ'); });
+}
+function openPinReset() { document.getElementById('pinResetInput').value = ''; document.getElementById('pinResetError').textContent = ''; document.getElementById('pinResetOverlay').classList.add('show'); }
+function closePinReset() { document.getElementById('pinResetOverlay').classList.remove('show'); }
+function confirmPinReset() {
+  if (document.getElementById('pinResetInput').value.trim() !== 'รีเซ็ต') { const e = document.getElementById('pinResetError'); e.className = 'fb-error show'; e.textContent = 'พิมพ์คำว่า รีเซ็ต ให้ตรงก่อน'; return; }
+  savLock = null; savLockSave(); savRevealUntil = 0; closePinReset(); pinClose(); refreshSavViews(); showToast('ล้างรหัสแล้ว ยอดออมแสดงตามปกติ ตั้งรหัสใหม่ได้ที่ปุ่มรูปตา');
+}
 function renderSavingLine(saved) {
   const b = document.getElementById('savingLine');
   if (!b) return;
-  if (saved > 0 || savings.moves.length) { b.style.display = 'flex'; b.innerHTML = '<span>🐷 เงินออมที่แยกไว้ (หักจากยอดคงเหลือแล้ว)</span><b>' + fmt(saved) + '</b>'; }
+  if (saved > 0 || savings.moves.length) { b.style.display = 'flex'; b.innerHTML = '<span>🐷 เงินออมที่แยกไว้ (หักจากยอดคงเหลือแล้ว)</span><b>' + svFmt(saved) + '</b>'; }
   else b.style.display = 'none';
 }
 function ensureDefaultJar() {
@@ -3740,15 +3877,18 @@ function ensureDefaultJar() {
 function openSavings() { closeSettings(); ensureDefaultJar(); renderSavings(); document.getElementById('savingsOverlay').classList.add('show'); }
 function closeSavings() { document.getElementById('savingsOverlay').classList.remove('show'); }
 function renderSavings() {
+  updateEyeButtons();
   document.getElementById('svNote').innerHTML = 'ยอดคงเหลือที่ใช้ได้ตอนนี้ <b>' + fmt(availableBalance()) + '</b> · เงินที่หยอดจะถูกหักออกจากยอดคงเหลือ และไม่นับเป็นรายจ่าย';
   const box = document.getElementById('svBody'); box.innerHTML = '';
   savings.jars.forEach(j => {
     const amt = jarAmount(j.id); const card = document.createElement('div'); card.className = 'jar-card';
     const top = document.createElement('div'); top.className = 'jar-top';
     const nm = document.createElement('span'); nm.className = 'jar-name'; nm.textContent = '🐷 ' + j.name;
-    const am = document.createElement('span'); am.className = 'jar-amt'; am.textContent = fmt(amt);
+    const am = document.createElement('span'); am.className = 'jar-amt'; am.textContent = svTxt(amt);
     top.appendChild(nm); top.appendChild(am); card.appendChild(top);
-    if (j.goal) {
+    if (j.goal && savMasked()) {
+      const g0 = document.createElement('div'); g0.className = 'jar-goal'; g0.textContent = 'เป้าหมาย ••••••'; card.appendChild(g0);
+    } else if (j.goal) {
       const pct = Math.min(100, amt / j.goal * 100);
       const g = document.createElement('div'); g.className = 'jar-goal'; g.textContent = 'เป้าหมาย ' + fmt(j.goal) + ' · ' + pct.toFixed(0) + '%' + (amt >= j.goal ? ' 🎉 ครบแล้ว' : ' · อีก ' + fmt(j.goal - amt));
       const bar = document.createElement('div'); bar.className = 'bg-bar'; const f = document.createElement('i'); f.style.width = pct + '%'; bar.appendChild(f);
@@ -3769,7 +3909,7 @@ function renderSavings() {
       const l = document.createElement('div'); l.className = 'l'; l.textContent = (m.type === 'dep' ? 'หยอด ' : 'ถอน ') + (jar ? jar.name : '');
       const sm = document.createElement('small'); sm.textContent = thaiDateLabel(m.date) + (m.note ? ' · ' + m.note : ''); l.appendChild(sm);
       const r = document.createElement('div'); r.className = 'r'; r.style.color = m.type === 'dep' ? 'var(--deposit)' : 'var(--brass)';
-      r.appendChild(document.createTextNode((m.type === 'dep' ? '+' : '−') + fmt(m.amount)));
+      r.appendChild(document.createTextNode((m.type === 'dep' ? '+' : '−') + svTxt(m.amount)));
       const x = document.createElement('button'); x.className = 'x'; x.textContent = '✕'; x.title = 'ลบรายการนี้'; x.onclick = () => deleteMove(m.id); r.appendChild(x);
       row.appendChild(l); row.appendChild(r); box.appendChild(row);
     });
@@ -3792,7 +3932,7 @@ function saveMove() {
   const a = parseMoney(document.getElementById('mvAmount').value);
   if (a === null) { showMvError('กรุณาใส่จำนวนเงินให้ถูกต้อง'); return; }
   if (mvType === 'dep' && a > availableBalance() + 0.004) { showMvError('ยอดคงเหลือไม่พอ (มี ' + fmt(availableBalance()) + ')'); return; }
-  if (mvType === 'wd' && a > jarAmount(j.id) + 0.004) { showMvError('ในกระปุกมีเงินไม่พอ (มี ' + fmt(jarAmount(j.id)) + ')'); return; }
+  if (mvType === 'wd' && a > jarAmount(j.id) + 0.004) { showMvError('ในกระปุกมีเงินไม่พอ (มี ' + svTxt(jarAmount(j.id)) + ')'); return; }
   savings.moves.push({ id: 'mv-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6), jarId: j.id, type: mvType, amount: a, date: todayStr(), note: document.getElementById('mvNote').value.trim().slice(0, 40), createdAt: Date.now() });
   saveSavings(); closeMove(); render(); renderSavings();
   showToast(mvType === 'dep' ? 'หยอดเงินออมแล้ว' : 'ถอนเงินออมแล้ว');
@@ -3826,7 +3966,7 @@ function saveJar() {
 }
 function deleteJar() {
   const j = savings.jars.find(x => x.id === jeId); if (!j) return;
-  if (Math.abs(jarAmount(j.id)) > 0.004) { showJeError('ลบไม่ได้ ในกระปุกยังมีเงิน ' + fmt(jarAmount(j.id)) + ' กรุณาถอนออกให้หมดก่อน'); return; }
+  if (Math.abs(jarAmount(j.id)) > 0.004) { showJeError('ลบไม่ได้ ในกระปุกยังมีเงิน ' + svTxt(jarAmount(j.id)) + ' กรุณาถอนออกให้หมดก่อน'); return; }
   if (!confirm('ลบกระปุก "' + j.name + '" และประวัติหยอด/ถอนของกระปุกนี้ใช่ไหม?')) return;
   savings.jars = savings.jars.filter(x => x.id !== j.id); savings.moves = savings.moves.filter(m => m.jarId !== j.id);
   saveSavings(); closeJarEdit(); render(); renderSavings(); showToast('ลบกระปุกแล้ว');
@@ -5237,7 +5377,7 @@ function onClearInput() {
 async function doClearAll() {
   if (document.getElementById('clearInput').value.replace(/\s+/g, '') !== 'ลบทั้งหมด') return;
   try { await new Promise(r => { try { const q = indexedDB.deleteDatabase(SLIP_DB); q.onsuccess = q.onerror = q.onblocked = () => r(); setTimeout(r, 1500); } catch (e) { r(); } }); } catch (e) {}
-  [TX_KEY, RECV_KEY, CAT_KEY, CAT_TRASH_KEY, CUSTOM_EMOJI_KEY, LAST_BACKUP_KEY, FB_NAME_KEY, FB_DRAFT_KEY, RECUR_KEY, SNOOZE_KEY, BANK_KEY, BANK_SEEN_KEY, BUDGET_KEY, SAVE_KEY, STYLE_KEY, 'budgetOpen', 'entryFold', PROFILE_KEY, PHOTO_KEY, COVERBG_KEY, ACCT_KEY, ACCT_LAST_KEY, CATIMG_KEY, HOME_CARDS_KEY].forEach(k => {
+  [TX_KEY, RECV_KEY, CAT_KEY, CAT_TRASH_KEY, CUSTOM_EMOJI_KEY, LAST_BACKUP_KEY, FB_NAME_KEY, FB_DRAFT_KEY, RECUR_KEY, SNOOZE_KEY, BANK_KEY, BANK_SEEN_KEY, BUDGET_KEY, SAVE_KEY, STYLE_KEY, 'budgetOpen', 'entryFold', 'savLock', PROFILE_KEY, PHOTO_KEY, COVERBG_KEY, ACCT_KEY, ACCT_LAST_KEY, CATIMG_KEY, HOME_CARDS_KEY].forEach(k => {
     try { localStorage.removeItem(k); } catch (e) {}
   });
   window.location.reload();
@@ -6083,8 +6223,8 @@ function homeCardHtml(id) {
   if (id === 'savings') {
     let h = '<div class="hc-t"><span>🐷 กระปุกออม</span><a onclick="openSavings()">จัดการ ›</a></div>';
     if (!savings.jars.length) return h + '<div class="hc-mut">ยังไม่มีกระปุก กด "จัดการ" เพื่อสร้าง</div>';
-    h += '<div class="hc-big">' + fmt(savedTotal()) + '</div><div class="hc-mut" style="margin-bottom:4px;">รวมเงินออมทั้งหมด</div>';
-    savings.jars.slice(0, 3).forEach(j => { let v = 0; savings.moves.forEach(m => { if (m.jarId === j.id) v += m.type === 'dep' ? m.amount : -m.amount; }); h += `<div class="hc-row"><span>${escapeHtml(j.name)}</span><span>${fmt(Math.round(v * 100) / 100)}</span></div>`; });
+    h += '<div class="hc-big">' + svFmt(savedTotal()) + '<button type="button" class="eye-btn" onclick="toggleSavEye()" title="ซ่อน/แสดงยอดเงินออม">' + (savMasked() ? '🙈' : '👁️') + '</button></div><div class="hc-mut" style="margin-bottom:4px;">รวมเงินออมทั้งหมด</div>';
+    savings.jars.slice(0, 3).forEach(j => { let v = 0; savings.moves.forEach(m => { if (m.jarId === j.id) v += m.type === 'dep' ? m.amount : -m.amount; }); h += `<div class="hc-row"><span>${escapeHtml(j.name)}</span><span>${svFmt(Math.round(v * 100) / 100)}</span></div>`; });
     return h;
   }
   if (id === 'compare') {
