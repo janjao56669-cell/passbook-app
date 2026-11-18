@@ -3399,15 +3399,14 @@ let pfDraft = null;   // { photo, bg, theme }
 // tell the person WHY a picture could not be used, and what to do about it
 function imgErrMsg(f, e) {
   if (e && e.message === 'HEIC_CANCELLED') return 'ยกเลิกการแปลงรูปแล้ว';
-  if (e && e.message === 'HEIC_TIMEOUT') return 'แปลงรูปนานเกินไป เครื่องอาจไม่ไหว ลองตั้งกล้องเป็น JPG หรือจับหน้าจอรูปนั้นแทน';
-  if (e && e.message === 'HEIC_FAIL:TOO_BIG') return 'รูป HEIC ใหญ่เกินไปสำหรับเครื่องนี้ ลองบันทึกเป็น JPG ก่อน';
-  if (e && /^HEIC_FAIL/.test(e.message)) return 'แปลงรูป HEIC นี้ไม่สำเร็จ (' + e.message.slice(10, 60) + ') ลองบันทึกเป็น JPG หรือจับหน้าจอรูปนั้นแทน';
-  if (e && e.message === 'HEIC_LIB_OFFLINE') return 'แปลงรูป HEIC ต้องต่ออินเทอร์เน็ตครั้งแรก ลองใหม่เมื่อมีเน็ต หรือบันทึกรูปเป็น JPG ก่อน';
-  const n = ((f && f.type) || '') + ' ' + ((f && f.name) || '');
-  if (/heic|heif/i.test(n)) return 'รูปแบบ HEIC/HEIF เครื่องนี้เปิดไม่ได้ ลองบันทึกเป็น JPG หรือ PNG ก่อน หรือใช้ภาพจับหน้าจอแทน';
-  if (f && f.size > 40 * 1024 * 1024) return 'รูปใหญ่มาก (' + (f.size / 1048576).toFixed(0) + ' MB) เครื่องอ่านไม่ไหว ลองรูปที่เล็กลง';
-  if (f && f.type && !/^image\//.test(f.type)) return 'ไฟล์นี้ไม่ใช่รูปภาพ เลือกไฟล์ JPG, PNG, WebP หรือ GIF';
-  return 'อ่านรูปนี้ไม่ได้ ลองรูปอื่น หรือบันทึกรูปเป็น JPG/PNG ก่อน';
+  const mb = f && f.size ? (f.size / 1048576).toFixed(1) + 'MB' : '?';
+  const code = ' [' + IMG_BUILD + ' ' + ((e && e.message) || '?').slice(0, 40) + ' ' + ((e && e.diag) || '') + ' ' + ((f && f.type) || '-') + ' ' + mb + ']';
+  if (e && e.message === 'HEIC_TIMEOUT') return 'แปลงรูปนานเกินไป เครื่องอาจไม่ไหว ลองตั้งกล้องเป็น JPG หรือจับหน้าจอรูปนั้นแทน' + code;
+  if (e && e.message === 'HEIC_FAIL:TOO_BIG') return 'รูป HEIC ใหญ่เกินไปสำหรับเครื่องนี้ ลองบันทึกเป็น JPG ก่อน' + code;
+  if (e && e.message === 'HEIC_LIB_OFFLINE') return 'แปลงรูป HEIC ต้องต่ออินเทอร์เน็ตครั้งแรก ลองใหม่เมื่อมีเน็ต หรือบันทึกรูปเป็น JPG ก่อน' + code;
+  if (e && e.heic) return 'แปลงรูป HEIC นี้ไม่สำเร็จ ลองบันทึกเป็น JPG หรือจับหน้าจอรูปนั้นแทน' + code;
+  if (f && f.type && !/^image\//.test(f.type)) return 'ไฟล์นี้ไม่ใช่รูปภาพ เลือกไฟล์ JPG, PNG, WebP หรือ GIF' + code;
+  return 'อ่านรูปนี้ไม่ได้ ลองรูปอื่น หรือบันทึกรูปเป็น JPG/PNG ก่อน' + code;
 }
 /* ---- picture cropper: every place that takes a picture lets the person choose which area is used ---- */
 let cropJob = null;
@@ -3513,8 +3512,8 @@ function renderProfileDraftKeepPickers(which) {
   if (which === 'c') { document.getElementById('pfC1').value = a; document.getElementById('pfC2').value = b; }
   else { document.getElementById('pfS1').value = c; document.getElementById('pfS2').value = d; }
 }
-async function pfChoosePhoto(inp) { const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return; try { const b = await cropImage(f, { aspect: 1, outW: 256, q: 0.8, round: true, title: 'เลือกพื้นที่ของรูปโปรไฟล์' }); if (!b) return; pfDraft.photo = await fileToDataUrl(b); renderProfileDraft(); } catch (e) { showToast(imgErrMsg(f, e), 5000); } }
-async function pfChooseBg(inp) { const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return; try { const b = await cropImage(f, { aspect: 13 / 4, outW: 800, q: 0.7, title: 'เลือกพื้นที่ของภาพปก' }); if (!b) return; pfDraft.bg = await fileToDataUrl(b); renderProfileDraft(); } catch (e) { showToast(imgErrMsg(f, e), 5000); } }
+async function pfChoosePhoto(inp) { const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return; try { const b = await cropImage(f, { aspect: 1, outW: 256, q: 0.8, round: true, title: 'เลือกพื้นที่ของรูปโปรไฟล์' }); if (!b) return; pfDraft.photo = await fileToDataUrl(b); renderProfileDraft(); } catch (e) { showToast(imgErrMsg(f, e), 9000); } }
+async function pfChooseBg(inp) { const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return; try { const b = await cropImage(f, { aspect: 13 / 4, outW: 800, q: 0.7, title: 'เลือกพื้นที่ของภาพปก' }); if (!b) return; pfDraft.bg = await fileToDataUrl(b); renderProfileDraft(); } catch (e) { showToast(imgErrMsg(f, e), 9000); } }
 function pfClearPhoto() { pfDraft.photo = ''; renderProfileDraft(); }
 function pfClearBg() { pfDraft.bg = ''; renderProfileDraft(); }
 function closeProfile() { document.getElementById('profileOverlay').classList.remove('show'); pfDraft = null; }
@@ -4182,13 +4181,14 @@ function resizeToBlobRaw(file, maxDim, quality, keepAlpha) {
 }
 // ---- HEIC / HEIF (iPhone & some Android cameras): browsers that cannot open them natively get a converter, loaded only when needed ----
 const HEIC_LIB_URL = window.HEIC_LIB_URL || 'https://cdn.jsdelivr.net/npm/libheif-js@1.23.5/libheif-wasm/libheif-bundle.js';
-async function isHeicFile(f) {
-  if (/heic|heif/i.test((f.type || '') + ' ' + (f.name || ''))) return true;
-  try {   // some phones give no type/name: look at the file's own signature ("ftyp" + heic/heif brand)
+const IMG_BUILD = 'i3';
+async function heicBrand(f) {   // reads the file's own signature; returns e.g. 'heic' / 'mif1', or '' when it is not HEIF
+  try {
     const h = new Uint8Array(await f.slice(0, 16).arrayBuffer());
     const t = String.fromCharCode(...h.slice(4, 12));
-    return /^ftyp(heic|heix|hevc|hevx|heim|heis|mif1|msf1)/.test(t);
-  } catch (e) { return false; }
+    const m = /^ftyp(heic|heix|hevc|hevx|heim|heis|mif1|msf1|avif)/.exec(t);
+    return m ? m[1] : '';
+  } catch (e) { return ''; }
 }
 // The converter (libheif, ~2 MB, loaded from the internet the first time) runs in a background worker so the page never freezes.
 let heicJob = null;
@@ -4205,7 +4205,10 @@ function heicConvert(file) {
         'const a=im[0],W=a.get_width(),H=a.get_height();if(W*H>64e6)throw new Error("TOO_BIG");' +
         'const id={data:new Uint8ClampedArray(W*H*4),width:W,height:H};' +
         'await new Promise((res,rej)=>a.display(id,r=>r?res():rej(new Error("DISPLAY_FAILED"))));' +
-        'postMessage({ok:1,w:W,h:H,buf:id.data.buffer},[id.data.buffer]);}catch(x){postMessage({ok:0,err:String(x&&x.message||x)})}};' +
+        'const M=1600,sc=Math.min(1,M/Math.max(W,H));let ow=W,oh=H,od=id.data;' +
+        'if(sc<1){ow=Math.max(1,Math.round(W*sc));oh=Math.max(1,Math.round(H*sc));od=new Uint8ClampedArray(ow*oh*4);const fx=W/ow,fy=H/oh,kx=Math.max(1,Math.min(4,Math.floor(fx))),ky=Math.max(1,Math.min(4,Math.floor(fy)));' +
+        'for(let y=0;y<oh;y++){for(let x=0;x<ow;x++){let r=0,g=0,b=0,al=0,n=0;for(let j=0;j<ky;j++){const sy=Math.min(H-1,Math.floor(y*fy+j*fy/ky));for(let i=0;i<kx;i++){const sx=Math.min(W-1,Math.floor(x*fx+i*fx/kx));const p=(sy*W+sx)*4;r+=id.data[p];g+=id.data[p+1];b+=id.data[p+2];al+=id.data[p+3];n++;}}const q=(y*ow+x)*4;od[q]=r/n;od[q+1]=g/n;od[q+2]=b/n;od[q+3]=al/n;}}}' +
+        'postMessage({ok:1,w:ow,h:oh,buf:od.buffer},[od.buffer]);}catch(x){postMessage({ok:0,err:String(x&&x.message||x)})}};' +
         'postMessage({ready:1});';
       w = new Worker(URL.createObjectURL(new Blob([src], { type: 'application/javascript' })));
       timer = setTimeout(() => end(reject, new Error('HEIC_TIMEOUT')), 90000);
@@ -4222,16 +4225,31 @@ function heicConvert(file) {
   });
 }
 async function resizeToBlob(file, maxDim, quality, keepAlpha) {
-  try { return await resizeToBlobRaw(file, maxDim, quality, keepAlpha); }
-  catch (e) {
-    if (!(await isHeicFile(file))) throw e;
-    const bz = document.getElementById('heicBusy'); document.getElementById('heicMsg').textContent = 'กำลังโหลดตัวแปลง (ครั้งแรกต้องใช้เน็ต)…'; bz.classList.add('show');
-    try {
-      await new Promise(r => setTimeout(r, 60));
-      const jpg = await heicConvert(file);
-      return await resizeToBlobRaw(jpg, maxDim, quality, keepAlpha);
-    } finally { bz.classList.remove('show'); }
-  }
+  const diag = [];
+  try { return await resizeToBlobRaw(file, maxDim, quality, keepAlpha); } catch (e1) { diag.push('img'); }
+  try {   // second route: decode through ImageBitmap (some phones manage this when <img> fails)
+    if (window.createImageBitmap) {
+      const bm = await createImageBitmap(file);
+      const ratio = Math.min(1, maxDim / Math.max(bm.width, bm.height));
+      const w = Math.max(1, Math.round(bm.width * ratio)), h = Math.max(1, Math.round(bm.height * ratio));
+      const c = document.createElement('canvas'); c.width = w; c.height = h; const cx = c.getContext('2d');
+      if (!keepAlpha) { cx.fillStyle = '#ffffff'; cx.fillRect(0, 0, w, h); }
+      cx.drawImage(bm, 0, 0, w, h); try { bm.close(); } catch (_) {}
+      const b = await new Promise(r => keepAlpha ? c.toBlob(r, 'image/png') : c.toBlob(r, 'image/jpeg', quality));
+      if (b) return b;
+      diag.push('bmpenc');
+    }
+  } catch (e2) { diag.push('bmp:' + (e2 && e2.name || '?')); }
+  const brand = await heicBrand(file);
+  const fail = (m, brandInfo) => { const er = new Error(m); er.diag = diag.join(',') + (brand ? ' b=' + brand : ' b=-'); er.heic = !!brand; return er; };
+  if (!brand) throw fail('IMAGE_DECODE_FAILED');
+  const bz = document.getElementById('heicBusy'); document.getElementById('heicMsg').textContent = 'กำลังโหลดตัวแปลง (ครั้งแรกต้องใช้เน็ต)…'; bz.classList.add('show');
+  try {
+    await new Promise(r => setTimeout(r, 60));
+    let jpg;
+    try { jpg = await heicConvert(file); } catch (e3) { diag.push('heic'); const er = fail(e3.message); throw er; }
+    try { return await resizeToBlobRaw(jpg, maxDim, quality, keepAlpha); } catch (e4) { diag.push('afterconv'); throw fail('IMAGE_DECODE_FAILED'); }
+  } finally { bz.classList.remove('show'); }
 }
 async function setSlipDraftFromFile(file, silent) {
   if (slipItems.length >= MAX_SLIPS) { if (!silent) showToast('แนบได้สูงสุด ' + MAX_SLIPS + ' รูป', 3000); return false; }
@@ -5664,7 +5682,7 @@ async function onCatImageChosen(input) {
       dataUrl = await fileToDataUrl(blob);
       if (f.type === 'image/gif') showToast('GIF ใหญ่เกิน 200 KB จึงใช้เป็นรูปนิ่งแทน', 3800);
     }
-  } catch (e) { showToast(imgErrMsg(f, e), 5000); return; }
+  } catch (e) { showToast(imgErrMsg(f, e), 9000); return; }
   if (dataUrl.length > 330000) { showToast('รูปนี้ใหญ่เกินไป ลองรูปอื่น', 3000); return; }
   const id = 'ci' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
   catImages[id] = dataUrl;
@@ -6068,7 +6086,7 @@ if ('serviceWorker' in navigator) {
 
 // Must equal BUILD_ID in sw.js for the same release. If the newest sw.js on the server has this same build,
 // this page IS the newest version (the page is always loaded fresh), so there is nothing to update to.
-const PAGE_BUILD = '20261117220000';
+const PAGE_BUILD = '20261118120000';
 async function pageIsCurrent() {
   try {
     const r = await fetch('sw.js?c=' + Date.now(), { cache: 'no-store' });
