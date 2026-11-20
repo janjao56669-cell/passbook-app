@@ -683,7 +683,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .cat-manage-list.is-dragging { user-select: none; -webkit-user-select: none; }
   .emoji-section-title { font-size: 12.5px; font-weight: 700; color: var(--ink-soft); margin: 4px 0 8px; display: flex; justify-content: space-between; align-items: center; }
   .emoji-mini-btn { border: 1px solid var(--brass); background: #fff; color: #7A5E1E; border-radius: 8px; padding: 4px 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
-  .emoji-custom-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin-bottom: 12px; padding: 2px; }
+  .emoji-custom-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; margin-bottom: 12px; padding: 2px; }
   .emoji-opt.add-opt { color: #7A5E1E; font-size: 26px; font-weight: 700; border: 1px dashed var(--brass); background: rgba(184,146,47,0.08); }
   .emoji-opt.del-mode { border-color: var(--withdraw); position: relative; }
   .emoji-opt.del-mode::after { content: '✕'; position: absolute; top: 2px; right: 4px; font-size: 11px; color: var(--withdraw); }
@@ -697,8 +697,8 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   /* Emoji picker */
   .emoji-reset-row { margin-bottom: 12px; }
   .emoji-reset-btn { width: 100%; padding: 11px; border-radius: 10px; border: 1px dashed var(--brass); background: rgba(184,146,47,0.08); color: #7A5E1E; font-size: 13.5px; font-weight: 700; cursor: pointer; }
-  .emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; max-height: 44vh; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 2px; }
-  .emoji-opt { aspect-ratio: 1; font-size: 22px; border-radius: 8px; border: 1px solid var(--line); background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .emoji-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; max-height: 44vh; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 2px; }
+  .emoji-opt { aspect-ratio: 1; align-self: start; min-width: 0; padding: 0; line-height: 1; font-size: 22px; border-radius: 8px; border: 1px solid var(--line); background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; }
   .emoji-opt:active { background: var(--page-cream-2); }
   .cat-trash-section { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--line); }
   .cat-trash-title { font-size: 12.5px; font-weight: 700; color: var(--ink-soft); margin-bottom: 8px; }
