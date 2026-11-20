@@ -683,8 +683,9 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .cat-manage-list.is-dragging { user-select: none; -webkit-user-select: none; }
   .emoji-section-title { font-size: 12.5px; font-weight: 700; color: var(--ink-soft); margin: 4px 0 8px; display: flex; justify-content: space-between; align-items: center; }
   .emoji-mini-btn { border: 1px solid var(--brass); background: #fff; color: #7A5E1E; border-radius: 8px; padding: 4px 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
-  .emoji-custom-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; margin-bottom: 12px; padding: 2px; }
-  .emoji-opt.add-opt { color: #7A5E1E; font-size: 26px; font-weight: 700; border: 1px dashed var(--brass); background: rgba(184,146,47,0.08); }
+  .emoji-custom-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; margin-bottom: 12px; padding: 2px; max-height: min(30vw, 150px); overflow-y: auto; -webkit-overflow-scrolling: touch; align-content: start; }
+  .emoji-folded { display: none !important; }
+  .emoji-opt.emoji-plus { color: #7A5E1E; font-size: 26px; font-weight: 700; border: 1px dashed var(--brass); background: rgba(184,146,47,0.08); }
   .emoji-opt.del-mode { border-color: var(--withdraw); position: relative; }
   .emoji-opt.del-mode::after { content: '✕'; position: absolute; top: 2px; right: 4px; font-size: 11px; color: var(--withdraw); }
   .emoji-add-row { display: none; gap: 8px; margin-bottom: 8px; }
@@ -1256,14 +1257,14 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
       <button type="button" class="emoji-reset-btn" onclick="openCatImgWarn()">🖼️ ใช้รูปภาพ / GIF แทนอีโมจิ</button>
     </div>
     <input type="file" id="catImgInput" accept="image/*,.heic,.heif" style="display:none" onchange="onCatImageChosen(this)">
-    <div class="emoji-section-title"><span>⭐ อีโมจิของฉัน</span><button type="button" class="emoji-mini-btn" id="emojiDelToggle" onclick="toggleEmojiDeleteMode()" style="display:none;">🗑️ ลบ</button></div>
+    <div class="emoji-section-title"><span class="fold-t" onclick="toggleEmojiFold('mine')"><b class="tri" id="triEmoMine">▼</b> ⭐ อีโมจิของฉัน <small class="fold-sum" id="sumEmoMine"></small></span><button type="button" class="emoji-mini-btn" id="emojiDelToggle" onclick="toggleEmojiDeleteMode()" style="display:none;">🗑️ ลบ</button></div>
     <div class="emoji-add-row" id="emojiAddRow">
       <input type="text" id="emojiAddInput" placeholder="พิมพ์/วางอีโมจิ" autocomplete="off">
       <button type="button" onclick="addCustomEmojiFromInput()">เพิ่ม</button>
     </div>
     <div class="emoji-add-hint" id="emojiAddHint">เปิดคีย์บอร์ดอีโมจิของเครื่อง เลือกอีโมจิที่ต้องการ แล้วกด "เพิ่ม" (ใส่ได้หลายตัว)</div>
     <div class="emoji-custom-grid" id="emojiCustomGrid"></div>
-    <div class="emoji-section-title"><span>อีโมจิทั่วไป</span></div>
+    <div class="emoji-section-title"><span class="fold-t" onclick="toggleEmojiFold('all')"><b class="tri" id="triEmoAll">▼</b> อีโมจิทั่วไป</span></div>
     <div class="emoji-grid" id="emojiGrid"></div>
     <div class="sheet-actions">
       <button class="btn-cancel" style="width:100%;" onclick="closeEmojiPicker()">ปิด</button>
@@ -2676,15 +2677,31 @@ function renderEmojiPicker() {
     cg.appendChild(b);
   });
   const add = document.createElement('button');
-  add.type = 'button'; add.className = 'emoji-opt add-opt'; add.textContent = '+';
+  add.type = 'button'; add.className = 'emoji-opt emoji-plus'; add.textContent = '+';
   add.onclick = toggleEmojiAddRow;
   cg.appendChild(add);
 
   const delBtn = document.getElementById('emojiDelToggle');
   delBtn.style.display = customEmojis.length ? '' : 'none';
   delBtn.textContent = emojiDeleteMode ? '✔ เสร็จ' : '🗑️ ลบ';
+  applyEmojiFolds();
 }
 
+let emojiFold = { mine: false, all: false };
+try { const f = JSON.parse(localStorage.getItem('emojiFold') || '{}'); emojiFold = { mine: f.mine === true, all: f.all === true }; } catch (e) {}
+function applyEmojiFolds() {
+  const set = (id, hide) => { const el = document.getElementById(id); if (el) el.classList.toggle('emoji-folded', hide); };
+  set('emojiCustomGrid', emojiFold.mine); set('emojiAddRow', emojiFold.mine); set('emojiAddHint', emojiFold.mine); set('emojiGrid', emojiFold.all);
+  [['triEmoMine', emojiFold.mine], ['triEmoAll', emojiFold.all]].forEach(([id, f]) => { const t = document.getElementById(id); if (t) t.parentElement.classList.toggle('closed', f); });
+  const sm = document.getElementById('sumEmoMine'); if (sm) sm.textContent = emojiFold.mine ? '· ' + customEmojis.length + ' ตัว' : '';
+  const del = document.getElementById('emojiDelToggle'); if (del && emojiFold.mine) del.style.display = 'none';
+}
+function toggleEmojiFold(k) {
+  emojiFold[k] = !emojiFold[k];
+  try { localStorage.setItem('emojiFold', JSON.stringify(emojiFold)); } catch (e) {}
+  if (emojiFold.mine && emojiDeleteMode) emojiDeleteMode = false;
+  renderEmojiPicker();
+}
 function toggleEmojiAddRow() {
   const row = document.getElementById('emojiAddRow');
   const hint = document.getElementById('emojiAddHint');
