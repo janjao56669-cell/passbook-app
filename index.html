@@ -6,6 +6,8 @@
 <title>บัญชีต้อการช่าง</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1B4332">
+<meta name="color-scheme" content="only light">
+<meta name="supported-color-schemes" content="light">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -806,9 +808,10 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .passbook { padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
   .pg { display: none; } .pg.on { display: block; }
   #pgList.pg.on, #pgSum.pg.on { padding-top: 6px; }
-  .swipe { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 8px 14px 22px; margin: 0 -14px -10px; scroll-padding: 0 14px; scrollbar-width: none; align-items: stretch; }
+  :root { color-scheme: only light; }   /* the app has its own look: never let the phone's dark mode recolour it */
+  .swipe { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; padding: 8px 14px 22px; margin: 0 -14px -10px; scroll-padding: 0 14px; scrollbar-width: none; align-items: stretch; }
   .swipe::-webkit-scrollbar { display: none; }
-  .swipe > .balance-card, .swipe > .pie-card { flex: 0 0 92%; scroll-snap-align: center; margin-top: 0; box-sizing: border-box; }
+  .swipe > .balance-card, .swipe > .pie-card { flex: 0 0 92%; scroll-snap-align: center; scroll-snap-stop: always; margin-top: 0; box-sizing: border-box; }
   .swipe > .pie-card { padding: 16px 16px 14px; }
   .dots { display: flex; justify-content: center; gap: 6px; padding: 2px 0 4px; }
   .dots i { width: 8px; height: 8px; border-radius: 4px; background: var(--line); transition: all .2s; display: block; }
@@ -859,13 +862,17 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .swipe > .pie-card .rank-row { font-size: 13px; }
 
   .pick-cards { all: unset; cursor: pointer; font-size: 12.5px; color: var(--brass); padding: 4px 8px; font-family: 'Noto Sans Thai', sans-serif; }
-  .hcard { flex: 0 0 92%; scroll-snap-align: center; box-sizing: border-box; background: var(--page-cream); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 12px 28px var(--shadow); padding: 14px 16px; }
+  .hcard { flex: 0 0 92%; scroll-snap-align: center; scroll-snap-stop: always; box-sizing: border-box; background: var(--page-cream); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 12px 28px var(--shadow); padding: 14px 16px; }
   .hcard .hc-t { font-weight: 700; font-size: 15px; margin-bottom: 8px; display: flex; justify-content: space-between; }
   .hcard .hc-t a { font-weight: 400; font-size: 12.5px; color: var(--brass); text-decoration: none; cursor: pointer; }
   .hcard .hc-bar { height: 12px; border-radius: 6px; background: var(--line); overflow: hidden; margin: 4px 0 10px; } .hcard .hc-bar i { display: block; height: 100%; background: var(--deposit); } .hcard .hc-bar i.warn { background: #C98A1B; } .hcard .hc-bar i.over { background: var(--withdraw); }
   .hcard .hc-row { display: flex; justify-content: space-between; font-size: 13.5px; margin-top: 3px; } .hcard .hc-big { font-size: 26px; font-weight: 700; font-family: 'Noto Serif Thai', serif; }
   .hcard .hc-bar i.warn { background: var(--brass); } .hcard .hc-bar i.over { background: var(--withdraw); }
   .hcard .hc-row .ov { color: var(--withdraw); font-weight: 700; }
+  .bk-row { display: flex; align-items: center; gap: 10px; padding: 10px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; } .bk-row .nm { flex: 1; min-width: 0; } .bk-row .nm small { display: block; color: var(--ink-soft); font-size: 12px; } .bk-row .bal { font-weight: 700; font-size: 16px; text-align: right; }
+  .bk-big { font-family: 'Noto Serif Thai', serif; font-size: 28px; font-weight: 700; } .bk-sub { color: var(--ink-soft); font-size: 12.5px; }
+  .bk-chart { display: flex; align-items: flex-end; gap: 6px; height: 120px; margin: 10px 0 4px; } .bk-col { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; font-size: 11px; color: var(--ink-soft); } .bk-bars { display: flex; align-items: flex-end; gap: 2px; width: 100%; height: 100px; justify-content: center; } .bk-bars i { display: block; width: 42%; border-radius: 3px 3px 0 0; min-height: 1px; } .bk-bars i.in { background: var(--deposit); } .bk-bars i.out { background: var(--withdraw); } .bk-col.sel { color: var(--ink); font-weight: 700; } .bk-col { cursor: pointer; }
+  .bk-in { width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; font-size: 15px; background: #fff; } .bk-fl { display: flex; gap: 8px; align-items: center; margin: 6px 0; } .bk-fl > span { flex: 0 0 38%; font-size: 13.5px; }
   .hc-more { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; padding: 9px 12px; border-radius: 10px; background: rgba(184,146,47,.10); border: 1px dashed var(--line); color: var(--ink-soft); font-size: 13px; cursor: pointer; }
   .hc-more b { color: var(--withdraw); }
   .ba-sec { margin-top: 12px; } .ba-sec h4 { margin: 0 0 4px; font-size: 14.5px; display: flex; justify-content: space-between; }
@@ -902,7 +909,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   <button type="button" class="settings-btn" id="settingsBtn" aria-label="ตั้งค่า" onclick="openSettings()">⚙️</button>
   <div class="brand">P A S S B O O K</div>
   <button type="button" class="avatar-btn" id="avatarBtn" aria-label="โปรไฟล์" onclick="openProfile()" style="display:none;"></button>
-  <h1><span id="appTitle">บัญชีต้อการช่าง</span><span class="version-tag">V2.0</span></h1>
+  <h1><span id="appTitle">บัญชีต้อการช่าง</span><span class="version-tag">V2.1</span></h1>
   <div class="who-line" id="whoLine" style="display:none;"></div>
 </div>
 
@@ -1029,6 +1036,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
         <button type="button" class="set-row" onclick="openRecurList()"><span class="ic">🔁</span><span class="tx">รายการประจำ<span class="sub">ตั้งรายการที่เกิดซ้ำทุกเดือน แล้วให้แอปถามตอนถึงวัน</span></span><span class="arrow">›</span></button>
         <button type="button" class="set-row" onclick="openBudget()"><span class="ic">🎯</span><span class="tx">งบค่าใช้จ่าย<span class="sub">ตั้งงบต่อวัน/สัปดาห์/เดือน/ปี แยกหมวดได้</span></span><span class="arrow">›</span></button>
         <button type="button" class="set-row" onclick="openSavings()"><span class="ic">🐷</span><span class="tx">เงินออม<span class="sub">แยกเงินเก็บออกจากยอดคงเหลือ หยอด/ถอนได้</span></span><span class="arrow">›</span></button>
+        <button type="button" class="set-row" onclick="closeSettings();openBank()"><span class="ic">📒</span><span class="tx">ดูยอด/กราฟ/ประวัติแต่ละบัญชี<span class="sub">ยอดเงินแต่ละธนาคาร กราฟ 6 เดือน ประวัติ ตั้งงบต่อบัญชี</span></span><span class="arrow">›</span></button>
         <button type="button" class="set-row" onclick="openAcctManage()"><span class="ic">🏦</span><span class="tx">บัญชี / ธนาคาร<span class="sub">เลือกธนาคารที่แสดง เพิ่มบัญชีของตัวเอง</span></span><span class="arrow">›</span></button>
         <button type="button" class="set-row" onclick="exportBackup()"><span class="ic">💾</span><span class="tx">สำรองข้อมูล<span class="sub">บันทึกเป็นไฟล์เก็บไว้ (ย้ายเครื่อง/กันข้อมูลหาย)</span></span><span class="arrow">›</span></button>
         <button type="button" class="set-row" onclick="document.getElementById('restoreFile').click()"><span class="ic">📂</span><span class="tx">กู้คืนข้อมูลจากไฟล์สำรอง<span class="sub">เลือกไฟล์ที่เคยสำรองไว้</span></span><span class="arrow">›</span></button>
@@ -1111,6 +1119,14 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     </div>
   </div>
 </div>
+<div class="overlay" id="bankOverlay">
+  <div class="sheet">
+    <div class="sheet-title" id="bkTitle">🏦 บัญชี / ธนาคาร</div>
+    <div id="bkBody"></div>
+    <div class="sheet-actions" id="bkActs"></div>
+  </div>
+</div>
+
 <div class="overlay" id="cardPickOverlay">
   <div class="sheet">
     <div class="sheet-title">✏️ การ์ดที่ปัดดูบนหน้าแรก</div>
@@ -1798,7 +1814,7 @@ const CAT_TRASH_KEY = 'categoryTrash';
 const CUSTOM_EMOJI_KEY = 'customEmojis';
 const TEXT_SIZE_KEY = 'uiTextSize';
 const LAST_BACKUP_KEY = 'lastBackupAt';
-const APP_VERSION_LABEL = 'V2.0';
+const APP_VERSION_LABEL = 'V2.1';
 const TEXT_ZOOMS = { normal: 1, large: 1.12, xlarge: 1.24 };
 let customEmojis = [];
 
@@ -3028,7 +3044,7 @@ let pendingRestore = null;
 const ACCT_KEY = 'accounts', ACCT_LAST_KEY = 'lastAcct';
 const PRESET_ACCTS = [['💵','เงินสด'],['🏦','กรุงไทย'],['🌾','ธ.ก.ส.'],['🏦','กสิกรไทย'],['🏦','ไทยพาณิชย์'],['🏦','กรุงเทพ'],['🏦','ออมสิน'],['🏦','กรุงศรี'],['🏦','ทหารไทยธนชาต'],['🏦','อาคารสงเคราะห์'],['📱','พร้อมเพย์'],['📱','ทรูมันนี่'],['📱','ShopeePay']];
 const ACCT_DEFAULT_ON = ['เงินสด','กรุงไทย','ธ.ก.ส.','กสิกรไทย','ไทยพาณิชย์','พร้อมเพย์'];
-let acctData = { on: ACCT_DEFAULT_ON.slice(), custom: [], icons: {} };
+let acctData = { on: ACCT_DEFAULT_ON.slice(), custom: [], icons: {}, open: {}, budget: {} };
 let acctImgTarget = '';
 let selectedAcct = '';
 function cleanAcctName(v) { return String(v == null ? '' : v).replace(/[<>&"']/g, '').replace(/\s+/g, ' ').trim().slice(0, 24); }
@@ -3038,7 +3054,10 @@ function sanitizeAccts(o) {
   const custom = (o && Array.isArray(o.custom) ? o.custom : []).map(cleanAcctName).filter((n, i, a) => n && a.indexOf(n) === i && !presetNames.includes(n)).slice(0, 30);
   const icons = {};
   if (o && o.icons && typeof o.icons === 'object') Object.keys(o.icons).slice(0, 60).forEach(k => { const n = cleanAcctName(k); if (n && (presetNames.includes(n) || custom.includes(n)) && typeof o.icons[k] === 'string' && /^img:[\w-]{1,40}$/.test(o.icons[k])) icons[n] = o.icons[k]; });
-  return { on, custom, icons };
+  const okName = n => presetNames.includes(n) || custom.includes(n);
+  const open = {}, budget = {};
+  [['open', open, true], ['budget', budget, false]].forEach(([key, tgt, neg]) => { const src = o && o[key]; if (src && typeof src === 'object') Object.keys(src).slice(0, 80).forEach(k => { const n = cleanAcctName(k), v = Number(src[k]); if (n && okName(n) && isFinite(v) && Math.abs(v) < 1e12 && (neg || v > 0) && v !== 0) tgt[n] = Math.round(v * 100) / 100; }); });
+  return { on, custom, icons, open, budget };
 }
 function loadAccts() { try { acctData = sanitizeAccts(JSON.parse(localStorage.getItem(ACCT_KEY) || 'null')); } catch (e) { acctData = sanitizeAccts(null); } }
 function saveAccts() { try { localStorage.setItem(ACCT_KEY, JSON.stringify(acctData)); } catch (e) { showToast('บันทึกบัญชีไม่ได้ (พื้นที่เครื่องเต็ม?)'); } }
@@ -3107,7 +3126,74 @@ function addAcctFromManage() {
   if (acctData.custom.length >= 30) { showToast('เพิ่มได้สูงสุด 30 บัญชี'); return; }
   acctData.custom.push(n); saveAccts(); el.value = ''; renderAcctManage(); showToast('เพิ่มบัญชีแล้ว');
 }
-function delAcctCustom(i) { const n = acctData.custom[i]; acctData.custom.splice(i, 1); if (n && acctData.icons) delete acctData.icons[n]; saveAccts(); renderAcctManage(); }
+function delAcctCustom(i) { const n = acctData.custom[i]; acctData.custom.splice(i, 1); if (n && acctData.icons) delete acctData.icons[n]; if (n) { if (acctData.open) delete acctData.open[n]; if (acctData.budget) delete acctData.budget[n]; } saveAccts(); renderAcctManage(); }
+
+/* ---------- Bank page (per-account balance / chart / history / budget) ---------- */
+let bkCur = '', bkMonth = '';   // bkMonth = 'YYYY-MM'
+function bkNames() {
+  const l = acctChoices(); transactions.forEach(t => { if (t.acct && !l.includes(t.acct)) l.push(t.acct); });
+  Object.keys(acctData.open || {}).forEach(n => { if (!l.includes(n)) l.push(n); });
+  return l;
+}
+function bkList() {
+  return bkNames().map(name => { let i = 0, o = 0, n = 0; transactions.forEach(t => { if (t.acct === name) { n++; if (t.type === 'in') i += Number(t.amount) || 0; else o += Number(t.amount) || 0; } });
+    const op = (acctData.open || {})[name] || 0; return { name, n, in: i, out: o, open: op, hasOpen: !!op, bal: Math.round((op + i - o) * 100) / 100 }; });
+}
+function bkMonthSum(name, ym) { let i = 0, o = 0; transactions.forEach(t => { if (t.acct === name && String(t.date).slice(0, 7) === ym) { if (t.type === 'in') i += Number(t.amount) || 0; else o += Number(t.amount) || 0; } }); return { in: i, out: o }; }
+function bkShiftYm(ym, d) { let [y, m] = ym.split('-').map(Number); m += d; while (m < 1) { m += 12; y--; } while (m > 12) { m -= 12; y++; } return y + '-' + String(m).padStart(2, '0'); }
+function bkYmLabel(ym) { const [y, m] = ym.split('-').map(Number); return THAI_MONTHS[m - 1] + ' ' + (y + 543); }
+function openBank(name) { bkCur = name || ''; bkMonth = todayStr().slice(0, 7); renderBank(); document.getElementById('bankOverlay').classList.add('show'); }
+function closeBank() { document.getElementById('bankOverlay').classList.remove('show'); }
+function bkBack() { bkCur = ''; renderBank(); }
+function bkMoney(v) { return (v < 0 ? '−' : '') + fmt(Math.abs(v)); }
+function renderBank() {
+  const body = document.getElementById('bkBody'), acts = document.getElementById('bkActs'), title = document.getElementById('bkTitle');
+  if (!bkCur) {
+    title.innerHTML = '🏦 บัญชี / ธนาคาร';
+    const L = bkList(), tot = L.reduce((s, x) => s + x.bal, 0);
+    let h = `<div class="bk-sub">ยอดรวมทุกบัญชี (จากรายการที่ระบุบัญชี${L.some(x => x.hasOpen) ? ' + ยอดตั้งต้น' : ''})</div><div class="bk-big">${bkMoney(tot)}</div><div class="bk-sub" style="margin-bottom:6px;">แตะบัญชีเพื่อดูกราฟ ประวัติ และตั้งงบ</div>`;
+    const used = L.filter(x => x.n || x.hasOpen), rest = L.filter(x => !(x.n || x.hasOpen));
+    used.forEach(x => { h += `<div class="bk-row" data-n="${escapeHtml(x.name)}"><span class="acct-ic" style="cursor:inherit">${acctIconHtml(x.name)}</span><div class="nm">${escapeHtml(x.name)}<small>${x.n} รายการ</small></div><div class="bal" style="color:var(--${x.bal < 0 ? 'withdraw' : 'ink'})">${bkMoney(x.bal)}</div></div>`; });
+    if (!used.length) h += '<div class="hc-mut" style="padding:8px 0;">ยังไม่มีรายการที่ระบุบัญชี ตอนบันทึกรายการให้เลือก "บัญชีที่ใช้"</div>';
+    if (rest.length) h += `<div class="bk-sub" style="margin-top:10px;">ยังไม่มีรายการ: ${rest.map(x => `<a style="color:var(--brass);cursor:pointer;margin-right:8px;" data-n="${escapeHtml(x.name)}">${escapeHtml(x.name)}</a>`).join('')}</div>`;
+    body.innerHTML = h;
+    acts.innerHTML = '<button class="btn-cancel" onclick="closeBank()">ปิด</button><button class="btn-save in" onclick="closeBank();openAcctManage()">จัดการบัญชี</button>';
+  } else {
+    const name = bkCur, x = bkList().find(z => z.name === name) || { name, n: 0, in: 0, out: 0, open: 0, bal: 0 };
+    title.innerHTML = acctIconHtml(name) + ' ' + escapeHtml(name);
+    const ms = []; for (let k = 5; k >= 0; k--) { const ym = bkShiftYm(todayStr().slice(0, 7), -k); ms.push({ ym, ...bkMonthSum(name, ym) }); }
+    if (!ms.some(m => m.ym === bkMonth)) ms.unshift({ ym: bkMonth, ...bkMonthSum(name, bkMonth) }), ms.pop();
+    const mx = Math.max(1, ...ms.map(m => Math.max(m.in, m.out)));
+    const cur = bkMonthSum(name, bkMonth), bud = (acctData.budget || {})[name] || 0;
+    let h = `<div class="bk-sub">ยอดคงเหลือในบัญชีนี้</div><div class="bk-big" style="color:var(--${x.bal < 0 ? 'withdraw' : 'ink'})">${bkMoney(x.bal)}</div>`;
+    h += `<div class="bk-sub">รับทั้งหมด ${fmt(x.in)} · จ่ายทั้งหมด ${fmt(x.out)}${x.open ? ' · ยอดตั้งต้น ' + bkMoney(x.open) : ''}</div>`;
+    h += `<div class="field-label" style="margin-top:12px;"><span>กราฟ 6 เดือน (เขียว = รับ แดง = จ่าย) แตะแท่งเพื่อเลือกเดือน</span></div><div class="bk-chart">${ms.map(m => `<div class="bk-col ${m.ym === bkMonth ? 'sel' : ''}" data-ym="${m.ym}"><div class="bk-bars"><i class="in" style="height:${Math.round(m.in / mx * 100)}%"></i><i class="out" style="height:${Math.round(m.out / mx * 100)}%"></i></div>${THAI_MONTHS[+m.ym.slice(5) - 1].slice(0, 3)}${m.ym.slice(2, 4)}</div>`).join('')}</div>`;
+    h += `<div class="field-label" style="margin-top:12px;"><span>🎯 งบรายจ่ายต่อเดือนของบัญชีนี้</span></div>`;
+    if (bud > 0) { const pct = cur.out / bud * 100; h += `<div style="display:flex;justify-content:space-between;gap:10px;font-size:13.5px;margin-top:3px;"><span>${bkYmLabel(bkMonth)}</span><span class="${pct >= 100 ? 'ov' : ''}">${fmt(cur.out)} / ${fmt(bud)}</span></div><div class="bg-bar"><i class="${budgetClass(pct)}" style="width:${Math.min(100, pct)}%"></i></div>`; }
+    h += `<div class="bk-fl"><span>ตั้งงบ (บาท/เดือน)</span><input class="bk-in" id="bkBud" inputmode="decimal" placeholder="ไม่ตั้งก็ได้" value="${bud || ''}"></div>`;
+    h += `<div class="bk-fl"><span>ยอดตั้งต้น (ที่มีอยู่ก่อนเริ่มจด)</span><input class="bk-in" id="bkOpen" inputmode="decimal" placeholder="0" value="${x.open || ''}"></div><button class="btn-save in" style="width:100%;margin:2px 0 6px;" id="bkSaveBtn">บันทึกงบ/ยอดตั้งต้น</button>`;
+    const list = transactions.filter(t => t.acct === name && String(t.date).slice(0, 7) === bkMonth).sort((a, b) => (b.date + (b.time || '')).localeCompare(a.date + (a.time || '')));
+    h += `<div class="field-label" style="margin-top:12px;"><span class="manage-cat-link" id="bkPrev">‹ ก่อนหน้า</span><span><b>${bkYmLabel(bkMonth)}</b></span><span class="manage-cat-link" id="bkNext">ถัดไป ›</span></div><div class="bk-sub">รับ ${fmt(cur.in)} · จ่าย ${fmt(cur.out)} · ${list.length} รายการ</div>`;
+    if (!list.length) h += '<div class="hc-mut" style="padding:8px 0;">เดือนนี้ไม่มีรายการของบัญชีนี้</div>';
+    list.forEach(t => { h += `<div class="ledger-row" style="display:flex;justify-content:space-between;align-items:center;gap:10px;" onclick="openEditEntry('${t.id}')"><div class="row-desc" style="flex:1;min-width:0;"><div class="row-date month-tag">${escapeHtml(thaiDateLabel(t.date))}${t.time ? ' ' + escapeHtml(t.time) + ' น.' : ''} · ${catIconHtml(t.type, t.category)}</div><div class="row-note full">${escapeHtml(t.note || '(ไม่มีบันทึกเพิ่มเติม)')}</div></div><div class="row-amt ${t.type === 'in' ? 'in' : 'out'}">${t.type === 'in' ? '+' : '−'}${fmt(t.amount)}</div></div>`; });
+    body.innerHTML = h;
+    acts.innerHTML = '<button class="btn-cancel" onclick="bkBack()">‹ กลับ</button><button class="btn-save in" onclick="closeBank()">ปิด</button>';
+    const sv = document.getElementById('bkSaveBtn'); if (sv) sv.onclick = bkSave;
+    document.getElementById('bkPrev').onclick = () => { bkMonth = bkShiftYm(bkMonth, -1); renderBank(); };
+    document.getElementById('bkNext').onclick = () => { bkMonth = bkShiftYm(bkMonth, 1); renderBank(); };
+    body.querySelectorAll('.bk-col').forEach(c => c.onclick = () => { bkMonth = c.dataset.ym; renderBank(); });
+  }
+  body.querySelectorAll('[data-n]').forEach(e => e.onclick = () => { bkCur = e.dataset.n; bkMonth = todayStr().slice(0, 7); renderBank(); document.querySelector('#bankOverlay .sheet').scrollTop = 0; });
+}
+function bkSave() {
+  const num = id => { const v = String(document.getElementById(id).value || '').replace(/,/g, '').trim(); return v === '' ? 0 : Number(v); };
+  const b = num('bkBud'), o = num('bkOpen');
+  if (!isFinite(b) || !isFinite(o) || b < 0) { showToast('กรอกเป็นตัวเลขให้ถูกต้อง'); return; }
+  acctData.budget = acctData.budget || {}; acctData.open = acctData.open || {};
+  if (b > 0) acctData.budget[bkCur] = Math.round(b * 100) / 100; else delete acctData.budget[bkCur];
+  if (o !== 0) acctData.open[bkCur] = Math.round(o * 100) / 100; else delete acctData.open[bkCur];
+  saveAccts(); renderBank(); renderHomeCards(); showToast('บันทึกแล้ว');
+}
 
 const HOME_CARDS_KEY = 'homeCards';
 const HOME_CARD_DEFS = [
@@ -3115,7 +3201,8 @@ const HOME_CARD_DEFS = [
   ['budget', '🎯', 'งบค่าใช้จ่าย', 'ใช้ไปเท่าไรของงบที่ตั้งไว้'],
   ['savings', '🐷', 'กระปุกออม', 'ยอดเงินออมแต่ละกระปุก'],
   ['compare', '📈', 'เทียบเดือนก่อน', 'รายจ่ายเพิ่มหรือลดจากเดือนก่อน'],
-  ['profit', '💹', 'กำไร/ขาดทุนจากค้างรับ', 'เดือนนี้ได้กำไรหรือขาดทุนเท่าไร']
+  ['profit', '💹', 'กำไร/ขาดทุนจากค้างรับ', 'เดือนนี้ได้กำไรหรือขาดทุนเท่าไร'],
+  ['banks', '🏦', 'บัญชี/ธนาคาร', 'ยอดเงินแต่ละบัญชี แตะดูกราฟและประวัติ']
 ];
 let homeCards = ['pie'];
 try { const a = JSON.parse(localStorage.getItem(HOME_CARDS_KEY) || 'null'); if (Array.isArray(a)) homeCards = a.filter((x, i) => HOME_CARD_DEFS.some(d => d[0] === x) && a.indexOf(x) === i); } catch (e) {}
@@ -5358,6 +5445,14 @@ async function shareYearImg() {
 /* ----- What's new (release notes) ----- */
 // Newest first. Every new release: add a new entry at the TOP and bump APP_VERSION_LABEL + sw.js.
 const RELEASE_NOTES = [
+  { ver: 'V2.1', date: '2026-11-21', items: [
+    { e: '🏦', t: 'หน้าบัญชี/ธนาคารแต่ละแห่ง', d: 'ดูยอด กราฟรับ-จ่าย 6 เดือน ประวัติรายเดือน ตั้งงบรายเดือน และยอดตั้งต้นของแต่ละบัญชี เข้าจาก ตั้งค่า › ดูยอด/กราฟ/ประวัติแต่ละบัญชี' },
+    { e: '🃏', t: 'การ์ดบัญชี/ธนาคารที่หน้าแรก', d: 'โชว์ยอดแต่ละบัญชี แตะเพื่อดูละเอียด เลือกเปิดได้ที่ "เลือกการ์ดที่ปัด"' },
+    { e: '👆', t: 'ปัดการ์ดหน้าแรกทีละใบ', d: 'ปัดแรงแค่ไหนก็ขยับทีละ 1 ใบ ไม่ข้ามไปใบถัดไปอีก' },
+    { e: '☀️', t: 'แอปใช้โหมดสว่างเสมอ', d: 'ไม่เปลี่ยนเป็นโหมดมืดตามมือถือ' },
+    { e: '✂️', t: 'เลือกพื้นที่รูปก่อนใช้', d: 'รูปโปรไฟล์ รูปหน้าปก ไอคอนหมวด/บัญชี เลือกกรอบและซูมได้ รองรับไฟล์ JPG/PNG/GIF/WebP' },
+    { e: '😀', t: 'เลือกอีโมจิง่ายขึ้น', d: 'พับ/ขยายกลุ่มได้ และเลื่อนดูอีโมจิของฉันได้' }
+  ]},
   { ver: 'V2.0', date: '2026-11-17', confetti: true, items: [
     { e: '🏠', t: 'หน้าตาใหม่ ใช้ง่ายขึ้น', d: 'มีเมนูล่าง 4 ปุ่ม (หน้าแรก / รายการ / สรุป / เพิ่มเติม) และปุ่ม ➕ ตรงกลางสำหรับจดรายรับ รายจ่าย สแกนสลิป และเพิ่มค้างรับ' },
     { e: '🃏', t: 'ปัดการ์ดบนหน้าแรก', d: 'ปัดดูยอดคงเหลือ กราฟ งบ กระปุก เทียบเดือนก่อน กำไร/ขาดทุน กด "✏️ เลือกการ์ดที่ปัด" เพื่อเลือกว่าจะโชว์อะไร' },
@@ -5969,6 +6064,7 @@ function render() {
   refreshNotices();
   renderHomeExtras();
   renderHomeCards();
+  try { if (document.getElementById('bankOverlay').classList.contains('show')) renderBank(); } catch (e) {}
 }
 
 
@@ -6101,7 +6197,7 @@ if ('serviceWorker' in navigator) {
 
 // Must equal BUILD_ID in sw.js for the same release. If the newest sw.js on the server has this same build,
 // this page IS the newest version (the page is always loaded fresh), so there is nothing to update to.
-const PAGE_BUILD = '20261118120000';
+const PAGE_BUILD = '20261121180000';
 async function pageIsCurrent() {
   try {
     const r = await fetch('sw.js?c=' + Date.now(), { cache: 'no-store' });
@@ -6300,6 +6396,22 @@ function updateHomeDots() {
   [...box.children].forEach((d, i) => d.classList.toggle('on', i === idx));
 }
 (function () { const sw = document.getElementById('homeSwipe'); if (sw) sw.addEventListener('scroll', () => requestAnimationFrame(updateHomeDots), { passive: true }); })();
+/* หน้าแรก: ปัด 1 ครั้ง = ขยับ 1 การ์ด (กันปัดแรงแล้วข้ามไป 2 ใบ) */
+(function () {
+  const sw = document.getElementById('homeSwipe'); if (!sw) return;
+  let startIdx = 0, startX = 0, dir = 0, released = false;
+  const snaps = () => { const r0 = sw.getBoundingClientRect(), max = sw.scrollWidth - sw.clientWidth;
+    return [...sw.children].map(c => { const r = c.getBoundingClientRect(); return Math.max(0, Math.min(max, sw.scrollLeft + (r.left - r0.left) + r.width / 2 - sw.clientWidth / 2)); }); };
+  const nearest = (a, v) => a.reduce((bi, x, i) => Math.abs(x - v) < Math.abs(a[bi] - v) ? i : bi, 0);
+  sw.addEventListener('touchstart', e => { startIdx = nearest(snaps(), sw.scrollLeft); startX = e.touches[0].clientX; dir = 0; released = false; }, { passive: true });
+  sw.addEventListener('touchmove', e => { const dx = e.touches[0].clientX - startX; dir = dx < -4 ? 1 : dx > 4 ? -1 : 0; }, { passive: true });
+  sw.addEventListener('touchend', () => { released = true; }, { passive: true });
+  sw.addEventListener('scroll', () => {
+    if (!released || !dir) return;
+    const a = snaps(), ti = Math.max(0, Math.min(a.length - 1, startIdx + dir)), lim = a[ti];
+    if ((dir > 0 && sw.scrollLeft > lim + 1) || (dir < 0 && sw.scrollLeft < lim - 1)) { released = false; sw.style.overflowX = 'hidden'; sw.style.scrollSnapType = 'none'; sw.scrollLeft = lim; setTimeout(() => { sw.style.overflowX = ''; sw.style.scrollSnapType = ''; sw.scrollLeft = lim; }, 60); }
+  }, { passive: true });
+})();
 function shortDay(d) {
   if (d === todayStr()) return 'วันนี้';
   const y = new Date(); y.setDate(y.getDate() - 1);
@@ -6398,6 +6510,14 @@ function homeCardHtml(id) {
     const d = compareData();
     const ph = cmpPhrase('out', d.cur.out, d.prev.out, d.partial) || cmpPhrase('in', d.cur.in, d.prev.in, d.partial);
     return '<div class="hc-t"><span>📈 เทียบเดือนก่อน</span><a onclick="openCompare()">ดูละเอียด ›</a></div>' + (ph ? '<div style="font-size:15px;line-height:1.6;">' + ph.html + '</div>' : '<div class="hc-mut">ยังมีข้อมูลไม่พอให้เทียบ</div>');
+  }
+  if (id === 'banks') {
+    const L = bkList().filter(x => x.n || x.hasOpen);
+    let h = '<div class="hc-t"><span>🏦 บัญชี/ธนาคาร</span><a onclick="openBank()">ดูทั้งหมด ›</a></div>';
+    if (!L.length) return h + '<div class="hc-mut">ยังไม่มีรายการที่ระบุบัญชี ตอนบันทึกรายการให้เลือก "บัญชีที่ใช้"</div>';
+    L.sort((a, b) => b.n - a.n || Math.abs(b.bal) - Math.abs(a.bal)).slice(0, 5).forEach(x => { h += `<div class="hc-row" style="cursor:pointer" onclick="openBank('${escapeHtml(x.name).replace(/'/g, '')}')"><span>${acctIconHtml(x.name)} ${escapeHtml(x.name)}</span><span style="font-weight:700;color:var(--${x.bal < 0 ? 'withdraw' : 'ink'})">${x.bal < 0 ? '−' : ''}${fmt(Math.abs(x.bal))}</span></div>`; });
+    if (L.length > 5) h += `<div class="hc-more" onclick="openBank()"><span>ดูอีก ${L.length - 5} บัญชี</span><span>›</span></div>`;
+    return h;
   }
   if (id === 'profit') {
     const r = periodRange('month', t); const p = profitBetween(r.start, r.end);
