@@ -869,6 +869,11 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .hcard .hc-row { display: flex; justify-content: space-between; font-size: 13.5px; margin-top: 3px; } .hcard .hc-big { font-size: 26px; font-weight: 700; font-family: 'Noto Serif Thai', serif; }
   .hcard .hc-bar i.warn { background: var(--brass); } .hcard .hc-bar i.over { background: var(--withdraw); }
   .hcard .hc-row .ov { color: var(--withdraw); font-weight: 700; }
+  .chk-big { font-family: 'Noto Serif Thai', serif; font-size: 26px; font-weight: 700; margin: 2px 0; } .chk-ok { color: var(--deposit); } .chk-bad { color: var(--withdraw); }
+  .chk-box { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin: 8px 0; background: var(--page-cream-2); } .chk-line { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; padding: 2px 0; }
+  .chk-part { display: flex; align-items: center; gap: 8px; margin: 5px 0; } .chk-part > span { flex: 1; min-width: 0; font-size: 14px; } .chk-part input { width: 42%; }
+  .chk-sure { display: flex; align-items: center; gap: 10px; margin: 12px 0 4px; padding: 11px 12px; border-radius: 10px; background: #FFF6DE; border: 1px solid #E8D9A8; font-size: 15px; } .chk-sure input { width: 22px; height: 22px; flex: none; }
+  .chk-tx { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; padding: 4px 0; border-bottom: 1px dashed var(--line); } .chk-tx small { color: var(--ink-soft); }
   .bk-row { display: flex; align-items: center; gap: 10px; padding: 10px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; } .bk-row .nm { flex: 1; min-width: 0; } .bk-row .nm small { display: block; color: var(--ink-soft); font-size: 12px; } .bk-row .bal { font-weight: 700; font-size: 16px; text-align: right; }
   .bk-big { font-family: 'Noto Serif Thai', serif; font-size: 28px; font-weight: 700; } .bk-sub { color: var(--ink-soft); font-size: 12.5px; }
   .bk-chart { display: flex; align-items: flex-end; gap: 6px; height: 120px; margin: 10px 0 4px; } .bk-col { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; font-size: 11px; color: var(--ink-soft); } .bk-bars { display: flex; align-items: flex-end; gap: 2px; width: 100%; height: 100px; justify-content: center; } .bk-bars i { display: block; width: 42%; border-radius: 3px 3px 0 0; min-height: 1px; } .bk-bars i.in { background: var(--deposit); } .bk-bars i.out { background: var(--withdraw); } .bk-col.sel { color: var(--ink); font-weight: 700; } .bk-col { cursor: pointer; }
@@ -1036,6 +1041,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
         <button type="button" class="set-row" onclick="openRecurList()"><span class="ic">🔁</span><span class="tx">รายการประจำ<span class="sub">ตั้งรายการที่เกิดซ้ำทุกเดือน แล้วให้แอปถามตอนถึงวัน</span></span><span class="arrow">›</span></button>
         <button type="button" class="set-row" onclick="openBudget()"><span class="ic">🎯</span><span class="tx">งบค่าใช้จ่าย<span class="sub">ตั้งงบต่อวัน/สัปดาห์/เดือน/ปี แยกหมวดได้</span></span><span class="arrow">›</span></button>
         <button type="button" class="set-row" onclick="openSavings()"><span class="ic">🐷</span><span class="tx">เงินออม<span class="sub">แยกเงินเก็บออกจากยอดคงเหลือ หยอด/ถอนได้</span></span><span class="arrow">›</span></button>
+        <button type="button" class="set-row" onclick="openCheck()"><span class="ic">🧮</span><span class="tx">ตรวจยอดเงิน<span class="sub">กรอกเงินจริงที่มี เทียบกับยอดในแอป ถ้าไม่ตรงบอกส่วนต่างและส่งรายงานได้</span></span><span class="arrow">›</span></button>
         <button type="button" class="set-row" onclick="closeSettings();openBank()"><span class="ic">📒</span><span class="tx">ดูยอด/กราฟ/ประวัติแต่ละบัญชี<span class="sub">ยอดเงินแต่ละธนาคาร กราฟ 6 เดือน ประวัติ ตั้งงบต่อบัญชี</span></span><span class="arrow">›</span></button>
         <button type="button" class="set-row" onclick="openAcctManage()"><span class="ic">🏦</span><span class="tx">บัญชี / ธนาคาร<span class="sub">เลือกธนาคารที่แสดง เพิ่มบัญชีของตัวเอง</span></span><span class="arrow">›</span></button>
         <button type="button" class="set-row" onclick="exportBackup()"><span class="ic">💾</span><span class="tx">สำรองข้อมูล<span class="sub">บันทึกเป็นไฟล์เก็บไว้ (ย้ายเครื่อง/กันข้อมูลหาย)</span></span><span class="arrow">›</span></button>
@@ -1121,9 +1127,17 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
 </div>
 <div class="overlay" id="bankOverlay">
   <div class="sheet">
-    <div class="sheet-title" id="bkTitle">🏦 บัญชี / ธนาคาร</div>
+    <div class="sheet-title" id="bnkTitle">🏦 บัญชี / ธนาคาร</div>
     <div id="bkBody"></div>
     <div class="sheet-actions" id="bkActs"></div>
+  </div>
+</div>
+
+<div class="overlay" id="checkOverlay">
+  <div class="sheet">
+    <div class="sheet-title">🧮 ตรวจยอดเงิน</div>
+    <div id="chkBody"></div>
+    <div class="sheet-actions" id="chkActs"></div>
   </div>
 </div>
 
@@ -2995,7 +3009,7 @@ function buildBackupObject() {
     version: APP_VERSION_LABEL,
     exportedAt: Date.now(),
     transactions, receivables, categories, categoryTrash, customEmojis, recurring,
-    budgets, savings, chartStyle, profile, accounts: acctData, homeCards,
+    budgets, savings, chartStyle, profile, accounts: acctData, homeCards, checks,
     textSize: size
   };
 }
@@ -3128,6 +3142,124 @@ function addAcctFromManage() {
 }
 function delAcctCustom(i) { const n = acctData.custom[i]; acctData.custom.splice(i, 1); if (n && acctData.icons) delete acctData.icons[n]; if (n) { if (acctData.open) delete acctData.open[n]; if (acctData.budget) delete acctData.budget[n]; } saveAccts(); renderAcctManage(); }
 
+/* ---------- Balance check (compare app total with the real money) ---------- */
+const CHK_KEY = 'balanceChecks', CHK_DAY_KEY = 'chkPromptDay';
+let checks = [], chkStage = 'in', chkRes = null;
+const r2 = v => Math.round(v * 100) / 100;
+function sanitizeChecks(a) {
+  if (!Array.isArray(a)) return [];
+  return a.filter(x => x && isFinite(x.at) && isFinite(x.app) && isFinite(x.real)).slice(-60)
+    .map(x => ({ at: Math.round(x.at), date: String(x.date || '').slice(0, 10), app: r2(x.app), real: r2(x.real), ok: !!x.ok, adj: !!x.adj, n: Math.max(0, Math.round(+x.n || 0)) }));
+}
+function loadChecks() { try { checks = sanitizeChecks(JSON.parse(localStorage.getItem(CHK_KEY) || '[]')); } catch (e) { checks = []; } }
+function saveChecks() { try { localStorage.setItem(CHK_KEY, JSON.stringify(checks.slice(-60))); } catch (e) {} }
+loadChecks();
+function chkDue() {
+  if (!transactions.length) return false;
+  const t = todayStr();
+  if (checks.length && checks[checks.length - 1].date === t) return false;
+  try { if (localStorage.getItem(CHK_DAY_KEY) === t) return false; } catch (e) {}
+  return true;
+}
+function dismissChkNotice() { try { localStorage.setItem(CHK_DAY_KEY, todayStr()); } catch (e) {} refreshNotices(); }
+function openCheck() { chkStage = 'in'; chkRes = null; renderCheck(); document.getElementById('checkOverlay').classList.add('show'); const sh = document.querySelector('#checkOverlay .sheet'); if (sh) sh.scrollTop = 0; }
+function closeCheck() { document.getElementById('checkOverlay').classList.remove('show'); refreshNotices(); }
+function chkNum(v) { const t = String(v == null ? '' : v).replace(/[,\s]/g, ''); if (t === '') return null; const n = Number(t); return isFinite(n) && n >= 0 && n < 1e10 ? r2(n) : null; }
+function chkSince(prev) { const from = prev ? prev.at : (Date.now() - 7 * 86400000); return transactions.filter(t => (t.createdAt || 0) > from).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)); }
+function chkLastLine() {
+  const l = checks[checks.length - 1]; if (!l) return 'ยังไม่เคยตรวจยอด';
+  const d = r2(l.app - l.real);
+  return 'ตรวจครั้งก่อน: ' + thaiDateLabel(l.date) + ' · ' + (l.ok ? '✓ ตรงกัน' : (l.adj ? '⚖️ ปรับยอดแล้ว (ต่าง ' + fmt(Math.abs(d)) + ')' : 'ไม่ตรง (ต่าง ' + fmt(Math.abs(d)) + ')'));
+}
+function renderCheck() {
+  const body = document.getElementById('chkBody'), acts = document.getElementById('chkActs');
+  if (chkStage === 'in') {
+    const names = acctChoices();
+    let h = `<div class="bk-sub">นับเงินที่คุณมีอยู่จริงตอนนี้ <b>รวมทุกที่</b> (ทุกธนาคาร เงินสด กระเป๋าเงินออนไลน์ เงินออม) แล้วกรอกเป็นยอดเดียว</div><div class="bk-sub" style="margin:4px 0 8px;">${escapeHtml(chkLastLine())}</div>`;
+    h += `<div class="field-label"><span>① ยอดเงินจริงรวมทุกที่ (บาท)</span></div><input class="bk-in" id="chkReal" inputmode="decimal" placeholder="เช่น 7,894.06" autocomplete="off">`;
+    h += `<div class="bk-sub" style="margin-top:8px;"><a id="chkHelpLink" style="color:var(--brass);cursor:pointer;">🤔 ไม่แน่ใจ? ช่วยนับทีละที่ ▾</a></div><div id="chkParts" style="display:none;margin-top:4px;"><div class="bk-sub">กรอกยอดแต่ละที่ แอปจะรวมให้ในช่อง ① (ข้ามที่ไม่มีได้)</div>`;
+    names.forEach((n, i) => { h += `<label class="chk-part"><span>${acctIconHtml(n)} ${escapeHtml(n)}</span><input class="bk-in" data-part="${i}" inputmode="decimal" placeholder="0.00" autocomplete="off"></label>`; });
+    h += `<label class="chk-part"><span>➕ อื่นๆ (บัตรอาหาร ฯลฯ)</span><input class="bk-in" data-part="x" inputmode="decimal" placeholder="0.00" autocomplete="off"></label></div>`;
+    h += `<label class="chk-sure"><input type="checkbox" id="chkSure"><span>② ฉันนับแล้ว <b>ชัวร์</b> ว่าตัวเลขนี้ถูก</span></label>`;
+    body.innerHTML = h;
+    acts.innerHTML = '<button class="btn-cancel" onclick="closeCheck()">ปิด</button><button class="btn-save in" id="chkGo" disabled>ตรวจยอด</button>';
+    const real = document.getElementById('chkReal'), sure = document.getElementById('chkSure'), go = document.getElementById('chkGo');
+    const upd = () => { go.disabled = !(sure.checked && chkNum(real.value) !== null); };
+    real.oninput = upd; sure.onchange = upd;
+    document.getElementById('chkHelpLink').onclick = () => { const b = document.getElementById('chkParts'); b.style.display = b.style.display === 'none' ? 'block' : 'none'; };
+    body.querySelectorAll('[data-part]').forEach(inp => inp.oninput = () => {
+      let sum = 0, any = false; body.querySelectorAll('[data-part]').forEach(x => { const v = chkNum(x.value); if (v !== null) { sum += v; any = true; } });
+      if (any) real.value = String(r2(sum)); upd();
+    });
+    go.onclick = () => chkRun(chkNum(real.value));
+    return;
+  }
+  // result
+  const R = chkRes, diff = R.diff;
+  let h = '';
+  if (R.ok) {
+    h += `<div class="chk-big chk-ok">✓ ตรงกัน</div><div class="bk-sub">ยอดในแอปเท่ากับเงินจริง ${fmt(R.real)} บาท บันทึกเป็นจุดตรวจของวันนี้แล้ว</div>`;
+  } else {
+    h += `<div class="chk-big chk-bad">ไม่ตรงกัน ${diff > 0 ? '−' : '+'}${fmt(Math.abs(diff))}</div><div class="bk-sub">${diff > 0 ? 'แอปแสดง <b>มากกว่า</b>เงินจริง' : 'แอปแสดง <b>น้อยกว่า</b>เงินจริง'} ${fmt(Math.abs(diff))} บาท</div>`;
+    h += `<div class="chk-box"><div class="chk-line"><span>ยอดในแอป</span><b>${fmt(R.app)}</b></div><div class="chk-line"><span>เงินจริงที่คุณนับ</span><b>${fmt(R.real)}</b></div></div>`;
+    h += `<div class="field-label"><span>${R.prev ? 'รายการที่จดตั้งแต่ตรวจครั้งก่อน (' + thaiDateLabel(R.prev.date) + ')' : 'รายการที่จดใน 7 วันล่าสุด'} · ${R.list.length} รายการ</span></div>`;
+    if (R.prev && R.prev.ok) h += `<div class="bk-sub">ครั้งก่อนยอดตรงกัน ส่วนต่างนี้จึงเกิดหลังจากนั้น: จากรายการด้านล่าง หรือเงินที่เข้า/ออกโดยไม่ได้จด (เช่น ค่าธรรมเนียม ดอกเบี้ย)</div>`;
+    R.list.slice(0, 40).forEach(t => { h += `<div class="chk-tx"><span>${catIconHtml(t.type, t.category)} ${escapeHtml(t.category)}${t.note ? ' <small>· ' + escapeHtml(t.note.slice(0, 22)) + '</small>' : ''}<br><small>${escapeHtml(thaiDateLabel(t.date))}${t.time ? ' ' + escapeHtml(t.time) : ''}</small></span><b style="color:var(--${t.type === 'in' ? 'deposit' : 'withdraw'})">${t.type === 'in' ? '+' : '−'}${fmt(t.amount)}</b></div>`; });
+    if (R.list.length > 40) h += `<div class="bk-sub">…และอีก ${R.list.length - 40} รายการ</div>`;
+    h += `<label class="chk-part" style="margin-top:10px;"><input type="checkbox" id="chkAttach" style="width:20px;height:20px;flex:none;"><span>แนบรายการข้างบน (ไม่รวมหมายเหตุ) ตอนส่งรายงาน</span></label>`;
+    h += `<div id="chkAdjBox" style="display:none;" class="chk-box"><div class="bk-sub">จะเพิ่มรายการ "ปรับยอด" ${diff > 0 ? 'รายจ่าย' : 'รายรับ'} ${fmt(Math.abs(diff))} บาท เพื่อให้ยอดแอปเท่ากับเงินจริง (ส่วนต่างจะไม่ถูกหาสาเหตุอีก) แน่ใจไหม</div><button class="btn-save in" style="width:100%;margin-top:6px;" id="chkAdjYes">ใช่ ปรับยอดให้ตรง</button></div>`;
+  }
+  body.innerHTML = h;
+  if (R.ok) acts.innerHTML = '<button class="btn-save in" onclick="closeCheck()">เรียบร้อย</button>';
+  else {
+    acts.innerHTML = '<button class="btn-cancel" onclick="closeCheck()">ปิด</button><button class="btn-cancel" id="chkAdjBtn">⚖️ ปรับยอด</button><button class="btn-save in" id="chkSend">📨 ส่งรายงาน</button>';
+    document.getElementById('chkSend').onclick = chkSend;
+    document.getElementById('chkAdjBtn').onclick = () => { document.getElementById('chkAdjBox').style.display = 'block'; };
+    document.getElementById('chkAdjYes').onclick = chkAdjust;
+  }
+}
+function chkRun(real) {
+  if (real === null) return;
+  const app = txNetTotal(), prev = checks[checks.length - 1] || null, list = chkSince(prev), diff = r2(app - real), ok = Math.abs(diff) < 0.005;
+  chkRes = { app, real, diff, ok, prev, list };
+  checks.push({ at: Date.now(), date: todayStr(), app, real, ok, adj: false, n: list.length }); checks = checks.slice(-60); saveChecks();
+  chkStage = 'res'; renderCheck(); refreshNotices();
+  const sh = document.querySelector('#checkOverlay .sheet'); if (sh) sh.scrollTop = 0;
+}
+async function chkAdjust() {
+  const R = chkRes; if (!R || R.ok) return;
+  const type = R.diff > 0 ? 'out' : 'in', name = 'ปรับยอด';
+  if (!(categories[type] || []).some(c => c.name === name)) { categories[type].push({ name, icon: '⚖️' }); try { await saveCategories(); } catch (e) {} }
+  transactions.push({ id: Date.now() + '-' + Math.random().toString(36).slice(2, 7), type, amount: Math.abs(R.diff), date: todayStr(), category: name, note: 'ปรับยอดให้ตรงกับของจริง (ตรวจยอด)', createdAt: Date.now(), time: nowHM() });
+  await saveTransactions();
+  const l = checks[checks.length - 1]; if (l) { l.adj = true; saveChecks(); }
+  render(); closeCheck(); showToast('ปรับยอดแล้ว ยอดแอปเท่ากับเงินจริง', 3500);
+}
+let chkSending = false;
+async function chkSend() {
+  if (chkSending || !chkRes) return;
+  const R = chkRes, btn = document.getElementById('chkSend');
+  const prev = R.prev ? (thaiDateLabel(R.prev.date) + (R.prev.ok ? ' ตรง' : ' ต่าง ' + fmt(Math.abs(r2(R.prev.app - R.prev.real))))) : 'ไม่มี';
+  let text = '[ตรวจยอด] ' + todayStr() + ' ' + nowHM() + ' ' + APP_VERSION_LABEL + '\nยอดแอป ' + fmt(R.app) + ' | เงินจริง ' + fmt(R.real) + ' | ต่าง ' + (R.diff > 0 ? 'แอปมากกว่า ' : 'แอปน้อยกว่า ') + fmt(Math.abs(R.diff)) + '\nครั้งก่อน: ' + prev + ' | รายการตั้งแต่นั้น ' + R.list.length + ' | รวมทั้งหมด ' + transactions.length;
+  const att = document.getElementById('chkAttach');
+  if (att && att.checked) {
+    text += '\n';
+    for (const t of R.list) { const line = (t.type === 'in' ? '+' : '-') + t.amount + ' ' + t.category + ' ' + String(t.date).slice(5) + (t.acct ? ' ' + t.acct : '') + '\n'; if ((text + line).length > 950) { text += '…'; break; } text += line; }
+  }
+  text = text.slice(0, 1000);
+  if (!navigator.onLine) { showToast('ตอนนี้ไม่มีอินเทอร์เน็ต ลองส่งใหม่ภายหลัง', 3500); return; }
+  chkSending = true; btn.disabled = true; btn.textContent = 'กำลังส่ง...';
+  const ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null, timer = setTimeout(() => { if (ctrl) ctrl.abort(); }, 15000);
+  let name = ''; try { name = localStorage.getItem(FB_NAME_KEY) || ''; } catch (e) {}
+  try {
+    const res = await fetch(FEEDBACK_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: FB_TYPES[1], name, text, appVersion: APP_VERSION_LABEL, platform: detectPlatform(), website: '' }), signal: ctrl ? ctrl.signal : undefined });
+    let data = {}; try { data = await res.json(); } catch (e) {}
+    if (res.ok && data.ok) { showToast('ส่งรายงานแล้ว ขอบคุณค่ะ 🙏', 3500); btn.textContent = '✓ ส่งแล้ว'; clearTimeout(timer); chkSending = false; return; }
+    showToast(res.status === 429 ? 'ส่งบ่อยเกินไป รอสักครู่แล้วลองใหม่' : 'ส่งไม่สำเร็จ ลองใหม่อีกครั้ง', 3500);
+  } catch (e) { showToast((e && e.name === 'AbortError') ? 'ใช้เวลานานเกินไป ลองใหม่อีกครั้ง' : 'ส่งไม่สำเร็จ ลองใหม่อีกครั้ง', 3500); }
+  clearTimeout(timer); chkSending = false; btn.disabled = false; btn.textContent = '📨 ส่งรายงาน';
+}
+
 /* ---------- Bank page (per-account balance / chart / history / budget) ---------- */
 let bkCur = '', bkMonth = '';   // bkMonth = 'YYYY-MM'
 function bkNames() {
@@ -3147,7 +3279,7 @@ function closeBank() { document.getElementById('bankOverlay').classList.remove('
 function bkBack() { bkCur = ''; renderBank(); }
 function bkMoney(v) { return (v < 0 ? '−' : '') + fmt(Math.abs(v)); }
 function renderBank() {
-  const body = document.getElementById('bkBody'), acts = document.getElementById('bkActs'), title = document.getElementById('bkTitle');
+  const body = document.getElementById('bkBody'), acts = document.getElementById('bkActs'), title = document.getElementById('bnkTitle');
   if (!bkCur) {
     title.innerHTML = '🏦 บัญชี / ธนาคาร';
     const L = bkList(), tot = L.reduce((s, x) => s + x.bal, 0);
@@ -3251,6 +3383,7 @@ async function onRestoreFileChosen(input) {
     profile: (obj.profile && typeof obj.profile === 'object') ? sanitizeProfile(obj.profile) : null,
     accounts: (obj.accounts && typeof obj.accounts === 'object') ? sanitizeAccts(obj.accounts) : null,
     homeCards: Array.isArray(obj.homeCards) ? obj.homeCards.filter((x, i, a) => typeof x === 'string' && HOME_CARD_DEFS.some(d => d[0] === x) && a.indexOf(x) === i) : null,
+    checks: Array.isArray(obj.checks) ? sanitizeChecks(obj.checks) : null,
     exportedAt: typeof obj.exportedAt === 'number' ? obj.exportedAt : 0,
     textSize: TEXT_ZOOMS[obj.textSize] ? obj.textSize : null
   };
@@ -3318,6 +3451,11 @@ async function doRestore(mode) {
     });
   }
 
+  if (r.checks) {
+    if (mode === 'replace') checks = r.checks;
+    else { const have = new Set(checks.map(c => c.at)); r.checks.forEach(c => { if (!have.has(c.at)) checks.push(c); }); checks.sort((a, b) => a.at - b.at); checks = checks.slice(-60); }
+    saveChecks();
+  }
   await saveTransactions();
   await saveReceivables();
   await saveCategories();
@@ -3409,6 +3547,10 @@ function refreshNotices() {
   if (false && bankPending.length && !bankDismissed) {
     html += `<div class="notice recur"><span>🏦 มีรายการโอนรอยืนยัน <b>${bankPending.length}</b> รายการ</span>
       <div class="notice-actions"><button class="go" onclick="openBankNext()">ดู / ยืนยัน</button><button class="later" onclick="dismissBankNotice()">ซ่อน</button></div></div>`;
+  }
+  if (chkDue()) {
+    html += `<div class="notice recur"><span>🧮 วันนี้ยังไม่ได้ตรวจยอดเงิน เทียบกับเงินจริงไหม</span>
+      <div class="notice-actions"><button class="go" onclick="openCheck()">ตรวจเลย</button><button class="later" onclick="dismissChkNotice()">ไว้ทีหลัง</button></div></div>`;
   }
   const bk = backupReminderState();
   if (bk) {
@@ -5561,6 +5703,8 @@ const MORE_HELP = [
   ['วางแผนเงิน', [
     ['budget', '🎯', 'งบค่าใช้จ่าย', '<b>ตั้งค่า › งบค่าใช้จ่าย</b> ตั้งตัวเลขเองได้ต่อวัน/สัปดาห์/เดือน/ปี ทั้งรวมและแยกหมวด (ช่องไหนไม่ตั้งก็เว้นว่าง) แถบงบจะอยู่ใต้ปุ่มรายรับ/รายจ่าย แตะเพื่อกางดู และเตือนเมื่อเกินงบ'],
     ['savings', '🐷', 'เงินออม', '<b>ตั้งค่า › เงินออม</b> หรือแตะบรรทัด "เงินออมที่แยกไว้" ใต้ยอดเงิน กด <b>หยอด</b> เพื่อแยกเงินออกจากยอดคงเหลือ กด <b>ถอน</b> เพื่อคืน ตั้งเป้าหมายและเพิ่มกระปุกได้ เงินออมไม่นับเป็นรายจ่าย'],
+    ['check', '🧮', 'ตรวจยอดเงิน (เทียบกับเงินจริง)', '<b>ตั้งค่า › ตรวจยอดเงิน</b> หรือแตะแถบเตือนที่หน้าแรก นับเงินที่มีจริงรวมทุกที่ (ทุกธนาคาร เงินสด เงินออม) ใส่ในช่อง ① ถ้าไม่แน่ใจกด "ช่วยนับทีละที่" แล้วกรอกทีละธนาคาร แอปจะรวมให้ จากนั้นติ๊ก ② ว่านับแล้วชัวร์ แล้วกด <b>ตรวจยอด</b> ถ้าตรงจะขึ้น ✓ ถ้าไม่ตรงจะบอกส่วนต่างและรายการที่จดตั้งแต่ตรวจครั้งก่อน กด <b>ส่งรายงาน</b> เพื่อให้ผู้พัฒนาช่วยดู หรือ <b>ปรับยอด</b> เพื่อให้ยอดแอปเท่าเงินจริง แนะนำให้ตรวจวันละครั้ง จะรู้ทันทีว่ายอดเพี้ยนวันไหน'],
+    ['banks', '🏦', 'ดูยอด/กราฟ/ประวัติแต่ละบัญชี', '<b>ตั้งค่า › ดูยอด/กราฟ/ประวัติแต่ละบัญชี</b> หรือการ์ด "บัญชี/ธนาคาร" ที่หน้าแรก (เปิดที่ เลือกการ์ดที่ปัด) แตะบัญชีเพื่อดูยอด กราฟรับ-จ่าย 6 เดือน ประวัติ และตั้งงบรายเดือนของบัญชีนั้น ช่อง "ยอดตั้งต้น" คือเงินที่มีในบัญชีก่อนเริ่มจดในแอป ยอดบัญชีนับเฉพาะรายการที่เลือกบัญชีไว้'],
     ['recur', '🔁', 'รายการประจำ', '<b>ตั้งค่า › รายการประจำ</b> ตั้งรายการที่เกิดซ้ำทุกเดือน เช่น ค่าเช่า แล้วแอปจะถามให้ยืนยันเมื่อถึงวัน']
   ]],
   ['ของฉัน และดูแลข้อมูล', [
