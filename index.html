@@ -869,6 +869,8 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .hcard .hc-row { display: flex; justify-content: space-between; font-size: 13.5px; margin-top: 3px; } .hcard .hc-big { font-size: 26px; font-weight: 700; font-family: 'Noto Serif Thai', serif; }
   .hcard .hc-bar i.warn { background: var(--brass); } .hcard .hc-bar i.over { background: var(--withdraw); }
   .hcard .hc-row .ov { color: var(--withdraw); font-weight: 700; }
+  #annOverlay { align-items: center; padding: 18px; z-index: 60; } #annOverlay .sheet { border-radius: 20px; max-width: 420px; animation: none; box-shadow: 0 18px 50px rgba(0,0,0,.4); }
+  .ann-p { font-size: 15px; line-height: 1.65; margin: 0 0 10px; } .ann-hl { background: #FFF6DE; border: 1px solid #E8D9A8; border-radius: 12px; padding: 10px 12px; font-size: 14.5px; line-height: 1.6; margin: 4px 0 10px; }
   .chk-big { font-family: 'Noto Serif Thai', serif; font-size: 26px; font-weight: 700; margin: 2px 0; } .chk-ok { color: var(--deposit); } .chk-bad { color: var(--withdraw); }
   .chk-box { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin: 8px 0; background: var(--page-cream-2); } .chk-line { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; padding: 2px 0; }
   .chk-part { display: flex; align-items: center; gap: 8px; margin: 5px 0; } .chk-part > span { flex: 1; min-width: 0; font-size: 14px; } .chk-part input { width: 42%; }
@@ -1130,6 +1132,14 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     <div class="sheet-title" id="bnkTitle">🏦 บัญชี / ธนาคาร</div>
     <div id="bkBody"></div>
     <div class="sheet-actions" id="bkActs"></div>
+  </div>
+</div>
+
+<div class="overlay" id="annOverlay">
+  <div class="sheet">
+    <div class="sheet-title" id="annTitle"></div>
+    <div id="annBody"></div>
+    <div class="sheet-actions" id="annActs"><button class="btn-cancel" id="annGo">🧮 ตรวจยอดเลย</button><button class="btn-save in" id="annOk">รับทราบ</button></div>
   </div>
 </div>
 
@@ -3259,6 +3269,46 @@ async function chkSend() {
   } catch (e) { showToast((e && e.name === 'AbortError') ? 'ใช้เวลานานเกินไป ลองใหม่อีกครั้ง' : 'ส่งไม่สำเร็จ ลองใหม่อีกครั้ง', 3500); }
   clearTimeout(timer); chkSending = false; btn.disabled = false; btn.textContent = '📨 ส่งรายงาน';
 }
+
+/* ---------- Announcement pop-up (dismiss = hidden until 06:00 the next morning) ---------- */
+const ANNOUNCEMENT = {
+  id: 'balance-mismatch-2026-11', active: true, title: '📢 ประกาศ',
+  text: 'ตอนนี้เรากำลังตรวจสอบปัญหา <b>ยอดในแอปไม่ตรงกับเงินจริง</b> ประมาณ 1–2 สัปดาห์ ระหว่างนี้ใช้งานได้ตามปกติ แต่ขอให้ <b>ตรวจยอดทุกวัน</b> (ตั้งค่า › ตรวจยอดเงิน) หรือใช้แอปอื่นไปก่อนก็ได้ ขออภัยในความไม่สะดวกครับ 🙏'
+};
+const ANN_KEY = 'annSeen';
+function annPeriodStart(now) { const d = new Date(now); d.setHours(6, 0, 0, 0); if (now < d.getTime()) d.setDate(d.getDate() - 1); return d.getTime(); }
+function annDue(now) {
+  if (!ANNOUNCEMENT.active) return false;
+  now = now || Date.now();
+  let seen = {}; try { seen = JSON.parse(localStorage.getItem(ANN_KEY) || '{}') || {}; } catch (e) {}
+  return !(seen.id === ANNOUNCEMENT.id && typeof seen.at === 'number' && seen.at >= annPeriodStart(now) && seen.at <= now + 60000);
+}
+function annDismiss() {
+  try { localStorage.setItem(ANN_KEY, JSON.stringify({ id: ANNOUNCEMENT.id, at: Date.now() })); } catch (e) {}
+  document.getElementById('annOverlay').classList.remove('show');
+  annSchedule();
+}
+function annShow() {
+  const ov = document.getElementById('annOverlay'); if (!ov) return;
+  document.getElementById('annTitle').innerHTML = ANNOUNCEMENT.title;
+  document.getElementById('annBody').innerHTML = '<div class="ann-p" style="margin-bottom:4px;">' + ANNOUNCEMENT.text + '</div>';
+  document.getElementById('annOk').onclick = annDismiss;
+  document.getElementById('annGo').onclick = () => { annDismiss(); openCheck(); };
+  ov.classList.add('show');
+}
+function annTry() {
+  if (!annDue()) return;
+  if (document.querySelector('.overlay.show')) { setTimeout(annTry, 60000); return; }   // never interrupt something the person is doing
+  annShow();
+}
+let annTimer = null;
+function annSchedule() {   // if the app stays open past 06:00, show it again then
+  clearTimeout(annTimer);
+  const n = new Date(), t = new Date(n); t.setHours(6, 0, 5, 0); if (t.getTime() <= n.getTime()) t.setDate(t.getDate() + 1);
+  annTimer = setTimeout(annTry, Math.min(t.getTime() - n.getTime(), 2147000000));
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) annTry(); });
+setTimeout(() => { annTry(); annSchedule(); }, 800);
 
 /* ---------- Bank page (per-account balance / chart / history / budget) ---------- */
 let bkCur = '', bkMonth = '';   // bkMonth = 'YYYY-MM'
@@ -6341,7 +6391,7 @@ if ('serviceWorker' in navigator) {
 
 // Must equal BUILD_ID in sw.js for the same release. If the newest sw.js on the server has this same build,
 // this page IS the newest version (the page is always loaded fresh), so there is nothing to update to.
-const PAGE_BUILD = '20261121180000';
+const PAGE_BUILD = '20261122230000';
 async function pageIsCurrent() {
   try {
     const r = await fetch('sw.js?c=' + Date.now(), { cache: 'no-store' });
