@@ -54,17 +54,22 @@ async function handleShare(request) {
 const PUSH_API = 'https://sweet-morning-e56c.janjao56669.workers.dev';
 self.addEventListener('push', (event) => {
   event.waitUntil((async () => {
+    const opts = { icon: 'icon-192.png', badge: 'badge-96.png', data: { url: self.registration.scope } };
+    // show at once, before any network: a sleeping phone may have no network yet, and waiting for it kept the notification
+    // hidden until the app was opened
+    await self.registration.showNotification('🔔 บัญชีต้อการช่าง', Object.assign({ body: 'มีเรื่องแจ้งเตือน แตะเพื่อเปิดแอป', tag: 'pb-push', renotify: true, vibrate: [180, 90, 180] }, opts));
     let msgs = [];
     try {
       const sub = await self.registration.pushManager.getSubscription();
       for (let i = 0; sub && i < 3; i++) {
-        try { const r = await fetch(PUSH_API + '/pending', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) }); msgs = (await r.json()).msgs || []; break; }
+        try { const r = await fetch(PUSH_API + '/pending', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }), signal: AbortSignal.timeout(6000) }); msgs = (await r.json()).msgs || []; break; }
         catch (e) { await new Promise((res) => setTimeout(res, 1500 * (i + 1))); }
       }
     } catch (e) {}
-    if (!msgs.length) msgs = [{ title: '🔔 บัญชีต้อการช่าง', body: 'มีเรื่องแจ้งเตือน แตะเพื่อเปิดแอป', tag: 'pb-push' }];
+    if (!msgs.length) return;   // keep the general one, tapping it still opens the app
+    (await self.registration.getNotifications({ tag: 'pb-push' })).forEach((n) => n.close());
     for (const m of msgs) {
-      await self.registration.showNotification(String(m.title || '🔔 บัญชีต้อการช่าง'), { body: String(m.body || ''), tag: m.tag || 'pb-push', renotify: true, icon: 'icon-192.png', badge: 'badge-96.png', vibrate: [180, 90, 180], data: { url: self.registration.scope } });
+      await self.registration.showNotification(String(m.title || '🔔 บัญชีต้อการช่าง'), Object.assign({ body: String(m.body || ''), tag: m.tag || 'pb-push', silent: true }, opts));   // the general one already buzzed
     }
   })());
 });
