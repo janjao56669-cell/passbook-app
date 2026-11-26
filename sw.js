@@ -3,9 +3,9 @@
 // same) — this is what actually makes the browser detect a service worker
 // update and fire the in-app "new version" banner.
 const APP_VERSION = 'V2.1';
-const BUILD_ID = '20261126140000';
+const BUILD_ID = '20261126143000';
 const CACHE_NAME = 'passbook-cache-' + BUILD_ID;
-const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './badge-96.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -64,7 +64,7 @@ self.addEventListener('push', (event) => {
     } catch (e) {}
     if (!msgs.length) msgs = [{ title: '🔔 บัญชีต้อการช่าง', body: 'มีเรื่องแจ้งเตือน แตะเพื่อเปิดแอป', tag: 'pb-push' }];
     for (const m of msgs) {
-      await self.registration.showNotification(String(m.title || '🔔 บัญชีต้อการช่าง'), { body: String(m.body || ''), tag: m.tag || 'pb-push', renotify: true, icon: 'icon-192.png', badge: 'icon-192.png', vibrate: [180, 90, 180], data: { url: self.registration.scope } });
+      await self.registration.showNotification(String(m.title || '🔔 บัญชีต้อการช่าง'), { body: String(m.body || ''), tag: m.tag || 'pb-push', renotify: true, icon: 'icon-192.png', badge: 'badge-96.png', vibrate: [180, 90, 180], data: { url: self.registration.scope } });
     }
   })());
 });

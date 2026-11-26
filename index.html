@@ -3860,7 +3860,7 @@ function ntfSentGet() { try { return JSON.parse(localStorage.getItem(NTF_SENT_KE
 async function ntfShow(title, body, tag) {
   try {
     const reg = await navigator.serviceWorker.getRegistration();
-    const opt = { body, tag: tag || 'passbook', renotify: true, icon: 'icon-192.png', badge: 'icon-192.png', vibrate: [180, 90, 180], data: { url: location.href.split('#')[0] } };
+    const opt = { body, tag: tag || 'passbook', renotify: true, icon: 'icon-192.png', badge: 'badge-96.png', vibrate: [180, 90, 180], data: { url: location.href.split('#')[0] } };
     if (reg && reg.showNotification) await reg.showNotification(title, opt); else new Notification(title, opt);
     ntfChime();
     return true;
@@ -6762,7 +6762,7 @@ if ('serviceWorker' in navigator) {
 
 // Must equal BUILD_ID in sw.js for the same release. If the newest sw.js on the server has this same build,
 // this page IS the newest version (the page is always loaded fresh), so there is nothing to update to.
-const PAGE_BUILD = '20261126140000';
+const PAGE_BUILD = '20261126143000';
 async function pageIsCurrent() {
   try {
     const r = await fetch('sw.js?c=' + Date.now(), { cache: 'no-store' });
