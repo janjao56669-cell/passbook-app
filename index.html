@@ -1788,6 +1788,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     <div class="field-label"><span>ได้รับจริงเท่าไร (บาท)</span></div>
     <input type="text" class="text-input" id="payAmount" inputmode="decimal" autocomplete="off" oninput="updatePayHint()" onkeydown="if(event.key==='Enter')confirmPaid()">
     <div class="pay-hint" id="payHint"></div>
+    <div id="payAcctWrap"><div class="field-label"><span>เงินเข้าบัญชีไหน</span></div><div class="chip-row" id="payAcctChips"></div></div>
     <div id="payModeWrap" style="display:none;margin:6px 0 4px;">
       <label class="pay-mode"><input type="radio" name="payMode" value="partial" checked> <span><b>ยังเหลือจ่ายอีก</b><small>ยอดค้างรับยังอยู่ เหลืออีก <b id="payRemainTxt"></b> บาท</small></span></label>
       <label class="pay-mode"><input type="radio" name="payMode" value="close"> <span><b>ปิดงานเลย (ไม่ต้องจ่ายเพิ่ม)</b><small>บันทึกเป็นขาดทุนส่วนที่ขาด</small></span></label>
@@ -1923,7 +1924,7 @@ const CAT_TRASH_KEY = 'categoryTrash';
 const CUSTOM_EMOJI_KEY = 'customEmojis';
 const TEXT_SIZE_KEY = 'uiTextSize';
 const LAST_BACKUP_KEY = 'lastBackupAt';
-const APP_VERSION_LABEL = 'V2.3';
+const APP_VERSION_LABEL = 'V2.3.1';
 const TEXT_ZOOMS = { normal: 1, large: 1.12, xlarge: 1.24 };
 let customEmojis = [];
 
@@ -2678,7 +2679,7 @@ async function saveReceivable() {
 }
 
 function recvBase(r) { return typeof r.listed === 'number' ? r.listed : r.amount; }
-async function markReceivablePaid(id, received, partial) {
+async function markReceivablePaid(id, received, partial, acct) {
   const r = receivables.find(x => x.id === id);
   if (!r || r.status === 'paid') return;
   const got = (typeof received === 'number' && isFinite(received) && received > 0) ? Math.round(received * 100) / 100 : r.amount;
@@ -2702,8 +2703,10 @@ async function markReceivablePaid(id, received, partial) {
     date: todayStr(),
     category: 'รับชำระค้างรับ',
     note: r.name + (isPartial ? ' (รับบางส่วน)' : ''),
-    createdAt: Date.now()
+    createdAt: Date.now(),
+    ...(acct ? { acct } : {})
   });
+  if (acct) { try { localStorage.setItem(ACCT_LAST_KEY, acct); } catch (e) {} }
   await saveTransactions();
 
   render();
@@ -2723,6 +2726,8 @@ function openPaidSheet(id) {
   const inp = document.getElementById('payAmount'); inp.value = String(r.amount);
   document.getElementById('payError').className = 'fb-error'; document.getElementById('payError').textContent = '';
   updatePayHint();
+  renderAcctChips(lastAcct(), 'payAcctChips');
+  document.getElementById('payAcctWrap').style.display = acctChoices(lastAcct()).length ? '' : 'none';
   document.getElementById('payOverlay').classList.add('show');
   setTimeout(() => { inp.focus(); inp.select(); }, 150);
 }
@@ -2743,9 +2748,9 @@ async function confirmPaid() {
   const r = receivables.find(x => x.id === payTargetId); if (!r) { closePaidSheet(); return; }
   const v = parseMoney(document.getElementById('payAmount').value);
   if (v === null) { const e = document.getElementById('payError'); e.className = 'fb-error show'; e.textContent = 'กรุณาใส่จำนวนเงินที่ได้รับจริงให้ถูกต้อง'; return; }
-  const id = payTargetId; closePaidSheet();
+  const id = payTargetId, acct = selectedAcct; closePaidSheet();
   const mode = (document.querySelector('input[name=payMode]:checked') || {}).value;
-  await markReceivablePaid(id, v, mode !== 'close');
+  await markReceivablePaid(id, v, mode !== 'close', acct);
 }
 function profitBetween(start, end) {
   let sum = 0, n = 0; const items = [];
@@ -3285,8 +3290,9 @@ function acctChoices(extra) {
   if (extra && !l.includes(extra)) l.push(extra);
   return l;
 }
-function renderAcctChips(preselect) {
-  const box = document.getElementById('acctChips');
+// boxId: the entry sheet's row by default, or the "received" sheet's; both share selectedAcct (never open together)
+function renderAcctChips(preselect, boxId) {
+  const box = document.getElementById(boxId || 'acctChips');
   selectedAcct = preselect || '';
   box.innerHTML = '';
   acctChoices(preselect).forEach(n => {
@@ -6092,6 +6098,9 @@ async function shareYearImg() {
 /* ----- What's new (release notes) ----- */
 // Newest first. Every new release: add a new entry at the TOP and bump APP_VERSION_LABEL + sw.js.
 const RELEASE_NOTES = [
+  { ver: 'V2.3.1', date: '2026-11-26', items: [
+    { e: '🏦', t: 'รับเงินค้างรับ เลือกบัญชีได้', d: 'กด ✓ รับเงินแล้ว เลือกได้ว่าเงินเข้าเงินสดหรือธนาคารไหน ยอดแต่ละบัญชีจึงตรง' }
+  ] },
   { ver: 'V2.3', date: '2026-11-26', items: [
     { e: '↩️', t: 'บันทึกเงินคืน', d: 'กด ➕ › ได้เงินคืน เลือกหมวดของรายจ่ายเดิม ยอดเงินเพิ่ม รายจ่ายเดือนนั้นลดลง (ไม่นับเป็นรายรับ)' },
     { e: '🗂️', t: 'หมวดใหญ่ / หมวดย่อย', d: 'ถ้ามีหมวดตั้งแต่ 9 หมวด แอปจัดกลุ่มให้ (กินดื่ม, เดินทาง, บ้าน ฯลฯ) มีแถวใช้บ่อย และดูยอดรวมหมวดใหญ่ได้ แก้กลุ่มเองได้ที่หน้าจัดการหมวด' },
@@ -6873,7 +6882,7 @@ if ('serviceWorker' in navigator) {
 
 // Must equal BUILD_ID in sw.js for the same release. If the newest sw.js on the server has this same build,
 // this page IS the newest version (the page is always loaded fresh), so there is nothing to update to.
-const PAGE_BUILD = '20261126213500';
+const PAGE_BUILD = '20261126221800';
 async function pageIsCurrent() {
   try {
     const r = await fetch('sw.js?c=' + Date.now(), { cache: 'no-store' });
