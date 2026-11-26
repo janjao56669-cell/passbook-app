@@ -3964,8 +3964,12 @@ async function pushOff() {
 setTimeout(() => { if (ntfReady()) pushSync(true).then(() => { try { if (document.getElementById('ntfOverlay').classList.contains('show')) renderNtf(); } catch (e) {} }); }, 3000);
 document.addEventListener('visibilitychange', () => { if (document.hidden && ntfReady()) pushSync(false); });
 
-async function ntfTest() { if (!ntfReady()) { showToast('เปิดการแจ้งเตือนก่อน'); return; } const ok = await ntfShow('🔔 ทดสอบแจ้งเตือน', 'ถ้าเห็นข้อความนี้ที่แถบแจ้งเตือน แปลว่าใช้ได้แล้ว', 'pb-test'); if (!ok) showToast('แจ้งเตือนไม่สำเร็จ', 3000);
-  if (await pushSync(true)) { try { const reg = await swReady(), sub = await reg.pushManager.getSubscription(); if (sub) { showToast('อีกสักครู่จะมีแจ้งเตือนจากเซิร์ฟเวอร์อีกอัน (ลองปิดแอปรอดูได้)', 4000); setTimeout(() => fetch(PUSH_API + '/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) }).catch(() => {}), 8000); } } catch (e) {} }
+async function ntfTest() {
+  if (!ntfReady()) { showToast('เปิดการแจ้งเตือนก่อน'); return; }
+  if (await pushSync(true)) {   // server connected: test the real closed-app path (one notification)
+    try { const reg = await swReady(), sub = await reg.pushManager.getSubscription(); if (sub) { showToast('อีกประมาณ 8 วินาทีจะมีแจ้งเตือนเด้ง ลองปิดแอปรอดูได้', 4000); setTimeout(() => fetch(PUSH_API + '/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) }).catch(() => {}), 8000); return; } } catch (e) {}
+  }
+  const ok = await ntfShow('🔔 ทดสอบแจ้งเตือน', 'ถ้าเห็นข้อความนี้ที่แถบแจ้งเตือน แปลว่าใช้ได้แล้ว', 'pb-test'); if (!ok) showToast('แจ้งเตือนไม่สำเร็จ', 3000);
 }
 
 
@@ -6754,7 +6758,7 @@ if ('serviceWorker' in navigator) {
 
   let refreshing = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (refreshing) return;
+    if (refreshing || window._quietSwap) return;
     refreshing = true;
     window.location.reload();
   });
@@ -6773,7 +6777,12 @@ async function pageIsCurrent() {
 }
 async function showUpdateBanner(reg) {
   if (document.getElementById('updateBanner')) return;
-  if (await pageIsCurrent()) return;
+  if (await pageIsCurrent()) {
+    // the page is already the newest, only the background worker (it shows the closed-app notifications) is still the old one:
+    // swap it in quietly, without the banner or a reload
+    if (reg && reg.waiting) { window._quietSwap = true; reg.waiting.postMessage({ type: 'SKIP_WAITING' }); }
+    return;
+  }
   if (document.getElementById('updateBanner')) return;
   const banner = document.createElement('div');
   banner.id = 'updateBanner';
