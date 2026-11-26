@@ -506,6 +506,15 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .chip-row { display: flex; flex-wrap: wrap; gap: 8px; padding: 2px; }
   .chip { padding: 9px 14px; border-radius: 20px; border: 1px solid var(--line); background: #fff; font-size: 14px; color: var(--ink); cursor: pointer; touch-action: manipulation; }
   .chip.selected { background: var(--brass); border-color: var(--brass); color: #fff; font-weight: 700; }
+  .cat-grp { width: 100%; }
+  .cat-grp-h { display: flex; align-items: center; gap: 8px; width: 100%; box-sizing: border-box; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--page-cream-2); font-size: 15px; font-weight: 700; color: var(--ink); cursor: pointer; touch-action: manipulation; }
+  .cat-grp-h .n { font-weight: 400; color: var(--ink-soft); font-size: 13px; } .cat-grp-h .tri { margin-left: auto; transition: transform .15s; } .cat-grp.open .tri { transform: rotate(180deg); }
+  .cat-grp-h .pick { font-weight: 400; font-size: 13px; color: var(--brass); }
+  .cat-grp-b { display: none; flex-wrap: wrap; gap: 8px; padding: 8px 2px 2px 10px; } .cat-grp.open .cat-grp-b { display: flex; }
+  .cat-often { width: 100%; font-size: 12.5px; color: var(--ink-soft); margin: 2px 0 -2px 2px; }
+  .cat-manage-row { flex-wrap: wrap; }
+  .cat-manage-row .cat-group-input { order: 9; flex: 0 0 auto; width: calc(100% - 96px); margin: -4px 0 6px 96px; box-sizing: border-box; padding: 6px 10px; font-size: 13px; color: var(--ink-soft); background: var(--page-cream-2); }
+  .cat-folder-group { grid-column: 1 / -1; display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; color: var(--ink); margin: 8px 2px 0; padding-bottom: 4px; border-bottom: 1px dashed var(--line); }
 
   .text-input, .date-input { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); font-size: 15px; font-family: 'Noto Sans Thai', sans-serif; background: #fff; color: var(--ink); outline: none; }
   .text-input:focus, .date-input:focus { border-color: var(--brass); }
@@ -1121,6 +1130,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   <div class="sheet">
     <div class="sheet-title" style="text-align:center;">จะบันทึกอะไร?</div>
     <button type="button" class="add-opt out" onclick="closeAddMenu();openSheet('out')"><span class="e">➖</span><span>รายจ่าย<small>ซื้อของ จ่ายค่าใช้จ่าย</small></span></button>
+    <button type="button" class="add-opt in" onclick="closeAddMenu();openSheet('out', { refund: true })"><span class="e">↩️</span><span>ได้เงินคืน<small>หักรายจ่ายเดิม ไม่นับเป็นรายรับ</small></span></button>
     <button type="button" class="add-opt in" onclick="closeAddMenu();openSheet('in')"><span class="e">➕</span><span>รายรับ<small>ได้เงินเข้ามา</small></span></button>
     <button type="button" class="add-opt scan" onclick="closeAddMenu();document.getElementById('slipInput').click()"><span class="e">📷</span><span>สแกนสลิป<small>ถ่ายรูป หรือเลือกจากแกลเลอรี</small></span></button>
     <button type="button" class="add-opt recv" onclick="closeAddMenu();openReceivableSheet()"><span class="e">💰</span><span>เพิ่มยอดค้างรับ<small>ลูกค้ายังไม่จ่าย</small></span></button>
@@ -1215,6 +1225,11 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     <div class="field-label"><span>บันทึกเพิ่มเติม (ถ้ามี)</span></div>
     <input type="text" class="text-input" id="noteInput" placeholder="เช่น ค่ากับข้าว, เงินเดือน">
 
+    <div id="refundBox" style="display:none;">
+      <label class="paidfor-row"><input type="checkbox" id="refundChk" onchange="setRefund(this.checked)"><span>↩️ นี่คือเงินคืน (ได้เงินกลับมา)</span></label>
+      <div class="set-note" id="refundHint" style="display:none;margin-top:6px;">เลือกหมวดของรายจ่ายเดิม เงินคืนจะไปหักรายจ่ายหมวดนั้นในเดือนนี้ (ไม่นับเป็นรายรับ) และเลือกบัญชีที่เงินเข้า</div>
+    </div>
+
     <div id="paidForBox" style="display:none;">
       <label class="paidfor-row"><input type="checkbox" id="paidForChk" onchange="togglePaidFor()"><span>💸 จ่ายแทนคนอื่น (เขายังไม่ได้คืนเงิน)</span></label>
       <div id="paidForNameWrap" style="display:none;">
@@ -1298,6 +1313,8 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   <div class="sheet">
     <div class="sheet-title">จัดการหมวดหมู่</div>
     <div class="cat-manage-hint">แตะปุ่มไอคอนเพื่อเลือกอีโมจิ (ถ้าไม่เลือก ระบบจะเดาให้) • <b>แตะค้างที่ ☰ แล้วลากขึ้น/ลง เพื่อสลับลำดับ</b></div>
+    <div class="set-note" style="margin:0 0 8px;">ช่องขวาของแต่ละหมวดคือ <b>หมวดใหญ่</b> เว้นว่างไว้ แอปจะจัดให้เอง (ตัวอักษรจางๆ) หรือพิมพ์/เลือกชื่อหมวดใหญ่เองก็ได้ · หมวดใหญ่จะแสดงตอนจดเมื่อมีหมวดตั้งแต่ 9 หมวดขึ้นไป</div>
+    <datalist id="catGroupList"></datalist>
     <div class="cat-manage-list" id="catManageList"></div>
     <button class="cat-add-btn" onclick="addCategoryRow()">+ เพิ่มหมวดหมู่ใหม่</button>
     <div class="cat-trash-section" id="catTrashSection" style="display:none;">
@@ -1906,7 +1923,7 @@ const CAT_TRASH_KEY = 'categoryTrash';
 const CUSTOM_EMOJI_KEY = 'customEmojis';
 const TEXT_SIZE_KEY = 'uiTextSize';
 const LAST_BACKUP_KEY = 'lastBackupAt';
-const APP_VERSION_LABEL = 'V2.2';
+const APP_VERSION_LABEL = 'V2.3';
 const TEXT_ZOOMS = { normal: 1, large: 1.12, xlarge: 1.24 };
 let customEmojis = [];
 
@@ -2040,10 +2057,30 @@ function toggleEntryFold(k) {
   try { localStorage.setItem('entryFold', JSON.stringify(entryFold)); } catch (e) {}
   applyEntryFolds();
 }
+/* ---- category groups (หมวดใหญ่): a category may carry `group`; otherwise it is guessed from its name.
+   The entry sheet groups chips only when the list is long, so short lists look exactly as before. */
+const CAT_GROUP_RULES = {
+  out: [['🍚 กินดื่ม', /กับข้าว|ข้าว|อาหาร|ขนม|กาแฟ|ชา|ผลไม้|เครื่องดื่ม|โกโก้|ก๋วยเตี๋ยว|น้ำดื่ม|^น้ำ$|กิน/],
+        ['🚗 เดินทาง', /เดินทาง|น้ำมัน|รถ|ทางด่วน|แท็กซี่|วิน|โดยสาร|จอด/],
+        ['🏠 บ้าน/ค่าประจำ', /น้ำ-ไฟ|ไฟฟ้า|ประปา|เช่า|เน็ต|โทรศัพท์|บ้าน|ผ่อน|ประกัน|บิล|ค่าน้ำ|ค่าไฟ/],
+        ['💊 สุขภาพ', /ยา|หมอ|โรงพยาบาล|คลินิก|ฟัน|สุขภาพ/],
+        ['👨‍👩‍👧 ครอบครัว/ทำบุญ', /ลูก|หลาน|พ่อ|แม่|ครอบครัว|ทำบุญ|วัด|บริจาค/],
+        ['🛍️ ซื้อของ', /ซื้อ|ของใช้|เสื้อ|ช้อป|ตลาด|เกม/],
+        ['🛠️ งาน/ช่าง', /วัสดุ|อุปกรณ์|เครื่องมือ|ช่าง|อะไหล่|ค่าแรง|งาน/]],
+  in: [['💼 รายได้จากงาน', /เงินเดือน|ค่าจ้าง|ค่าแรง|ขาย|งาน|ลูกค้า|ช่าง|โบนัส|รายได้/],
+       ['🎁 ได้รับ/ดอกผล', /ลูก|ให้|บำนาญ|ของขวัญ|ดอกเบี้ย|ปันผล|เงินคืน/]]
+};
+const CAT_GROUP_OTHER = '📦 อื่นๆ';
+function guessCatGroup(mode, name) { const r = (CAT_GROUP_RULES[mode] || []).find(([, re]) => re.test(name || '')); return r ? r[0] : CAT_GROUP_OTHER; }
+function catGroupOf(mode, c) { return (c && c.group) || guessCatGroup(mode, c && c.name); }
+const CAT_GROUP_MIN = 9;   // group the chips only from this many categories up
+function catGroupsInUse(mode) { const out = []; categories[mode].forEach(c => { const g = catGroupOf(mode, c); if (!out.includes(g)) out.push(g); }); return out; }
+
 function renderCategoryChips(mode, preselect) {
   const cats = categories[mode];
   const chipBox = document.getElementById('categoryChips');
   chipBox.innerHTML = '';
+  if (cats.length >= CAT_GROUP_MIN) return renderGroupedCategoryChips(mode, preselect, chipBox);
   cats.forEach(c => {
     const chip = document.createElement('div');
     chip.className = 'chip';
@@ -2057,6 +2094,34 @@ function renderCategoryChips(mode, preselect) {
     };
     chipBox.appendChild(chip);
   });
+}
+
+function renderGroupedCategoryChips(mode, preselect, chipBox) {
+  const cats = categories[mode];
+  const pick = (name) => {
+    selectedCategory = name;
+    chipBox.querySelectorAll('.chip').forEach(ch => ch.classList.toggle('selected', ch.dataset.cat === name));
+    chipBox.querySelectorAll('.cat-grp').forEach(g => { const has = !!g.querySelector('.chip.selected'); g.querySelector('.pick').textContent = has ? '· ' + name : ''; });
+    applyEntryFolds();
+  };
+  const chip = (c) => { const el = document.createElement('div'); el.className = 'chip'; el.dataset.cat = c.name; el.innerHTML = iconHtml(c.icon) + ' ' + escapeHtml(c.name); el.onclick = () => pick(c.name); return el; };
+  // often used: the 4 categories with most entries in the last 60 days
+  const since = (() => { const d = new Date(); d.setDate(d.getDate() - 60); return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()); })();
+  const cnt = {}; transactions.forEach(t => { if (t.type === mode && t.date >= since) cnt[t.category] = (cnt[t.category] || 0) + 1; });
+  const often = cats.filter(c => cnt[c.name]).sort((a, b) => cnt[b.name] - cnt[a.name]).slice(0, 4);
+  if (often.length) { const h = document.createElement('div'); h.className = 'cat-often'; h.textContent = 'ใช้บ่อย'; chipBox.appendChild(h); often.forEach(c => chipBox.appendChild(chip(c))); }
+  catGroupsInUse(mode).forEach(g => {
+    const list = cats.filter(c => catGroupOf(mode, c) === g);
+    const wrap = document.createElement('div'); wrap.className = 'cat-grp';
+    wrap.innerHTML = `<div class="cat-grp-h">${escapeHtml(g)} <span class="n">(${list.length})</span><span class="pick"></span><span class="tri">▾</span></div><div class="cat-grp-b"></div>`;
+    wrap.querySelector('.cat-grp-h').onclick = () => { const open = !wrap.classList.contains('open'); chipBox.querySelectorAll('.cat-grp.open').forEach(o => o.classList.remove('open')); wrap.classList.toggle('open', open); };
+    list.forEach(c => wrap.querySelector('.cat-grp-b').appendChild(chip(c)));
+    chipBox.appendChild(wrap);
+  });
+  if (preselect && cats.some(c => c.name === preselect)) {
+    pick(preselect);
+    const g = [...chipBox.querySelectorAll('.cat-grp')].find(w => w.querySelector('.chip.selected')); if (g) g.classList.add('open');
+  }
 }
 
 let editingTransactionId = null;
@@ -2084,7 +2149,7 @@ function openSheet(mode, prefill, isEdit) {
   setupDateField('dateInput', 'dateHint');
   document.getElementById('dateInput').value = initDate;
 
-  const isScanPrefill = prefill && !editingTransactionId;
+  const isScanPrefill = prefill && !editingTransactionId && !prefill.refund;
   document.getElementById('scanBanner').style.display = isScanPrefill ? 'block' : 'none';
   if (isScanPrefill) {
     document.querySelectorAll('.scan-type-btn').forEach(b => b.classList.remove('active'));
@@ -2098,7 +2163,7 @@ function openSheet(mode, prefill, isEdit) {
   renderAcctChips(prefill && prefill.acct ? prefill.acct : (editingTransactionId ? '' : lastAcct()));
   applyEntryFolds();
 
-  document.getElementById('timeInput').value = prefill ? (prefill.time || '') : nowHM();
+  document.getElementById('timeInput').value = prefill && (editingTransactionId || !prefill.refund) ? (prefill.time || '') : nowHM();
   document.getElementById('paidForChk').checked = false;
   document.getElementById('paidForName').value = '';
   togglePaidFor();
@@ -2107,14 +2172,16 @@ function openSheet(mode, prefill, isEdit) {
   if (editingTransactionId && slipIds.has(editingTransactionId)) loadExistingSlip(editingTransactionId);
   else renderSlipBox();
 
+  document.getElementById('refundBox').style.display = mode === 'out' ? 'block' : 'none';
+  setRefund(!!(prefill && prefill.refund));
   document.getElementById('entryOverlay').classList.add('show');
-  if (!prefill) setTimeout(() => document.getElementById('amountInput').focus(), 100);
+  if (!prefill || (prefill.refund && !editingTransactionId)) setTimeout(() => document.getElementById('amountInput').focus(), 100);
 }
 
 function openEditEntry(id) {
   const tx = transactions.find(t => t.id === id);
   if (!tx) return;
-  openSheet(tx.type, { amount: tx.amount, date: tx.date, note: tx.note, category: tx.category, time: tx.time || '', acct: tx.acct || '' }, id);
+  openSheet(tx.type, { amount: Math.abs(tx.amount), date: tx.date, note: tx.note, category: tx.category, time: tx.time || '', acct: tx.acct || '', refund: tx.type === 'out' && tx.amount < 0 }, id);
 }
 
 function deleteFromEditSheet() {
@@ -2132,6 +2199,8 @@ function switchSheetType(mode) {
   document.getElementById('sheetTitle').className = 'sheet-title ' + mode;
   document.getElementById('saveBtn').className = 'btn-save ' + mode;
   renderCategoryChips(mode, null);
+  document.getElementById('refundBox').style.display = mode === 'out' ? 'block' : 'none';
+  setRefund(false);
   updatePaidForVisibility();
   document.querySelectorAll('.scan-type-btn').forEach(b => b.classList.remove('active'));
   const activeBtn = document.querySelector('.scan-type-btn.' + mode);
@@ -2183,7 +2252,7 @@ async function saveEntry(skipCatWarning) {
   const time = document.getElementById('timeInput').value || '';
   if (time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) { showToast('เวลาไม่ถูกต้อง'); return; }
   if (time && date === todayStr() && time > nowHM()) { showToast('เลือกเวลาในอนาคตไม่ได้', 3500); document.getElementById('timeInput').value = nowHM(); return; }
-  const paidFor = !editingTransactionId && currentMode === 'out' && document.getElementById('paidForChk').checked;
+  const paidFor = !editingTransactionId && currentMode === 'out' && !entryRefund && document.getElementById('paidForChk').checked;
   const paidName = document.getElementById('paidForName').value.trim();
   if (paidFor && !paidName) { showToast('กรุณาใส่ชื่อคนที่จ่ายแทน'); document.getElementById('paidForName').focus(); return; }
   if (!selectedCategory && skipCatWarning !== true) {
@@ -2192,19 +2261,20 @@ async function saveEntry(skipCatWarning) {
   }
   const category = selectedCategory || await ensureOthersCategory(currentMode);
   const roundedAmount = Math.round(amount * 100) / 100;
+  const signedAmount = currentMode === 'out' && entryRefund ? -roundedAmount : roundedAmount;
 
   if (editingTransactionId) {
     const tx = transactions.find(t => t.id === editingTransactionId);
     if (tx) {
       tx.type = currentMode;
-      tx.amount = roundedAmount;
+      tx.amount = signedAmount;
       tx.date = date;
       tx.category = category;
       tx.note = note;
       if (time) tx.time = time; else delete tx.time;
       if (selectedAcct) tx.acct = selectedAcct; else delete tx.acct;
       await commitSlip(tx.id);
-      const lr = linkedPendingRecv(tx.id);
+      const lr = signedAmount > 0 && linkedPendingRecv(tx.id);
       if (lr) {
         const got = lr.paidSoFar || 0;
         if (got > 0) lr.listed = roundedAmount;
@@ -2225,7 +2295,7 @@ async function saveEntry(skipCatWarning) {
 
   const entry = {
     id: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
-    type: currentMode, amount: roundedAmount,
+    type: currentMode, amount: signedAmount,
     date: date, category: category, note: note, createdAt: Date.now()
   };
   if (time) entry.time = time;
@@ -2510,7 +2580,7 @@ function runSearch(keepAll) {
           <div class="row-date month-tag">${escapeHtml(thaiDateLabel(t.date))}${t.time ? ' ' + escapeHtml(t.time) + ' น.' : ''} · ${catIconHtml(t.type, t.category)}${t.acct ? ' · ' + escapeHtml(t.acct) : ''}</div>
           <div class="row-note full">${escapeHtml(label)}${slipMark(t)}</div>
         </div>
-        <div class="row-amt ${t.type === 'in' ? 'in' : 'out'}">${t.type === 'in' ? '+' : '−'}${fmt(t.amount)}</div>
+        <div class="row-amt ${txIn(t) ? 'in' : 'out'}">${txAmtLabel(t)}</div>
       </div>`;
   }).join('');
   const moreHtml = (!searchShowAll && matches.length > LIMIT)
@@ -2752,7 +2822,8 @@ function openCategoryManage() {
   categoryManageMode = currentMode;
   const list = document.getElementById('catManageList');
   list.innerHTML = '';
-  categories[categoryManageMode].forEach(c => addCategoryRow(c.name, c.icon));
+  categories[categoryManageMode].forEach(c => addCategoryRow(c.name, c.icon, c.group));
+  const dl = document.getElementById('catGroupList'); if (dl) dl.innerHTML = [...new Set([...(CAT_GROUP_RULES[categoryManageMode] || []).map(r => r[0]), CAT_GROUP_OTHER, ...categories[categoryManageMode].map(c => c.group).filter(Boolean)])].map(g => `<option value="${escapeHtml(g)}">`).join('');
   renderCategoryTrash();
   document.getElementById('categoryOverlay').classList.add('show');
 }
@@ -2937,7 +3008,7 @@ function closeEmojiPicker() {
   emojiPickerTargetBtn = null;
 }
 
-function addCategoryRow(name, icon) {
+function addCategoryRow(name, icon, group) {
   const list = document.getElementById('catManageList');
   const row = document.createElement('div');
   row.className = 'cat-manage-row';
@@ -2950,6 +3021,7 @@ function addCategoryRow(name, icon) {
     <button type="button" class="cat-drag-handle" aria-label="ลากเพื่อสลับลำดับ">☰</button>
     <button type="button" class="${iconBtnClass}" data-empty="${iconBtnEmpty}" ${isImgIcon(icon) ? 'data-img="' + escapeHtml(icon) + '"' : ''} onclick="openEmojiPicker(this)">${iconBtnText}</button>
     <input type="text" class="cat-name-input" value="${safeName}" placeholder="ชื่อหมวดหมู่">
+    <input type="text" class="cat-group-input" list="catGroupList" maxlength="30" value="${group ? escapeHtml(group) : ''}" placeholder="${escapeHtml(guessCatGroup(categoryManageMode, name || ''))}" title="หมวดใหญ่ (เว้นว่าง = ให้แอปจัดให้)">
     <button class="cat-del-btn" type="button">✕</button>
   `;
   row.querySelector('.cat-del-btn').onclick = () => {
@@ -3049,7 +3121,8 @@ async function saveCategoryManage() {
     const iconBtn = row.querySelector('.cat-icon-btn');
     let icon = iconBtn.dataset.empty === 'true' ? '' : (iconBtn.dataset.img || iconBtn.textContent.trim());
     if (!icon && name) icon = guessCategoryIcon(name);
-    return { name, icon };
+    const group = (row.querySelector('.cat-group-input') || { value: '' }).value.trim().slice(0, 30);
+    return group ? { name, icon, group } : { name, icon };
   }).filter(c => c.name.length > 0);
 
   if (entries.length === 0) { showToast('ต้องมีอย่างน้อย 1 หมวดหมู่'); return; }
@@ -3332,7 +3405,7 @@ function renderCheck() {
     h += `<div class="chk-box"><div class="chk-line"><span>ยอดในแอป</span><b>${fmt(R.app)}</b></div><div class="chk-line"><span>เงินจริงที่คุณนับ</span><b>${fmt(R.real)}</b></div></div>`;
     h += `<div class="field-label"><span>${R.prev ? 'รายการที่จดตั้งแต่ตรวจครั้งก่อน (' + thaiDateLabel(R.prev.date) + ')' : 'รายการที่จดใน 7 วันล่าสุด'} · ${R.list.length} รายการ</span></div>`;
     if (R.prev && R.prev.ok) h += `<div class="bk-sub">ครั้งก่อนยอดตรงกัน ส่วนต่างนี้จึงเกิดหลังจากนั้น: จากรายการด้านล่าง หรือเงินที่เข้า/ออกโดยไม่ได้จด (เช่น ค่าธรรมเนียม ดอกเบี้ย)</div>`;
-    R.list.slice(0, 40).forEach(t => { h += `<div class="chk-tx"><span>${catIconHtml(t.type, t.category)} ${escapeHtml(t.category)}${t.note ? ' <small>· ' + escapeHtml(t.note.slice(0, 22)) + '</small>' : ''}<br><small>${escapeHtml(thaiDateLabel(t.date))}${t.time ? ' ' + escapeHtml(t.time) : ''}</small></span><b style="color:var(--${t.type === 'in' ? 'deposit' : 'withdraw'})">${t.type === 'in' ? '+' : '−'}${fmt(t.amount)}</b></div>`; });
+    R.list.slice(0, 40).forEach(t => { h += `<div class="chk-tx"><span>${catIconHtml(t.type, t.category)} ${escapeHtml(t.category)}${t.note ? ' <small>· ' + escapeHtml(t.note.slice(0, 22)) + '</small>' : ''}<br><small>${escapeHtml(thaiDateLabel(t.date))}${t.time ? ' ' + escapeHtml(t.time) : ''}</small></span><b style="color:var(--${txIn(t) ? 'deposit' : 'withdraw'})">${txAmtLabel(t)}</b></div>`; });
     if (R.list.length > 40) h += `<div class="bk-sub">…และอีก ${R.list.length - 40} รายการ</div>`;
     h += `<label class="chk-part" style="margin-top:10px;"><input type="checkbox" id="chkAttach" style="width:20px;height:20px;flex:none;"><span>แนบรายการข้างบน (ไม่รวมหมายเหตุ) ตอนส่งรายงาน</span></label>`;
     h += `<div id="chkAdjBox" style="display:none;" class="chk-box"><div class="bk-sub">จะเพิ่มรายการ "ปรับยอด" ${diff > 0 ? 'รายจ่าย' : 'รายรับ'} ${fmt(Math.abs(diff))} บาท เพื่อให้ยอดแอปเท่ากับเงินจริง (ส่วนต่างจะไม่ถูกหาสาเหตุอีก) แน่ใจไหม</div><button class="btn-save in" style="width:100%;margin-top:6px;" id="chkAdjYes">ใช่ ปรับยอดให้ตรง</button></div>`;
@@ -3372,7 +3445,7 @@ async function chkSend() {
   const att = document.getElementById('chkAttach');
   if (att && att.checked) {
     text += '\n';
-    for (const t of R.list) { const line = (t.type === 'in' ? '+' : '-') + t.amount + ' ' + t.category + ' ' + String(t.date).slice(5) + (t.acct ? ' ' + t.acct : '') + '\n'; if ((text + line).length > 950) { text += '…'; break; } text += line; }
+    for (const t of R.list) { const line = (t.amount < 0 ? '+คืน' : t.type === 'in' ? '+' : '-') + Math.abs(t.amount) + ' ' + t.category + ' ' + String(t.date).slice(5) + (t.acct ? ' ' + t.acct : '') + '\n'; if ((text + line).length > 950) { text += '…'; break; } text += line; }
   }
   text = text.slice(0, 1000);
   if (!navigator.onLine) { showToast('ตอนนี้ไม่มีอินเทอร์เน็ต ลองส่งใหม่ภายหลัง', 3500); return; }
@@ -3561,7 +3634,7 @@ function renderBank() {
     if (xl.length) { const ms2 = xfSum(name, bkMonth); h += `<div class="bk-sub">⇄ โอนเข้า ${fmt(ms2.xin)} · โอนออก ${fmt(ms2.xout)} · ${xl.length} รายการโอน</div>`; }
     if (!list.length && !xl.length) h += '<div class="hc-mut" style="padding:8px 0;">เดือนนี้ไม่มีรายการของบัญชีนี้</div>';
     xl.sort((a, b) => (b.date + (b.time || '')).localeCompare(a.date + (a.time || ''))).forEach(t => { const out = t.from === name; h += `<div class="ledger-row xf" style="display:flex;justify-content:space-between;align-items:center;gap:10px;" onclick="openXfer('', '${t.id}')"><div class="row-desc" style="flex:1;min-width:0;"><div class="row-date month-tag">${escapeHtml(thaiDateLabel(t.date))}${t.time ? ' ' + escapeHtml(t.time) + ' น.' : ''} · ⇄ โอนย้าย</div><div class="row-note full">${out ? 'โอนไป ' + escapeHtml(t.to) : 'รับโอนจาก ' + escapeHtml(t.from)}${t.note ? ' · ' + escapeHtml(t.note) : ''}</div></div><div class="row-amt">${out ? '−' : '+'}${fmt(t.amount)}</div></div>`; });
-    list.forEach(t => { h += `<div class="ledger-row" style="display:flex;justify-content:space-between;align-items:center;gap:10px;" onclick="openEditEntry('${t.id}')"><div class="row-desc" style="flex:1;min-width:0;"><div class="row-date month-tag">${escapeHtml(thaiDateLabel(t.date))}${t.time ? ' ' + escapeHtml(t.time) + ' น.' : ''} · ${catIconHtml(t.type, t.category)}</div><div class="row-note full">${escapeHtml(t.note || '(ไม่มีบันทึกเพิ่มเติม)')}</div></div><div class="row-amt ${t.type === 'in' ? 'in' : 'out'}">${t.type === 'in' ? '+' : '−'}${fmt(t.amount)}</div></div>`; });
+    list.forEach(t => { h += `<div class="ledger-row" style="display:flex;justify-content:space-between;align-items:center;gap:10px;" onclick="openEditEntry('${t.id}')"><div class="row-desc" style="flex:1;min-width:0;"><div class="row-date month-tag">${escapeHtml(thaiDateLabel(t.date))}${t.time ? ' ' + escapeHtml(t.time) + ' น.' : ''} · ${catIconHtml(t.type, t.category)}</div><div class="row-note full">${escapeHtml(t.note || '(ไม่มีบันทึกเพิ่มเติม)')}</div></div><div class="row-amt ${txIn(t) ? 'in' : 'out'}">${txAmtLabel(t)}</div></div>`; });
     body.innerHTML = h;
     acts.innerHTML = '<button class="btn-cancel" onclick="bkBack()">‹ กลับ</button><button class="btn-save" style="background:#4B5D7A;" onclick="openXfer(bkCur)">⇄ โอนย้าย</button><button class="btn-save in" onclick="closeBank()">ปิด</button>';
     const sv = document.getElementById('bkSaveBtn'); if (sv) sv.onclick = bkSave;
@@ -4269,7 +4342,7 @@ function sumRange(start, end, type, cat) {
 function catTotals(start, end, type) {
   const m = {};
   for (const t of transactions) if (t.type === type && t.date >= start && t.date <= end) m[t.category] = (m[t.category] || 0) + t.amount;
-  return Object.entries(m).map(([n, v]) => [n, Math.round(v * 100) / 100]).sort((a, b) => b[1] - a[1]);
+  return Object.entries(m).map(([n, v]) => [n, Math.round(v * 100) / 100]).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]);
 }
 
 /* ================= chart detail page ================= */
@@ -4966,8 +5039,25 @@ function togglePaidFor() {
   document.getElementById('paidForNameWrap').style.display = document.getElementById('paidForChk').checked ? 'block' : 'none';
 }
 function updatePaidForVisibility() {
-  document.getElementById('paidForBox').style.display = (currentMode === 'out' && !editingTransactionId) ? 'block' : 'none';
+  document.getElementById('paidForBox').style.display = (currentMode === 'out' && !editingTransactionId && !entryRefund) ? 'block' : 'none';
 }
+// A refund is stored as a NEGATIVE expense in the original expense's category: the money comes in, the month's
+// spending (totals, chart, budgets) goes down, and it is not counted as income.
+var entryRefund = false;   // var: read by openSheet, which can run before this line during start-up
+function setRefund(on) {
+  entryRefund = !!on && currentMode === 'out';
+  document.getElementById('refundChk').checked = entryRefund;
+  document.getElementById('refundHint').style.display = entryRefund ? 'block' : 'none';
+  if (currentMode === 'out') {
+    const t = document.getElementById('sheetTitle'), b = document.getElementById('saveBtn');
+    t.textContent = editingTransactionId ? (entryRefund ? 'แก้ไขเงินคืน' : 'แก้ไขรายการ') : (entryRefund ? '↩️ บันทึกเงินคืน' : 'บันทึกรายจ่าย');
+    t.className = 'sheet-title ' + (entryRefund ? 'in' : 'out'); b.className = 'btn-save ' + (entryRefund ? 'in' : 'out');
+  }
+  if (entryRefund) { document.getElementById('paidForChk').checked = false; togglePaidFor(); }
+  updatePaidForVisibility();
+}
+function txIn(t) { return t.type === 'in' || t.amount < 0; }
+function txAmtLabel(t) { return (t.amount < 0 ? 'คืน +' : txIn(t) ? '+' : '−') + fmt(Math.abs(t.amount)); }
 
 /* --- pictures shared into the app from the phone gallery (Android share menu) --- */
 async function handleSharedSlip() {
@@ -5750,7 +5840,7 @@ async function buildYearReportBuffer(year) {
     const r = 2 + i;
     wd.getCell(r, 1).value = thaiDateLabel(t.date);
     wd.getCell(r, 2).value = parseInt(t.date.slice(5, 7), 10);
-    wd.getCell(r, 3).value = t.type === 'in' ? 'รายรับ' : 'รายจ่าย';
+    wd.getCell(r, 3).value = t.type === 'in' ? 'รายรับ' : (t.amount < 0 ? 'เงินคืน' : 'รายจ่าย');
     wd.getCell(r, 4).value = t.category || 'อื่นๆ';
     wd.getCell(r, 5).value = t.note || '';
     wd.getCell(r, 6).value = Number(t.amount) || 0;
@@ -6002,6 +6092,11 @@ async function shareYearImg() {
 /* ----- What's new (release notes) ----- */
 // Newest first. Every new release: add a new entry at the TOP and bump APP_VERSION_LABEL + sw.js.
 const RELEASE_NOTES = [
+  { ver: 'V2.3', date: '2026-11-26', items: [
+    { e: '↩️', t: 'บันทึกเงินคืน', d: 'กด ➕ › ได้เงินคืน เลือกหมวดของรายจ่ายเดิม ยอดเงินเพิ่ม รายจ่ายเดือนนั้นลดลง (ไม่นับเป็นรายรับ)' },
+    { e: '🗂️', t: 'หมวดใหญ่ / หมวดย่อย', d: 'ถ้ามีหมวดตั้งแต่ 9 หมวด แอปจัดกลุ่มให้ (กินดื่ม, เดินทาง, บ้าน ฯลฯ) มีแถวใช้บ่อย และดูยอดรวมหมวดใหญ่ได้ แก้กลุ่มเองได้ที่หน้าจัดการหมวด' },
+    { e: '🕒', t: 'สแกนสลิปได้เวลาด้วย', d: 'เติมช่องเวลาตามที่เขียนบนสลิปให้อัตโนมัติ' }
+  ] },
   { ver: 'V2.2', date: '2026-11-26', items: [
     { e: '🔔', t: 'แจ้งเตือนเด้งที่มือถือ แม้ปิดแอป', d: 'เปิดที่ ตั้งค่า › การแจ้งเตือน เลือกเรื่องและเวลาเตือนประจำวันได้ เตือนวันละครั้งรวมเรื่องที่ค้าง' },
     { e: '⇄', t: 'โอนย้ายระหว่างบัญชี', d: 'ย้ายเงินของตัวเองระหว่างบัญชี ยอดรวมไม่เปลี่ยน ยอดแต่ละบัญชีเปลี่ยนตาม (กด ➕ หรือในหน้าบัญชี)' },
@@ -6323,7 +6418,8 @@ function normalizeCategoryList(list, fallback) {
   if (!Array.isArray(list) || list.length === 0) return fallback.map(c => ({ ...c }));
   return list.map(item => {
     if (typeof item === 'string') return { name: item, icon: guessCategoryIcon(item) };
-    return { name: item.name || 'อื่นๆ', icon: item.icon || guessCategoryIcon(item.name || '') };
+    const g = typeof item.group === 'string' ? item.group.trim().slice(0, 30) : '';
+    return { name: item.name || 'อื่นๆ', icon: item.icon || guessCategoryIcon(item.name || ''), ...(g ? { group: g } : {}) };
   });
 }
 
@@ -6440,7 +6536,7 @@ function renderDayAccordion(monthTx, ledgerBox) {
             <div class="row-date">${rowDateLineHtml(t)}</div>
             <div class="row-note full">${escapeHtml(label)}${slipMark(t)}</div>
           </div>
-          <div class="row-amt ${t.type === 'in' ? 'in' : 'out'}">${t.type === 'in' ? '+' : '−'}${fmt(t.amount)}</div>
+          <div class="row-amt ${txIn(t) ? 'in' : 'out'}">${txAmtLabel(t)}</div>
           <div class="row-bal">${fmt(t.balanceAfter)}</div>
         </div>
       `;
@@ -6471,6 +6567,15 @@ function renderCategoryFolders(monthTx, ledgerBox) {
   function tilesHtml(catMap, type) {
     const entries = Object.entries(catMap).sort((a, b) => b[1].total - a[1].total);
     if (entries.length === 0) return '<div class="cat-folder-empty">ยังไม่มีรายการ</div>';
+    if (categories[type].length >= CAT_GROUP_MIN) {   // big list: show it per หมวดใหญ่ with the group total
+      const gOf = cat => catGroupOf(type, categories[type].find(c => c.name === cat) || { name: cat });
+      const groups = {}; entries.forEach(e => { const g = gOf(e[0]); (groups[g] = groups[g] || []).push(e); });
+      return Object.entries(groups).map(([g, list]) => [g, list, list.reduce((s, e) => s + e[1].total, 0)]).sort((a, b) => b[2] - a[2])
+        .map(([g, list, tot]) => `<div class="cat-folder-group"><span>${escapeHtml(g)}</span><span class="${type}">${fmt(tot)}</span></div>` + tileList(list, type)).join('');
+    }
+    return tileList(entries, type);
+  }
+  function tileList(entries, type) {
     return entries.map(([cat, info]) => `
       <div class="cat-tile" onclick="openCategoryDetail('${type}', '${encodeURIComponent(cat)}')">
         <div class="cat-tile-icon">${catIconHtml(type, cat)}</div>
@@ -6500,7 +6605,7 @@ function openCategoryDetail(type, encodedCat) {
 
   document.getElementById('catDetailTitle').textContent = catIconFor(type, cat) + ' ' + cat;
   document.getElementById('catDetailTotal').innerHTML =
-    `<span class="${type}">${type === 'in' ? '+' : '−'}${fmt(total)}</span> · ${items.length} รายการ`;
+    `<span class="${type}">${total < 0 ? 'คืน +' + fmt(-total) : (type === 'in' ? '+' : '−') + fmt(total)}</span> · ${items.length} รายการ`;
 
   const rowsHtml = items.map(t => {
     const d = new Date(t.date + 'T00:00:00');
@@ -6512,7 +6617,7 @@ function openCategoryDetail(type, encodedCat) {
           <div class="row-date">${dateLabel}${t.time ? ' · ' + escapeHtml(t.time) + ' น.' : ''}</div>
           <div class="row-note full">${escapeHtml(label)}${slipMark(t)}</div>
         </div>
-        <div class="row-amt ${type}">${type === 'in' ? '+' : '−'}${fmt(t.amount)}</div>
+        <div class="row-amt ${txIn(t) ? 'in' : 'out'}">${txAmtLabel(t)}</div>
       </div>
     `;
   }).join('');
@@ -6679,6 +6784,7 @@ async function processSlipFile(file) {
     openSheet(result.type === 'out' ? 'out' : 'in', {
       amount: result.amount || '',
       date: result.date || todayStr(),
+      time: /^([01]\d|2[0-3]):[0-5]\d$/.test(result.time || '') ? result.time : '',
       note: result.note || '',
       category: result.category || null
     });
@@ -6757,8 +6863,9 @@ if ('serviceWorker' in navigator) {
   setInterval(quietCheck, 20 * 60 * 1000);
 
   let refreshing = false;
+  const hadController = !!navigator.serviceWorker.controller; // first install claims the page: nothing to reload into
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (refreshing || window._quietSwap) return;
+    if (refreshing || window._quietSwap || !hadController) return;
     refreshing = true;
     window.location.reload();
   });
@@ -6766,7 +6873,7 @@ if ('serviceWorker' in navigator) {
 
 // Must equal BUILD_ID in sw.js for the same release. If the newest sw.js on the server has this same build,
 // this page IS the newest version (the page is always loaded fresh), so there is nothing to update to.
-const PAGE_BUILD = '20261126143000';
+const PAGE_BUILD = '20261126213500';
 async function pageIsCurrent() {
   try {
     const r = await fetch('sw.js?c=' + Date.now(), { cache: 'no-store' });
@@ -7004,7 +7111,7 @@ function renderHomeExtras() {
     const last = [...transactions].sort((a, b) => a.date !== b.date ? (a.date < b.date ? 1 : -1) : ((b.time || '00:00') !== (a.time || '00:00') ? ((b.time || '00:00') < (a.time || '00:00') ? -1 : 1) : (b.createdAt || 0) - (a.createdAt || 0))).slice(0, 5);
     box.innerHTML = last.length ? last.map(t => {
       const label = t.note ? t.note : '(ไม่มีบันทึกเพิ่มเติม)';
-      return `<div class="ledger-row" style="grid-template-columns:minmax(0,1fr) auto;" onclick="openEditEntry('${t.id}')"><div class="row-desc"><div class="row-date month-tag">${escapeHtml(shortDay(t.date))} · ${rowDateLineHtml(t)}</div><div class="row-note full">${escapeHtml(label)}${slipMark(t)}</div></div><div class="row-amt ${t.type === 'in' ? 'in' : 'out'}">${t.type === 'in' ? '+' : '−'}${fmt(t.amount)}</div></div>`;
+      return `<div class="ledger-row" style="grid-template-columns:minmax(0,1fr) auto;" onclick="openEditEntry('${t.id}')"><div class="row-desc"><div class="row-date month-tag">${escapeHtml(shortDay(t.date))} · ${rowDateLineHtml(t)}</div><div class="row-note full">${escapeHtml(label)}${slipMark(t)}</div></div><div class="row-amt ${txIn(t) ? 'in' : 'out'}">${txAmtLabel(t)}</div></div>`;
     }).join('') : '<div class="empty-state" style="padding:18px 10px;">ยังไม่มีรายการ กดปุ่ม + เพื่อเริ่มจด</div>';
   }
   updateHomeDots();
