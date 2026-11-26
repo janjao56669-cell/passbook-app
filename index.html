@@ -295,6 +295,9 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .recv-btn { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--line); background: #fff; font-size: 15px; cursor: pointer; }
   .recv-btn.paid-btn { color: var(--deposit); border-color: var(--deposit); }
   .recv-btn.del-btn { color: var(--withdraw); }
+  .recv-btn.edit-btn { color: var(--receivable); }
+  .recv-edit-note { font-size: 12.5px; line-height: 1.5; color: var(--ink-soft); background: rgba(28,124,124,0.08); border-radius: 10px; padding: 8px 12px; margin: 0 0 10px; }
+  .recv-desc.tap { cursor: pointer; }
   .recv-toggle-history { text-align: center; padding: 12px; font-size: 13px; color: var(--brass); font-weight: 700; cursor: pointer; }
 
   .actions { display: flex; gap: 12px; margin-top: 16px; }
@@ -840,6 +843,16 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .add-opt { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 12px; width: 100%; border-radius: 14px; padding: 14px; margin-bottom: 10px; color: #fff; font-weight: 700; font-size: 17px; cursor: pointer; font-family: 'Noto Sans Thai', sans-serif; }
   .add-opt small { display: block; font-weight: 400; font-size: 12px; opacity: .92; } .add-opt .e { font-size: 28px; }
   .add-opt.out { background: var(--withdraw); } .add-opt.in { background: var(--deposit); } .add-opt.scan { background: #B8922F; color: #fff; } .add-opt.recv { background: var(--receivable); }
+  .ntf-status { font-size: 13.5px; line-height: 1.55; padding: 10px 12px; border-radius: 10px; background: rgba(0,0,0,0.04); color: var(--ink-soft); margin-bottom: 4px; }
+  .ntf-status.on { background: rgba(31,107,61,0.10); color: var(--deposit); } .ntf-status.bad { background: rgba(176,58,46,0.09); color: var(--withdraw); }
+  #ntfBody.off { opacity: .45; pointer-events: none; }
+  .add-opt.xfer { background: #4B5D7A; }
+  .xf-row { display: flex; align-items: center; gap: 8px; } .xf-row select { flex: 1; min-width: 0; }
+  .xf-arrow { text-align: center; font-size: 20px; color: var(--ink-soft); margin: 4px 0; }
+  .xf-sel { width: 100%; box-sizing: border-box; padding: 12px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; font-family: inherit; font-size: 16px; color: var(--ink); }
+  .xf-err { color: var(--withdraw); font-size: 13px; min-height: 18px; margin-top: 6px; }
+  .ledger-row.xf .row-amt { color: #4B5D7A; }
+  .btn-xdel { all: unset; display: block; text-align: center; width: 100%; padding: 10px 0 2px; color: var(--withdraw); font-weight: 700; font-size: 14px; cursor: pointer; }
 
   .ci { width: 1.35em; height: 1.35em; object-fit: cover; border-radius: 6px; vertical-align: -0.25em; }
   .cat-icon-btn .ci { width: 28px; height: 28px; vertical-align: middle; }
@@ -861,6 +874,16 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   .swipe > .pie-card .rank-section { margin-top: 12px; padding-top: 10px; gap: 10px; }
   .swipe > .pie-card .rank-row { font-size: 13px; }
 
+  .co-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; position: relative; -webkit-touch-callout: none; }
+  .co-tile { position: relative; border: 1px solid var(--line); border-radius: 12px; background: var(--page-cream-2); padding: 10px 4px 8px; text-align: center; font-size: 12px; line-height: 1.3; min-height: 74px; box-sizing: border-box; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; cursor: grab; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; }
+  .co-tile .e { font-size: 24px; line-height: 1; }
+  .co-tile.co-slide { transition: transform .17s ease; }
+  .co-tile.lift { z-index: 10; background: #fff; border-color: var(--brass); box-shadow: 0 12px 26px rgba(0,0,0,.30); transition: none; cursor: grabbing; }
+  .swipe > .lift { z-index: 10; box-shadow: 0 18px 36px rgba(0,0,0,.35) !important; transition: none !important; cursor: grabbing; }
+  .swipe > .co-slide { transition: transform .17s ease; }
+  .swipe > .drop { transition: transform .16s ease, box-shadow .16s ease; }
+  .swipe .pie-card, .swipe .hcard { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  .co-tile.drop { transition: transform .16s ease, box-shadow .16s ease; }
   .pick-cards { all: unset; cursor: pointer; font-size: 12.5px; color: var(--brass); padding: 4px 8px; font-family: 'Noto Sans Thai', sans-serif; }
   .hcard { flex: 0 0 92%; scroll-snap-align: center; scroll-snap-stop: always; box-sizing: border-box; background: var(--page-cream); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 12px 28px var(--shadow); padding: 14px 16px; }
   .hcard .hc-t { font-weight: 700; font-size: 15px; margin-bottom: 8px; display: flex; justify-content: space-between; }
@@ -916,7 +939,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   <button type="button" class="settings-btn" id="settingsBtn" aria-label="ตั้งค่า" onclick="openSettings()">⚙️</button>
   <div class="brand">P A S S B O O K</div>
   <button type="button" class="avatar-btn" id="avatarBtn" aria-label="โปรไฟล์" onclick="openProfile()" style="display:none;"></button>
-  <h1><span id="appTitle">บัญชีต้อการช่าง</span><span class="version-tag">V2.1</span></h1>
+  <h1><span id="appTitle">บัญชีต้อการช่าง</span><span class="version-tag">V2.2</span></h1>
   <div class="who-line" id="whoLine" style="display:none;"></div>
 </div>
 
@@ -1044,6 +1067,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
         <button type="button" class="set-row" onclick="openBudget()"><span class="ic">🎯</span><span class="tx">งบค่าใช้จ่าย<span class="sub">ตั้งงบต่อวัน/สัปดาห์/เดือน/ปี แยกหมวดได้</span></span><span class="arrow">›</span></button>
         <button type="button" class="set-row" onclick="openSavings()"><span class="ic">🐷</span><span class="tx">เงินออม<span class="sub">แยกเงินเก็บออกจากยอดคงเหลือ หยอด/ถอนได้</span></span><span class="arrow">›</span></button>
         <button type="button" class="set-row" onclick="openCheck()"><span class="ic">🧮</span><span class="tx">ตรวจยอดเงิน<span class="sub">กรอกเงินจริงที่มี เทียบกับยอดในแอป ถ้าไม่ตรงบอกส่วนต่างและส่งรายงานได้</span></span><span class="arrow">›</span></button>
+        <button type="button" class="set-row" onclick="openNtf()"><span class="ic">🔔</span><span class="tx">การแจ้งเตือน<span class="sub">เด้งเตือนที่แถบแจ้งเตือนมือถือพร้อมเสียง เลือกได้ว่าจะเตือนเรื่องอะไร</span></span><span class="arrow">›</span></button>
         <button type="button" class="set-row" onclick="closeSettings();openBank()"><span class="ic">📒</span><span class="tx">ดูยอด/กราฟ/ประวัติแต่ละบัญชี<span class="sub">ยอดเงินแต่ละธนาคาร กราฟ 6 เดือน ประวัติ ตั้งงบต่อบัญชี</span></span><span class="arrow">›</span></button>
         <button type="button" class="set-row" onclick="openAcctManage()"><span class="ic">🏦</span><span class="tx">บัญชี / ธนาคาร<span class="sub">เลือกธนาคารที่แสดง เพิ่มบัญชีของตัวเอง</span></span><span class="arrow">›</span></button>
         <button type="button" class="set-row" onclick="exportBackup()"><span class="ic">💾</span><span class="tx">สำรองข้อมูล<span class="sub">บันทึกเป็นไฟล์เก็บไว้ (ย้ายเครื่อง/กันข้อมูลหาย)</span></span><span class="arrow">›</span></button>
@@ -1100,6 +1124,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     <button type="button" class="add-opt in" onclick="closeAddMenu();openSheet('in')"><span class="e">➕</span><span>รายรับ<small>ได้เงินเข้ามา</small></span></button>
     <button type="button" class="add-opt scan" onclick="closeAddMenu();document.getElementById('slipInput').click()"><span class="e">📷</span><span>สแกนสลิป<small>ถ่ายรูป หรือเลือกจากแกลเลอรี</small></span></button>
     <button type="button" class="add-opt recv" onclick="closeAddMenu();openReceivableSheet()"><span class="e">💰</span><span>เพิ่มยอดค้างรับ<small>ลูกค้ายังไม่จ่าย</small></span></button>
+    <button type="button" class="add-opt xfer" onclick="closeAddMenu();openXfer()"><span class="e">⇄</span><span>โอนย้ายระหว่างบัญชี<small>ย้ายเงินของตัวเอง ยอดรวมไม่เปลี่ยน</small></span></button>
     <div class="sheet-actions"><button class="btn-cancel" onclick="closeAddMenu()">ปิด</button></div>
   </div>
 </div>
@@ -1154,7 +1179,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
 <div class="overlay" id="cardPickOverlay">
   <div class="sheet">
     <div class="sheet-title">✏️ การ์ดที่ปัดดูบนหน้าแรก</div>
-    <div class="set-note" style="margin:-6px 0 8px;">ติ๊กอันที่อยากให้ปัดดูได้ (ยอดคงเหลือแสดงเสมอ) เรียงตามรายการนี้</div>
+    <div class="set-note" style="margin:-6px 0 8px;">ติ๊กเลือกการ์ดที่จะแสดง · อยากสลับลำดับ ให้กดค้างที่การ์ดบนหน้าแรกแล้วลาก (ยอดคงเหลือแสดงเสมอ)</div>
     <div id="cardPickList"></div>
     <div class="sheet-actions" style="margin-top:12px;"><button class="btn-cancel" style="width:100%;" onclick="closeCardPick()">เสร็จแล้ว</button></div>
   </div>
@@ -1653,10 +1678,53 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
   </div>
 </div>
 
+<!-- Notifications settings -->
+<div class="overlay" id="ntfOverlay">
+  <div class="sheet">
+    <div class="sheet-title">🔔 การแจ้งเตือน</div>
+    <div class="ntf-status" id="ntfStatus"></div>
+    <button type="button" class="btn-save in" style="width:100%;margin:4px 0 10px;" id="ntfMainBtn" onclick="ntfMain()">เปิดการแจ้งเตือน</button>
+    <div id="ntfBody">
+      <div class="field-label"><span>เตือนเรื่องอะไรบ้าง</span></div>
+      <div id="ntfTopics"></div>
+      <div class="bk-fl"><span>เวลาเตือนประจำวัน</span><input type="time" class="bk-in" id="ntfTime" value="20:00" onchange="ntfSetTime(this.value)"></div>
+      <label class="pick-row"><input type="checkbox" id="ntfSound" onchange="ntfSet('sound', this.checked)"><span>🔊 มีเสียงในแอปด้วย<small>ตอนเปิดแอปอยู่ จะมีเสียงกริ๊งเบาๆ เพิ่มจากเสียงแจ้งเตือนของเครื่อง</small></span></label>
+      <button type="button" class="btn-cancel" style="width:100%;margin-top:10px;" onclick="ntfTest()">🔔 ลองแจ้งเตือน</button>
+      <div class="set-note" style="margin-top:10px;">เตือนจดรายการ ตรวจยอด รายการประจำ และสำรองข้อมูล รวมเป็นแจ้งเตือนเดียวตามเวลาที่ตั้ง (วันละครั้ง) แม้ปิดแอป · เสียงเป็นเสียงแจ้งเตือนของเครื่อง (ถ้าเครื่องปิดเสียงอยู่จะไม่ดัง)</div>
+    </div>
+    <div class="sheet-actions"><button class="btn-cancel" onclick="closeNtf()">ปิด</button></div>
+  </div>
+</div>
+
+<!-- Transfer between own accounts -->
+<div class="overlay" id="xferOverlay">
+  <div class="sheet">
+    <div class="sheet-title" style="color:#4B5D7A;" id="xfTitle">⇄ โอนย้ายระหว่างบัญชี</div>
+    <div class="recv-edit-note" style="background:rgba(75,93,122,0.09);">ย้ายเงินของตัวเองจากบัญชีหนึ่งไปอีกบัญชี ยอดเงินรวมไม่เปลี่ยน ไม่นับเป็นรายรับ/รายจ่าย</div>
+    <input type="text" inputmode="decimal" class="amount-input" id="xfAmount" placeholder="0.00" autocomplete="off">
+    <div class="field-label"><span>จากบัญชี</span></div>
+    <select class="xf-sel" id="xfFrom"></select>
+    <div class="xf-arrow">⬇</div>
+    <div class="field-label" style="margin-top:0;"><span>ไปบัญชี</span></div>
+    <select class="xf-sel" id="xfTo"></select>
+    <div class="field-label"><span>วันที่</span><span class="date-hint" id="xfDateHint"></span></div>
+    <input type="date" class="date-input" id="xfDate">
+    <div class="field-label"><span>บันทึกเพิ่มเติม (ไม่ใส่ก็ได้)</span></div>
+    <input type="text" class="text-input" id="xfNote" maxlength="200" placeholder="เช่น ถอนเงินสด, เติมทรูมันนี่">
+    <div class="xf-err" id="xfErr"></div>
+    <div class="sheet-actions">
+      <button class="btn-cancel" onclick="closeXfer()">ยกเลิก</button>
+      <button class="btn-save" style="background:#4B5D7A;" id="xfSave" onclick="saveXfer()">บันทึก</button>
+    </div>
+    <button type="button" class="btn-xdel" id="xfDel" style="display:none;" onclick="delXfer()">ลบรายการโอนนี้</button>
+  </div>
+</div>
+
 <!-- Add receivable sheet -->
 <div class="overlay" id="receivableOverlay">
   <div class="sheet">
-    <div class="sheet-title" style="color:var(--receivable);">เพิ่มยอดค้างรับ</div>
+    <div class="sheet-title" style="color:var(--receivable);" id="recvSheetTitle">เพิ่มยอดค้างรับ</div>
+    <div class="recv-edit-note" id="recvEditNote" style="display:none;"></div>
     <input type="text" inputmode="decimal" class="amount-input" id="recvAmountInput" placeholder="0.00" autocomplete="off">
 
     <div class="field-label"><span>ชื่อลูกค้า / รายละเอียดงาน</span></div>
@@ -1667,7 +1735,7 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
 
     <div class="sheet-actions">
       <button class="btn-cancel" onclick="closeReceivableSheet()">ยกเลิก</button>
-      <button class="btn-save" style="background:var(--receivable);" onclick="saveReceivable()">บันทึก</button>
+      <button class="btn-save" style="background:var(--receivable);" id="recvSaveBtn" onclick="saveReceivable()">บันทึก</button>
     </div>
   </div>
 </div>
@@ -1838,7 +1906,7 @@ const CAT_TRASH_KEY = 'categoryTrash';
 const CUSTOM_EMOJI_KEY = 'customEmojis';
 const TEXT_SIZE_KEY = 'uiTextSize';
 const LAST_BACKUP_KEY = 'lastBackupAt';
-const APP_VERSION_LABEL = 'V2.1';
+const APP_VERSION_LABEL = 'V2.2';
 const TEXT_ZOOMS = { normal: 1, large: 1.12, xlarge: 1.24 };
 let customEmojis = [];
 
@@ -1910,6 +1978,21 @@ async function loadData() {
   viewMonth = now.getMonth();
   render();
 }
+
+// the app open twice (installed app + browser tab): when the other copy saves, take its data so our next save doesn't overwrite it
+// shortcut: two saves a few milliseconds apart in both copies can still clash (no person switches that fast); upgrade to merge-by-id if that ever shows up
+window.addEventListener('storage', e => {
+  if (![TX_KEY, RECV_KEY, RECUR_KEY, SAVE_KEY, XFER_KEY, CHK_KEY].includes(e.key)) return;
+  try {
+    if (e.key === TX_KEY) transactions = JSON.parse(e.newValue || '[]');
+    if (e.key === RECV_KEY) receivables = JSON.parse(e.newValue || '[]');
+    if (e.key === RECUR_KEY) recurring = sanitizeRecurring(JSON.parse(e.newValue || '[]'));
+    if (e.key === SAVE_KEY) savings = sanitizeSavings(JSON.parse(e.newValue || 'null'));
+    if (e.key === XFER_KEY) transfers = sanitizeTransfers(JSON.parse(e.newValue || '[]'));
+    if (e.key === CHK_KEY) checks = sanitizeChecks(JSON.parse(e.newValue || '[]'));
+  } catch (err) { return; }
+  render();
+});
 
 async function saveTransactions() {
   try { localStorage.setItem(TX_KEY, JSON.stringify(transactions)); }
@@ -2087,7 +2170,7 @@ async function ensureOthersCategory(mode) {
 }
 
 async function saveEntry(skipCatWarning) {
-  const amountRaw = document.getElementById('amountInput').value.replace(',', '.');
+  const amountRaw = normMoneyText(document.getElementById('amountInput').value);
   const amount = parseFloat(amountRaw);
   if (!amount || amount <= 0) { showToast('กรุณาใส่จำนวนเงินให้ถูกต้อง'); return; }
   const date = document.getElementById('dateInput').value || todayStr();
@@ -2433,7 +2516,7 @@ function runSearch(keepAll) {
   const moreHtml = (!searchShowAll && matches.length > LIMIT)
     ? `<div class="search-more" onclick="searchShowAll=true;runSearch(true)">แสดงอีก ${matches.length - LIMIT} รายการ</div>` : '';
   const recvHtml = recvMatches.map(r => `
-      <div class="ledger-row recv">
+      <div class="ledger-row recv"${r.status !== 'paid' ? ` onclick="openEditReceivable('${r.id}')"` : ''}>
         <div class="row-desc">
           <div class="row-date month-tag">${escapeHtml(thaiDateLabel(r.date))} · 💰 ${r.status === 'paid' ? 'ค้างรับ (รับแล้ว)' : 'ค้างรับ'}</div>
           <div class="row-note full">${escapeHtml(r.name)}</div>
@@ -2448,7 +2531,28 @@ function runSearch(keepAll) {
   resultsBox.innerHTML = rowsHtml + moreHtml + recvHtml;
 }
 
+let editingRecvId = null;
+function recvSheetMode(r) {
+  document.getElementById('recvSheetTitle').textContent = r ? 'แก้ไขยอดค้างรับ' : 'เพิ่มยอดค้างรับ';
+  document.getElementById('recvSaveBtn').textContent = r ? 'บันทึกการแก้ไข' : 'บันทึก';
+  const n = document.getElementById('recvEditNote'); let t = '';
+  if (r && r.paidSoFar) t = 'รับมาแล้ว ' + fmt(r.paidSoFar) + ' จากทั้งหมด ' + fmt(recvBase(r)) + ' · ช่องจำนวนเงินคือยอดที่ยังค้างอยู่';
+  if (r && r.fromTxId) t += (t ? '\n' : '') + 'รายการนี้มาจากการจ่ายแทน แก้ตรงนี้จะไม่เปลี่ยนรายจ่ายที่จดไว้';
+  n.textContent = t; n.style.whiteSpace = 'pre-line'; n.style.display = t ? 'block' : 'none';
+}
+function openEditReceivable(id) {
+  const r = receivables.find(x => x.id === id);
+  if (!r || r.status === 'paid') return;
+  editingRecvId = id;
+  recvSheetMode(r);
+  document.getElementById('recvAmountInput').value = String(r.amount);
+  document.getElementById('recvNameInput').value = r.name;
+  setupDateField('recvDateInput', 'recvDateHint');
+  document.getElementById('recvDateInput').value = r.date;
+  document.getElementById('receivableOverlay').classList.add('show');
+}
 function openReceivableSheet() {
+  editingRecvId = null; recvSheetMode(null);
   document.getElementById('recvAmountInput').value = '';
   document.getElementById('recvNameInput').value = '';
   setupDateField('recvDateInput', 'recvDateHint');
@@ -2458,11 +2562,14 @@ function openReceivableSheet() {
 }
 
 function closeReceivableSheet() {
+  editingRecvId = null;
   document.getElementById('receivableOverlay').classList.remove('show');
 }
 
 async function saveReceivable() {
-  const amountRaw = document.getElementById('recvAmountInput').value.replace(',', '.');
+  const editR = editingRecvId ? receivables.find(x => x.id === editingRecvId && x.status !== 'paid') : null;
+  if (editingRecvId && !editR) { closeReceivableSheet(); showToast('รายการนี้ถูกรับเงินหรือลบไปแล้ว แก้ไขไม่ได้'); render(); return; }
+  const amountRaw = normMoneyText(document.getElementById('recvAmountInput').value);
   const amount = parseFloat(amountRaw);
   if (!amount || amount <= 0) { showToast('กรุณาใส่จำนวนเงินให้ถูกต้อง'); return; }
   const name = document.getElementById('recvNameInput').value.trim();
@@ -2471,6 +2578,17 @@ async function saveReceivable() {
   if (isFutureDate(date)) {
     showToast('เลือกวันที่ในอนาคตไม่ได้ กรุณาเลือกวันนี้หรือวันก่อนหน้า', 3500);
     document.getElementById('recvDateInput').value = todayStr();
+    return;
+  }
+
+  if (editR) {
+    const newAmt = Math.round(amount * 100) / 100;
+    if (typeof editR.listed === 'number') editR.listed = Math.round((editR.listed + (newAmt - editR.amount)) * 100) / 100;
+    editR.amount = newAmt; editR.name = name; editR.date = date; editR.editedAt = Date.now();
+    await saveReceivables();
+    closeReceivableSheet();
+    render();
+    showToast('แก้ไขยอดค้างรับเรียบร้อย');
     return;
   }
 
@@ -3019,7 +3137,7 @@ function buildBackupObject() {
     version: APP_VERSION_LABEL,
     exportedAt: Date.now(),
     transactions, receivables, categories, categoryTrash, customEmojis, recurring,
-    budgets, savings, chartStyle, profile, accounts: acctData, homeCards, checks,
+    budgets, savings, chartStyle, profile, accounts: acctData, homeCards, checks, transfers,
     textSize: size
   };
 }
@@ -3300,6 +3418,7 @@ function annTry() {
   if (!annDue()) return;
   if (document.querySelector('.overlay.show')) { setTimeout(annTry, 60000); return; }   // never interrupt something the person is doing
   annShow();
+  try { notify('news', ntfPlain(ANNOUNCEMENT.title), ntfPlain(ANNOUNCEMENT.text).slice(0, 180), 'ann' + ANNOUNCEMENT.id + todayStr()); } catch (e) {}
 }
 let annTimer = null;
 function annSchedule() {   // if the app stays open past 06:00, show it again then
@@ -3310,16 +3429,98 @@ function annSchedule() {   // if the app stays open past 06:00, show it again th
 document.addEventListener('visibilitychange', () => { if (!document.hidden) annTry(); });
 setTimeout(() => { annTry(); annSchedule(); }, 800);
 
+/* ---------- Transfers between own accounts (not income/expense; total unchanged) ---------- */
+const XFER_KEY = 'transfers';
+let transfers = [];
+function sanitizeTransfers(a) {
+  if (!Array.isArray(a)) return [];
+  const ok = [], ids = new Set();
+  a.forEach(x => {
+    if (!x || typeof x !== 'object') return;
+    const amt = Number(x.amount), from = typeof x.from === 'string' ? x.from.trim().slice(0, 40) : '', to = typeof x.to === 'string' ? x.to.trim().slice(0, 40) : '';
+    if (!(isFinite(amt) && amt > 0 && amt < 1e10) || !from || !to || from === to || !/^\d{4}-\d{2}-\d{2}$/.test(String(x.date))) return;
+    // id ends up inside an onclick attribute: only allow plain characters (a tampered backup must not inject script)
+    const id = /^[\w-]{1,60}$/.test(String(x.id)) ? String(x.id) : ('x' + Date.now() + Math.random().toString(36).slice(2, 7));
+    if (ids.has(id)) return; ids.add(id);
+    ok.push({ id, from, to, amount: Math.round(amt * 100) / 100, date: x.date, time: /^\d{2}:\d{2}$/.test(String(x.time)) ? x.time : '', note: typeof x.note === 'string' ? x.note.slice(0, 200) : '', createdAt: typeof x.createdAt === 'number' ? x.createdAt : Date.now() });
+  });
+  return ok;
+}
+function loadTransfers() { try { transfers = sanitizeTransfers(JSON.parse(localStorage.getItem(XFER_KEY) || '[]')); } catch (e) { transfers = []; } }
+function saveTransfers() { try { localStorage.setItem(XFER_KEY, JSON.stringify(transfers)); return true; } catch (e) { showToast('บันทึกรายการโอนไม่สำเร็จ ลองอีกครั้ง'); return false; } }
+loadTransfers();
+let xfEditId = null, xfDelArm = false;
+function xfNames() { const l = bkNames(); return l; }
+function xfFill(sel, val, other) {
+  const names = xfNames(); if (val && !names.includes(val)) names.push(val);
+  sel.innerHTML = '<option value="">— เลือกบัญชี —</option>' + names.map(n => `<option value="${escapeHtml(n)}"${n === val ? ' selected' : ''}>${escapeHtml(n)}</option>`).join('');
+}
+function openXfer(from, id) {
+  const x = id ? transfers.find(t => t.id === id) : null;
+  xfEditId = x ? x.id : null; xfDelArm = false;
+  document.getElementById('xfTitle').textContent = x ? '⇄ แก้ไขรายการโอน' : '⇄ โอนย้ายระหว่างบัญชี';
+  document.getElementById('xfSave').textContent = x ? 'บันทึกการแก้ไข' : 'บันทึก';
+  const del = document.getElementById('xfDel'); del.style.display = x ? 'block' : 'none'; del.textContent = 'ลบรายการโอนนี้';
+  document.getElementById('xfAmount').value = x ? String(x.amount) : '';
+  xfFill(document.getElementById('xfFrom'), x ? x.from : (from || ''));
+  xfFill(document.getElementById('xfTo'), x ? x.to : '');
+  setupDateField('xfDate', 'xfDateHint');
+  document.getElementById('xfDate').value = x ? x.date : todayStr();
+  document.getElementById('xfNote').value = x ? x.note : '';
+  document.getElementById('xfErr').textContent = '';
+  document.getElementById('xferOverlay').classList.add('show');
+}
+function closeXfer() { document.getElementById('xferOverlay').classList.remove('show'); xfEditId = null; xfDelArm = false; }
+function xfAfter(msg) {
+  closeXfer(); render();
+  try { if (document.getElementById('bankOverlay').classList.contains('show')) renderBank(); } catch (e) {}
+  try { renderHomeCards(); } catch (e) {}
+  showToast(msg);
+}
+function saveXfer() {
+  const err = m => { document.getElementById('xfErr').textContent = m; };
+  const amount = parseMoney(document.getElementById('xfAmount').value);
+  const from = document.getElementById('xfFrom').value, to = document.getElementById('xfTo').value;
+  const date = document.getElementById('xfDate').value || todayStr(), note = document.getElementById('xfNote').value.trim().slice(0, 200);
+  if (amount === null) return err('กรุณาใส่จำนวนเงินให้ถูกต้อง');
+  if (!from || !to) return err('กรุณาเลือกบัญชีต้นทางและปลายทาง');
+  if (from === to) return err('บัญชีต้นทางกับปลายทางต้องไม่ใช่บัญชีเดียวกัน');
+  if (isFutureDate(date)) { document.getElementById('xfDate').value = todayStr(); return err('เลือกวันที่ในอนาคตไม่ได้'); }
+  if (xfEditId) {
+    const x = transfers.find(t => t.id === xfEditId);
+    if (!x) { closeXfer(); showToast('รายการนี้ถูกลบไปแล้ว'); return; }
+    Object.assign(x, { amount, from, to, date, note, editedAt: Date.now() });
+    if (!saveTransfers()) return;
+    return xfAfter('แก้ไขรายการโอนแล้ว');
+  }
+  transfers.push({ id: 'x' + Date.now() + '-' + Math.random().toString(36).slice(2, 7), from, to, amount, date, time: date === todayStr() ? nowHM() : '', note, createdAt: Date.now() });
+  if (!saveTransfers()) { transfers.pop(); return; }
+  xfAfter('โอน ' + fmt(amount) + ' จาก ' + from + ' ไป ' + to + ' แล้ว');
+}
+function delXfer() {
+  if (!xfEditId) return;
+  const b = document.getElementById('xfDel');
+  if (!xfDelArm) { xfDelArm = true; b.textContent = 'แตะอีกครั้งเพื่อยืนยันการลบ'; return; }
+  transfers = transfers.filter(t => t.id !== xfEditId); saveTransfers();
+  xfAfter('ลบรายการโอนแล้ว');
+}
+function xfSum(name, ym) {   // money moved in / out of an account by transfers (optionally one month)
+  let i = 0, o = 0;
+  transfers.forEach(t => { if (ym && String(t.date).slice(0, 7) !== ym) return; if (t.to === name) i += t.amount; if (t.from === name) o += t.amount; });
+  return { xin: Math.round(i * 100) / 100, xout: Math.round(o * 100) / 100 };
+}
+
 /* ---------- Bank page (per-account balance / chart / history / budget) ---------- */
 let bkCur = '', bkMonth = '';   // bkMonth = 'YYYY-MM'
 function bkNames() {
   const l = acctChoices(); transactions.forEach(t => { if (t.acct && !l.includes(t.acct)) l.push(t.acct); });
   Object.keys(acctData.open || {}).forEach(n => { if (!l.includes(n)) l.push(n); });
+  (typeof transfers !== 'undefined' ? transfers : []).forEach(t => { [t.from, t.to].forEach(n => { if (n && !l.includes(n)) l.push(n); }); });
   return l;
 }
 function bkList() {
   return bkNames().map(name => { let i = 0, o = 0, n = 0; transactions.forEach(t => { if (t.acct === name) { n++; if (t.type === 'in') i += Number(t.amount) || 0; else o += Number(t.amount) || 0; } });
-    const op = (acctData.open || {})[name] || 0; return { name, n, in: i, out: o, open: op, hasOpen: !!op, bal: Math.round((op + i - o) * 100) / 100 }; });
+    const op = (acctData.open || {})[name] || 0, xs = xfSum(name), xn = transfers.filter(t => t.from === name || t.to === name).length; return { name, n: n + xn, in: i, out: o, xin: xs.xin, xout: xs.xout, open: op, hasOpen: !!op, bal: Math.round((op + i - o + xs.xin - xs.xout) * 100) / 100 }; });
 }
 function bkMonthSum(name, ym) { let i = 0, o = 0; transactions.forEach(t => { if (t.acct === name && String(t.date).slice(0, 7) === ym) { if (t.type === 'in') i += Number(t.amount) || 0; else o += Number(t.amount) || 0; } }); return { in: i, out: o }; }
 function bkShiftYm(ym, d) { let [y, m] = ym.split('-').map(Number); m += d; while (m < 1) { m += 12; y--; } while (m > 12) { m -= 12; y++; } return y + '-' + String(m).padStart(2, '0'); }
@@ -3339,7 +3540,7 @@ function renderBank() {
     if (!used.length) h += '<div class="hc-mut" style="padding:8px 0;">ยังไม่มีรายการที่ระบุบัญชี ตอนบันทึกรายการให้เลือก "บัญชีที่ใช้"</div>';
     if (rest.length) h += `<div class="bk-sub" style="margin-top:10px;">ยังไม่มีรายการ: ${rest.map(x => `<a style="color:var(--brass);cursor:pointer;margin-right:8px;" data-n="${escapeHtml(x.name)}">${escapeHtml(x.name)}</a>`).join('')}</div>`;
     body.innerHTML = h;
-    acts.innerHTML = '<button class="btn-cancel" onclick="closeBank()">ปิด</button><button class="btn-save in" onclick="closeBank();openAcctManage()">จัดการบัญชี</button>';
+    acts.innerHTML = '<button class="btn-cancel" onclick="closeBank()">ปิด</button><button class="btn-save" style="background:#4B5D7A;" onclick="openXfer()">⇄ โอนย้าย</button><button class="btn-save in" onclick="closeBank();openAcctManage()">จัดการบัญชี</button>';
   } else {
     const name = bkCur, x = bkList().find(z => z.name === name) || { name, n: 0, in: 0, out: 0, open: 0, bal: 0 };
     title.innerHTML = acctIconHtml(name) + ' ' + escapeHtml(name);
@@ -3348,7 +3549,7 @@ function renderBank() {
     const mx = Math.max(1, ...ms.map(m => Math.max(m.in, m.out)));
     const cur = bkMonthSum(name, bkMonth), bud = (acctData.budget || {})[name] || 0;
     let h = `<div class="bk-sub">ยอดคงเหลือในบัญชีนี้</div><div class="bk-big" style="color:var(--${x.bal < 0 ? 'withdraw' : 'ink'})">${bkMoney(x.bal)}</div>`;
-    h += `<div class="bk-sub">รับทั้งหมด ${fmt(x.in)} · จ่ายทั้งหมด ${fmt(x.out)}${x.open ? ' · ยอดตั้งต้น ' + bkMoney(x.open) : ''}</div>`;
+    h += `<div class="bk-sub">รับทั้งหมด ${fmt(x.in)} · จ่ายทั้งหมด ${fmt(x.out)}${x.open ? ' · ยอดตั้งต้น ' + bkMoney(x.open) : ''}${(x.xin || x.xout) ? '<br>⇄ โอนเข้า ' + fmt(x.xin || 0) + ' · โอนออก ' + fmt(x.xout || 0) : ''}</div>`;
     h += `<div class="field-label" style="margin-top:12px;"><span>กราฟ 6 เดือน (เขียว = รับ แดง = จ่าย) แตะแท่งเพื่อเลือกเดือน</span></div><div class="bk-chart">${ms.map(m => `<div class="bk-col ${m.ym === bkMonth ? 'sel' : ''}" data-ym="${m.ym}"><div class="bk-bars"><i class="in" style="height:${Math.round(m.in / mx * 100)}%"></i><i class="out" style="height:${Math.round(m.out / mx * 100)}%"></i></div>${THAI_MONTHS[+m.ym.slice(5) - 1].slice(0, 3)}${m.ym.slice(2, 4)}</div>`).join('')}</div>`;
     h += `<div class="field-label" style="margin-top:12px;"><span>🎯 งบรายจ่ายต่อเดือนของบัญชีนี้</span></div>`;
     if (bud > 0) { const pct = cur.out / bud * 100; h += `<div style="display:flex;justify-content:space-between;gap:10px;font-size:13.5px;margin-top:3px;"><span>${bkYmLabel(bkMonth)}</span><span class="${pct >= 100 ? 'ov' : ''}">${fmt(cur.out)} / ${fmt(bud)}</span></div><div class="bg-bar"><i class="${budgetClass(pct)}" style="width:${Math.min(100, pct)}%"></i></div>`; }
@@ -3356,10 +3557,13 @@ function renderBank() {
     h += `<div class="bk-fl"><span>ยอดตั้งต้น (ที่มีอยู่ก่อนเริ่มจด)</span><input class="bk-in" id="bkOpen" inputmode="decimal" placeholder="0" value="${x.open || ''}"></div><button class="btn-save in" style="width:100%;margin:2px 0 6px;" id="bkSaveBtn">บันทึกงบ/ยอดตั้งต้น</button>`;
     const list = transactions.filter(t => t.acct === name && String(t.date).slice(0, 7) === bkMonth).sort((a, b) => (b.date + (b.time || '')).localeCompare(a.date + (a.time || '')));
     h += `<div class="field-label" style="margin-top:12px;"><span class="manage-cat-link" id="bkPrev">‹ ก่อนหน้า</span><span><b>${bkYmLabel(bkMonth)}</b></span><span class="manage-cat-link" id="bkNext">ถัดไป ›</span></div><div class="bk-sub">รับ ${fmt(cur.in)} · จ่าย ${fmt(cur.out)} · ${list.length} รายการ</div>`;
-    if (!list.length) h += '<div class="hc-mut" style="padding:8px 0;">เดือนนี้ไม่มีรายการของบัญชีนี้</div>';
+    const xl = transfers.filter(t => (t.from === name || t.to === name) && String(t.date).slice(0, 7) === bkMonth);
+    if (xl.length) { const ms2 = xfSum(name, bkMonth); h += `<div class="bk-sub">⇄ โอนเข้า ${fmt(ms2.xin)} · โอนออก ${fmt(ms2.xout)} · ${xl.length} รายการโอน</div>`; }
+    if (!list.length && !xl.length) h += '<div class="hc-mut" style="padding:8px 0;">เดือนนี้ไม่มีรายการของบัญชีนี้</div>';
+    xl.sort((a, b) => (b.date + (b.time || '')).localeCompare(a.date + (a.time || ''))).forEach(t => { const out = t.from === name; h += `<div class="ledger-row xf" style="display:flex;justify-content:space-between;align-items:center;gap:10px;" onclick="openXfer('', '${t.id}')"><div class="row-desc" style="flex:1;min-width:0;"><div class="row-date month-tag">${escapeHtml(thaiDateLabel(t.date))}${t.time ? ' ' + escapeHtml(t.time) + ' น.' : ''} · ⇄ โอนย้าย</div><div class="row-note full">${out ? 'โอนไป ' + escapeHtml(t.to) : 'รับโอนจาก ' + escapeHtml(t.from)}${t.note ? ' · ' + escapeHtml(t.note) : ''}</div></div><div class="row-amt">${out ? '−' : '+'}${fmt(t.amount)}</div></div>`; });
     list.forEach(t => { h += `<div class="ledger-row" style="display:flex;justify-content:space-between;align-items:center;gap:10px;" onclick="openEditEntry('${t.id}')"><div class="row-desc" style="flex:1;min-width:0;"><div class="row-date month-tag">${escapeHtml(thaiDateLabel(t.date))}${t.time ? ' ' + escapeHtml(t.time) + ' น.' : ''} · ${catIconHtml(t.type, t.category)}</div><div class="row-note full">${escapeHtml(t.note || '(ไม่มีบันทึกเพิ่มเติม)')}</div></div><div class="row-amt ${t.type === 'in' ? 'in' : 'out'}">${t.type === 'in' ? '+' : '−'}${fmt(t.amount)}</div></div>`; });
     body.innerHTML = h;
-    acts.innerHTML = '<button class="btn-cancel" onclick="bkBack()">‹ กลับ</button><button class="btn-save in" onclick="closeBank()">ปิด</button>';
+    acts.innerHTML = '<button class="btn-cancel" onclick="bkBack()">‹ กลับ</button><button class="btn-save" style="background:#4B5D7A;" onclick="openXfer(bkCur)">⇄ โอนย้าย</button><button class="btn-save in" onclick="closeBank()">ปิด</button>';
     const sv = document.getElementById('bkSaveBtn'); if (sv) sv.onclick = bkSave;
     document.getElementById('bkPrev').onclick = () => { bkMonth = bkShiftYm(bkMonth, -1); renderBank(); };
     document.getElementById('bkNext').onclick = () => { bkMonth = bkShiftYm(bkMonth, 1); renderBank(); };
@@ -3434,6 +3638,7 @@ async function onRestoreFileChosen(input) {
     accounts: (obj.accounts && typeof obj.accounts === 'object') ? sanitizeAccts(obj.accounts) : null,
     homeCards: Array.isArray(obj.homeCards) ? obj.homeCards.filter((x, i, a) => typeof x === 'string' && HOME_CARD_DEFS.some(d => d[0] === x) && a.indexOf(x) === i) : null,
     checks: Array.isArray(obj.checks) ? sanitizeChecks(obj.checks) : null,
+    transfers: Array.isArray(obj.transfers) ? sanitizeTransfers(obj.transfers) : null,   // null = older backup without transfers
     exportedAt: typeof obj.exportedAt === 'number' ? obj.exportedAt : 0,
     textSize: TEXT_ZOOMS[obj.textSize] ? obj.textSize : null
   };
@@ -3501,6 +3706,11 @@ async function doRestore(mode) {
     });
   }
 
+  if (r.transfers) {
+    if (mode === 'replace') transfers = r.transfers;
+    else { const have = new Set(transfers.map(t => t.id)); r.transfers.forEach(t => { if (!have.has(t.id)) { transfers.push(t); have.add(t.id); } }); }
+    saveTransfers();
+  }
   if (r.checks) {
     if (mode === 'replace') checks = r.checks;
     else { const have = new Set(checks.map(c => c.at)); r.checks.forEach(c => { if (!have.has(c.at)) checks.push(c); }); checks.sort((a, b) => a.at - b.at); checks = checks.slice(-60); }
@@ -3613,6 +3823,150 @@ function refreshNotices() {
   if (html !== noticeHtmlCache) { box.innerHTML = html; noticeHtmlCache = html; }
 }
 function dismissRecurNotice() { recurDismissed = true; refreshNotices(); }
+
+/* ================= Phone notifications (status-bar pop-up + sound) =================
+   Shown through the service worker so they appear in the phone's notification shade.
+   Works while the app is open or when it is opened; closed-app push needs the server (not built yet). */
+const NTF_KEY = 'ntfCfg', NTF_SENT_KEY = 'ntfSent';
+const NTF_TOPICS = [
+  ['check', '🧮 ตรวจยอดเงินประจำวัน'], ['recur', '🔁 รายการประจำถึงกำหนด'], ['daily', '✍️ เตือนจดรายการทุกวัน'],
+  ['budget', '🎯 ใช้เกินงบ'], ['backup', '💾 เตือนสำรองข้อมูล'], ['news', '📢 อัปเดตเวอร์ชัน ประกาศ และสรุปประจำเดือน'], ['error', '⚠️ แอปเจอปัญหา']
+];
+let ntfCfg = { on: false, sound: true, time: '20:00', topics: {} };
+try { const c = JSON.parse(localStorage.getItem(NTF_KEY) || 'null'); if (c && typeof c === 'object') ntfCfg = { on: !!c.on, sound: c.sound !== false, time: /^\d{2}:\d{2}$/.test(c.time) ? c.time : '20:00', topics: (c.topics && typeof c.topics === 'object') ? c.topics : {} }; } catch (e) {}
+function ntfSave() { try { localStorage.setItem(NTF_KEY, JSON.stringify(ntfCfg)); } catch (e) {} }
+function ntfTopicOn(t) { return ntfCfg.topics[t] !== false; }
+function ntfSupported() { return 'Notification' in window && 'serviceWorker' in navigator; }
+function ntfPerm() { return ntfSupported() ? Notification.permission : 'unsupported'; }
+function ntfReady() { return ntfCfg.on && ntfPerm() === 'granted'; }
+let ntfAudio = null;
+function ntfChime() {
+  if (!ntfCfg.sound || document.hidden) return;
+  try {
+    ntfAudio = ntfAudio || new (window.AudioContext || window.webkitAudioContext)();
+    if (ntfAudio.state === 'suspended') ntfAudio.resume();
+    const t0 = ntfAudio.currentTime;
+    [[880, 0], [1320, 0.14]].forEach(([f, d]) => {
+      const o = ntfAudio.createOscillator(), g = ntfAudio.createGain();
+      o.type = 'sine'; o.frequency.value = f; o.connect(g); g.connect(ntfAudio.destination);
+      g.gain.setValueAtTime(0.0001, t0 + d); g.gain.exponentialRampToValueAtTime(0.22, t0 + d + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d + 0.45);
+      o.start(t0 + d); o.stop(t0 + d + 0.5);
+    });
+  } catch (e) {}
+}
+// the browser only lets a page make sound after a tap: unlock the audio on the first one
+document.addEventListener('pointerdown', () => { try { if (ntfCfg.on && ntfCfg.sound && !ntfAudio) { ntfAudio = new (window.AudioContext || window.webkitAudioContext)(); } if (ntfAudio && ntfAudio.state === 'suspended') ntfAudio.resume(); } catch (e) {} }, { passive: true });
+function ntfSentGet() { try { return JSON.parse(localStorage.getItem(NTF_SENT_KEY) || '{}') || {}; } catch (e) { return {}; } }
+async function ntfShow(title, body, tag) {
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    const opt = { body, tag: tag || 'passbook', renotify: true, icon: 'icon-192.png', badge: 'icon-192.png', vibrate: [180, 90, 180], data: { url: location.href.split('#')[0] } };
+    if (reg && reg.showNotification) await reg.showNotification(title, opt); else new Notification(title, opt);
+    ntfChime();
+    return true;
+  } catch (e) { return false; }
+}
+// once per key (default: once per day per topic) so the same reminder never repeats every time the app opens
+function notify(topic, title, body, onceKey) {
+  if (!ntfReady() || !ntfTopicOn(topic)) return;
+  const key = topic + '|' + (onceKey || todayStr()), sent = ntfSentGet();
+  if (sent[key]) return;
+  sent[key] = Date.now();
+  const keys = Object.keys(sent); if (keys.length > 80) keys.sort((a, b) => sent[a] - sent[b]).slice(0, keys.length - 80).forEach(k => delete sent[k]);
+  try { localStorage.setItem(NTF_SENT_KEY, JSON.stringify(sent)); } catch (e) {}
+  ntfShow(title, body, 'pb-' + topic);
+}
+function ntfPlain(h) { const d = document.createElement('div'); d.innerHTML = h; return d.textContent.replace(/\s+/g, ' ').trim(); }
+// reminders that come from the state of the data (checked when the app opens / comes back / every few minutes)
+function ntfScan() {
+  if (!ntfReady() || pushOn) return;   // the worker sends the timed reminders when push is connected
+  try { const due = getDueRecurring(); if (due.length) notify('recur', '🔁 มีรายการประจำถึงกำหนด', due.length + ' รายการยังไม่ได้บันทึก แตะเพื่อเปิดแอป'); } catch (e) {}
+  try { if (chkDue()) notify('check', '🧮 วันนี้ยังไม่ได้ตรวจยอดเงิน', 'เทียบยอดในแอปกับเงินจริงวันนี้หน่อยไหม'); } catch (e) {}
+  try { const bk = backupReminderState(); if (bk) notify('backup', '💾 ถึงเวลาสำรองข้อมูล', bk.kind === 'old' ? 'ไม่ได้สำรองข้อมูลมา ' + bk.days + ' วันแล้ว' : 'ยังไม่เคยสำรองข้อมูลเลย', 'w' + Math.floor(Date.now() / 6048e5)); } catch (e) {}
+  try {
+    const hm = nowHM(), t = todayStr();
+    if (hm >= ntfCfg.time && !transactions.some(x => x.date === t)) notify('daily', '✍️ วันนี้ยังไม่ได้จดรายการ', 'มีรายรับรายจ่ายวันนี้ไหม จดไว้กันลืม');
+  } catch (e) {}
+}
+let ntfTimer = null;
+function ntfSchedule() {   // while the app stays open: wake up at the daily-reminder time, and every 10 minutes
+  clearTimeout(ntfTimer);
+  const n = new Date(), [h, m] = ntfCfg.time.split(':').map(Number), t = new Date(n); t.setHours(h, m, 5, 0);
+  let wait = t.getTime() - n.getTime(); if (wait <= 0) wait = 600000;
+  ntfTimer = setTimeout(() => { ntfScan(); ntfSchedule(); }, Math.min(wait, 600000));
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(ntfScan, 1500); });
+setTimeout(() => { ntfScan(); ntfSchedule(); }, 2500);
+let ntfErrN = 0;
+window.addEventListener('error', e => { if (!e || !e.message || ++ntfErrN > 3) return; notify('error', '⚠️ แอปเจอปัญหา', 'ลองปิดแล้วเปิดแอปใหม่ ถ้ายังเป็นอยู่ ส่งความคิดเห็นแจ้งได้เลย'); });
+
+function openNtf() { renderNtf(); document.getElementById('ntfOverlay').classList.add('show'); }
+function closeNtf() { document.getElementById('ntfOverlay').classList.remove('show'); }
+function renderNtf() {
+  const st = document.getElementById('ntfStatus'), btn = document.getElementById('ntfMainBtn'), body = document.getElementById('ntfBody'), p = ntfPerm();
+  if (p === 'unsupported') { st.className = 'ntf-status bad'; st.textContent = 'เครื่องหรือเบราว์เซอร์นี้ยังไม่รองรับการแจ้งเตือน (iPhone ต้องเพิ่มแอปลงหน้าจอโฮมก่อน แล้วเปิดจากไอคอน)'; btn.style.display = 'none'; body.className = 'off'; }
+  else if (p === 'denied') { st.className = 'ntf-status bad'; st.textContent = 'เครื่องนี้ปิดการแจ้งเตือนของแอปไว้ ไปเปิดได้ที่ ตั้งค่าโทรศัพท์ › แอป › Chrome (หรือแอปนี้) › การแจ้งเตือน แล้วกลับมาที่นี่'; btn.style.display = 'none'; body.className = 'off'; }
+  else if (ntfReady()) { st.className = 'ntf-status on'; st.textContent = '✅ เปิดการแจ้งเตือนอยู่' + (pushOn ? ' · เด้งได้แม้ปิดแอป' : ' · ตอนนี้เด้งเฉพาะตอนเปิดแอป (ยังเชื่อมเซิร์ฟเวอร์ไม่ได้)'); btn.style.display = 'block'; btn.textContent = 'ปิดการแจ้งเตือน'; btn.className = 'btn-cancel'; body.className = ''; }
+  else { st.className = 'ntf-status'; st.textContent = 'ยังไม่ได้เปิด กดปุ่มด้านล่าง แล้วกด "อนุญาต" ตอนเครื่องถาม'; btn.style.display = 'block'; btn.textContent = 'เปิดการแจ้งเตือน'; btn.className = 'btn-save in'; body.className = 'off'; }
+  btn.style.width = '100%';
+  document.getElementById('ntfTopics').innerHTML = NTF_TOPICS.map(([k, l]) => `<label class="pick-row"><input type="checkbox" ${ntfTopicOn(k) ? 'checked' : ''} onchange="ntfTopic('${k}', this.checked)"><span>${l}</span></label>`).join('');
+  document.getElementById('ntfTime').value = ntfCfg.time;
+  document.getElementById('ntfSound').checked = ntfCfg.sound;
+}
+async function ntfMain() {
+  if (ntfReady()) { ntfCfg.on = false; ntfSave(); await pushOff(); renderNtf(); showToast('ปิดการแจ้งเตือนแล้ว'); return; }
+  let p = ntfPerm();
+  if (p === 'default') { try { p = await Notification.requestPermission(); } catch (e) { p = ntfPerm(); } }
+  if (p === 'granted') { ntfCfg.on = true; ntfSave(); await pushSync(true); renderNtf(); await ntfShow('🔔 เปิดการแจ้งเตือนแล้ว', 'แอปจะเด้งเตือนตรงนี้พร้อมเสียงของเครื่อง', 'pb-test'); setTimeout(ntfScan, 1500); }
+  else { renderNtf(); showToast('ยังไม่ได้รับอนุญาตให้แจ้งเตือน', 3500); }
+}
+function ntfTopic(k, on) { ntfCfg.topics[k] = !!on; ntfSave(); pushSync(false); }
+function ntfSet(k, v) { ntfCfg[k] = v; ntfSave(); }
+function ntfSetTime(v) { if (/^\d{2}:\d{2}$/.test(v)) { ntfCfg.time = v; ntfSave(); ntfSchedule(); pushSync(false); } }
+/* ---- closed-app reminders through the Cloudflare worker (passbook-push) ----
+   The phone registers here; the worker wakes it at the reminder time. Only dates and settings are sent, never money. */
+const PUSH_API = 'https://sweet-morning-e56c.janjao56669.workers.dev';
+let pushOn = false; try { pushOn = localStorage.getItem('pushOn') === '1'; } catch (e) {}
+function pushSetOn(v) { pushOn = !!v; try { localStorage.setItem('pushOn', pushOn ? '1' : ''); } catch (e) {} }
+function dayOf(ms) { const d = new Date(ms); return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()); }
+function pushCfg() {
+  const t = todayStr(), now = new Date(), due = getDueRecurring().map(x => x.date);
+  recurring.forEach(it => {   // also this month's and next month's upcoming due dates, so the worker knows them while the app is closed
+    if (!it.active) return;
+    for (let k = 0; k < 2; k++) { const d = new Date(now.getFullYear(), now.getMonth() + k, 1), ym = ymKey(d.getFullYear(), d.getMonth()); if (ym >= it.startMonth && !it.doneMonths.includes(ym)) due.push(recurDueDate(it, d.getFullYear(), d.getMonth())); }
+  });
+  // same rules as backupReminderState(): not under 3 entries, 30 days after the last backup (or the oldest entry), respect snooze
+  let lb = 0, snooze = 0, chkSkip = ''; try { lb = parseInt(localStorage.getItem(LAST_BACKUP_KEY) || '0', 10) || 0; snooze = parseInt(localStorage.getItem(SNOOZE_KEY) || '0', 10) || 0; chkSkip = localStorage.getItem(CHK_DAY_KEY) || ''; } catch (e) {}
+  let backupFrom = '';
+  if (transactions.length >= 3) { const base = lb || transactions.reduce((m, x) => (typeof x.createdAt === 'number' && x.createdAt > 0 && x.createdAt < m ? x.createdAt : m), Date.now()); backupFrom = dayOf(Math.max(base + BACKUP_REMIND_DAYS * DAY_MS, snooze)); }
+  const topics = {}; ['daily', 'check', 'recur', 'backup', 'news'].forEach(k => { topics[k] = ntfTopicOn(k); });
+  return { time: ntfCfg.time, topics, lastEntry: transactions.reduce((m, x) => (x.date <= t && x.date > m ? x.date : m), ''), lastCheck: checks.length ? checks[checks.length - 1].date : '', hasTx: transactions.length > 0, chkSkip, backupFrom, recurDue: [...new Set(due)].slice(0, 40) };
+}
+const swReady = () => Promise.race([navigator.serviceWorker.ready, new Promise((_, no) => setTimeout(() => no(new Error('no sw')), 4000))]);
+function b64ToU8(s) { const b = atob(s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - s.length % 4) % 4)); return Uint8Array.from(b, c => c.charCodeAt(0)); }
+async function pushSync(create) {
+  if (!ntfReady() || !('PushManager' in window) || !('serviceWorker' in navigator)) return false;
+  try {
+    const reg = await swReady();
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub && create) { const k = (await (await fetch(PUSH_API + '/key')).json()).key; if (!k) return false; sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(k) }); }
+    if (!sub) { pushSetOn(false); return false; }
+    const r = await fetch(PUSH_API + '/sync', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ subscription: sub.toJSON(), cfg: pushCfg() }) });
+    pushSetOn(r.ok);
+    return r.ok;
+  } catch (e) { return false; }   // offline: keep the last state, try again next time
+}
+async function pushOff() {
+  try { const reg = await swReady(), sub = await reg.pushManager.getSubscription(); if (sub) { fetch(PUSH_API + '/unsub', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) }).catch(() => {}); await sub.unsubscribe(); } } catch (e) {}
+  pushSetOn(false);
+}
+// keep the worker's copy fresh: when the app starts and whenever the person leaves it
+setTimeout(() => { if (ntfReady()) pushSync(true).then(() => { try { if (document.getElementById('ntfOverlay').classList.contains('show')) renderNtf(); } catch (e) {} }); }, 3000);
+document.addEventListener('visibilitychange', () => { if (document.hidden && ntfReady()) pushSync(false); });
+
+async function ntfTest() { if (!ntfReady()) { showToast('เปิดการแจ้งเตือนก่อน'); return; } const ok = await ntfShow('🔔 ทดสอบแจ้งเตือน', 'ถ้าเห็นข้อความนี้ที่แถบแจ้งเตือน แปลว่าใช้ได้แล้ว', 'pb-test'); if (!ok) showToast('แจ้งเตือนไม่สำเร็จ', 3000);
+  if (await pushSync(true)) { try { const reg = await swReady(), sub = await reg.pushManager.getSubscription(); if (sub) { showToast('อีกสักครู่จะมีแจ้งเตือนจากเซิร์ฟเวอร์อีกอัน (ลองปิดแอปรอดูได้)', 4000); setTimeout(() => fetch(PUSH_API + '/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) }).catch(() => {}), 8000); } } catch (e) {} }
+}
 
 
 
@@ -4147,7 +4501,7 @@ function notifyBudget(entry) {
     const cb = (b.cats || {})[entry.category];
     if (cb) { const after = sumRange(r.start, r.end, 'out', entry.category); if (after > cb && after - entry.amount <= cb) msgs.push('หมวด ' + entry.category + ' เกินงบ' + KIND_NOW[k].replace('นี้', '')); }
   });
-  if (msgs.length) setTimeout(() => showToast('⚠️ ' + msgs.slice(0, 2).join(' · '), 4500), 1700);
+  if (msgs.length) { setTimeout(() => showToast('⚠️ ' + msgs.slice(0, 2).join(' · '), 4500), 1700); notify('budget', '🎯 ใช้เกินงบแล้ว', msgs.slice(0, 2).join(' · '), entry.id); }
 }
 
 /* ================= savings ================= */
@@ -4869,8 +5223,15 @@ function renderRecurDue() {
       </div></div>`;
   }).join('');
 }
+// "1,500" / "12,345.50" = thousands separators · "749,91" = decimal comma · spaces ignored
+function normMoneyText(s) {
+  const t = String(s == null ? '' : s).replace(/\s+/g, '');
+  if (/^\d{1,3}(,\d{3})+(\.\d*)?$/.test(t)) return t.replace(/,/g, '');
+  if (/^\d+,\d{1,2}$/.test(t)) return t.replace(',', '.');
+  return t.replace(/,/g, '');
+}
 function parseMoney(s) {
-  const v = parseFloat(String(s).replace(/,/g, '').replace(/\s+/g, ''));
+  const v = parseFloat(normMoneyText(s));
   return (isFinite(v) && v > 0) ? Math.round(v * 100) / 100 : null;
 }
 async function recurAct(kind, btn) {
@@ -5637,6 +5998,14 @@ async function shareYearImg() {
 /* ----- What's new (release notes) ----- */
 // Newest first. Every new release: add a new entry at the TOP and bump APP_VERSION_LABEL + sw.js.
 const RELEASE_NOTES = [
+  { ver: 'V2.2', date: '2026-11-26', items: [
+    { e: '🔔', t: 'แจ้งเตือนเด้งที่มือถือ แม้ปิดแอป', d: 'เปิดที่ ตั้งค่า › การแจ้งเตือน เลือกเรื่องและเวลาเตือนประจำวันได้ เตือนวันละครั้งรวมเรื่องที่ค้าง' },
+    { e: '⇄', t: 'โอนย้ายระหว่างบัญชี', d: 'ย้ายเงินของตัวเองระหว่างบัญชี ยอดรวมไม่เปลี่ยน ยอดแต่ละบัญชีเปลี่ยนตาม (กด ➕ หรือในหน้าบัญชี)' },
+    { e: '✏️', t: 'แก้ไขยอดค้างรับได้', d: 'กด ✏️ ที่รายการค้างรับ แก้ชื่อ ยอด วันที่ได้' },
+    { e: '🃏', t: 'ลากสลับการ์ดหน้าแรก', d: 'กดค้างที่การ์ดแล้วลากไปวางตำแหน่งที่ต้องการ' },
+    { e: '🔢', t: 'ใส่ลูกน้ำในจำนวนเงินได้', d: 'พิมพ์ 1,500 แอปอ่านเป็น 1500 ถูกต้อง (เดิมอ่านผิดเป็น 1.50)' },
+    { e: '🪟', t: 'เปิดแอปสองที่พร้อมกันไม่ทับกัน', d: 'เช่น แอปที่ติดตั้งกับแท็บ Chrome บันทึกแล้วอีกที่เห็นข้อมูลล่าสุดทันที' }
+  ] },
   { ver: 'V2.1', date: '2026-11-21', items: [
     { e: '🏦', t: 'หน้าบัญชี/ธนาคารแต่ละแห่ง', d: 'ดูยอด กราฟรับ-จ่าย 6 เดือน ประวัติรายเดือน ตั้งงบรายเดือน และยอดตั้งต้นของแต่ละบัญชี เข้าจาก ตั้งค่า › ดูยอด/กราฟ/ประวัติแต่ละบัญชี' },
     { e: '🃏', t: 'การ์ดบัญชี/ธนาคารที่หน้าแรก', d: 'โชว์ยอดแต่ละบัญชี แตะเพื่อดูละเอียด เลือกเปิดได้ที่ "เลือกการ์ดที่ปัด"' },
@@ -5852,9 +6221,10 @@ function onClearInput() {
 async function doClearAll() {
   if (document.getElementById('clearInput').value.replace(/\s+/g, '') !== 'ลบทั้งหมด') return;
   try { await new Promise(r => { try { const q = indexedDB.deleteDatabase(SLIP_DB); q.onsuccess = q.onerror = q.onblocked = () => r(); setTimeout(r, 1500); } catch (e) { r(); } }); } catch (e) {}
-  [TX_KEY, RECV_KEY, CAT_KEY, CAT_TRASH_KEY, CUSTOM_EMOJI_KEY, LAST_BACKUP_KEY, FB_NAME_KEY, FB_DRAFT_KEY, RECUR_KEY, SNOOZE_KEY, BANK_KEY, BANK_SEEN_KEY, BUDGET_KEY, SAVE_KEY, STYLE_KEY, 'budgetOpen', 'entryFold', 'savLock', PROFILE_KEY, PHOTO_KEY, COVERBG_KEY, ACCT_KEY, ACCT_LAST_KEY, CATIMG_KEY, HOME_CARDS_KEY].forEach(k => {
+  [TX_KEY, RECV_KEY, CAT_KEY, CAT_TRASH_KEY, CUSTOM_EMOJI_KEY, LAST_BACKUP_KEY, FB_NAME_KEY, FB_DRAFT_KEY, RECUR_KEY, SNOOZE_KEY, BANK_KEY, BANK_SEEN_KEY, BUDGET_KEY, SAVE_KEY, STYLE_KEY, 'budgetOpen', 'entryFold', 'savLock', PROFILE_KEY, PHOTO_KEY, COVERBG_KEY, ACCT_KEY, ACCT_LAST_KEY, CATIMG_KEY, HOME_CARDS_KEY, XFER_KEY, CHK_KEY, NTF_KEY, NTF_SENT_KEY, 'pushOn'].forEach(k => {
     try { localStorage.removeItem(k); } catch (e) {}
   });
+  try { if (typeof pushOff === 'function') await pushOff(); } catch (e) {}   // stop server reminders for wiped data
   window.location.reload();
 }
 
@@ -6187,12 +6557,13 @@ function renderReceivableList(ledgerBox) {
     const isPaid = r.status === 'paid';
     return `
       <div class="recv-row ${isPaid ? 'paid' : ''}">
-        <div class="recv-desc">
+        <div class="recv-desc${!isPaid ? ' tap' : ''}"${!isPaid ? ` onclick="openEditReceivable('${r.id}')"` : ''}>
           <div class="recv-name">${escapeHtml(r.name)}</div>
           <div class="recv-date">${dateLabel}${isPaid ? ' · รับแล้ว' : ''}${(isPaid && typeof r.received === 'number' && Math.abs(r.received - recvBase(r)) >= 0.005) ? ' · <b style="color:' + (r.received > recvBase(r) ? 'var(--deposit)' : 'var(--withdraw)') + '">รับจริง ' + fmt(r.received) + (r.received > recvBase(r) ? ' (กำไร ' : ' (ขาดทุน ') + fmt(Math.abs(r.received - recvBase(r))) + ')</b>' : ''}${(!isPaid && r.paidSoFar) ? ' · <b style="color:var(--deposit)">รับมาแล้ว ' + fmt(r.paidSoFar) + ' จากทั้งหมด ' + fmt(recvBase(r)) + '</b>' : ''}</div>
         </div>
         <div class="recv-amt">${fmt(r.amount)}</div>
         <div class="recv-actions">
+          ${!isPaid ? `<button class="recv-btn edit-btn" onclick="openEditReceivable('${r.id}')" title="แก้ไข">✏️</button>` : ''}
           ${!isPaid ? `<button class="recv-btn paid-btn" onclick="openPaidSheet('${r.id}')" title="รับเงินแล้ว">✓</button>` : ''}
           <button class="recv-btn del-btn" onclick="askDeleteReceivable('${r.id}')" title="ลบ">✕</button>
         </div>
@@ -6391,7 +6762,7 @@ if ('serviceWorker' in navigator) {
 
 // Must equal BUILD_ID in sw.js for the same release. If the newest sw.js on the server has this same build,
 // this page IS the newest version (the page is always loaded fresh), so there is nothing to update to.
-const PAGE_BUILD = '20261122230000';
+const PAGE_BUILD = '20261126140000';
 async function pageIsCurrent() {
   try {
     const r = await fetch('sw.js?c=' + Date.now(), { cache: 'no-store' });
@@ -6411,6 +6782,7 @@ async function showUpdateBanner(reg) {
   document.body.appendChild(banner);
   const g = document.getElementById('settingsBtn'); if (g) g.classList.add('has-update');
   window._pendingReg = reg;
+  notify('news', '🎉 มีเวอร์ชันใหม่ของแอป', 'เปิดแอปแล้วกด "อัปเดตเลย"', 'upd' + todayStr());
 }
 
 function dismissUpdateBanner() { window._updDismissed = true; const b = document.getElementById('updateBanner'); if (b) b.remove(); }
@@ -6466,6 +6838,7 @@ function showNewMonthBanner(prevMonthKey) {
   `;
   const container = document.querySelector('.passbook');
   if (container) container.prepend(banner);
+  notify('news', '🎉 เดือนใหม่แล้ว', 'ดูสรุปยอดเดือน ' + THAI_MONTHS[m - 1] + ' ' + (y + 543) + ' ในแอปได้เลย', 'm' + prevMonthKey);
 }
 
 function dismissNewMonthBanner() {
@@ -6601,7 +6974,7 @@ function updateHomeDots() {
   sw.addEventListener('touchmove', e => { const dx = e.touches[0].clientX - startX; dir = dx < -4 ? 1 : dx > 4 ? -1 : 0; }, { passive: true });
   sw.addEventListener('touchend', () => { released = true; }, { passive: true });
   sw.addEventListener('scroll', () => {
-    if (!released || !dir) return;
+    if (window.coBusy || !released || !dir) return;
     const a = snaps(), ti = Math.max(0, Math.min(a.length - 1, startIdx + dir)), lim = a[ti];
     if ((dir > 0 && sw.scrollLeft > lim + 1) || (dir < 0 && sw.scrollLeft < lim - 1)) { released = false; sw.style.overflowX = 'hidden'; sw.style.scrollSnapType = 'none'; sw.scrollLeft = lim; setTimeout(() => { sw.style.overflowX = ''; sw.style.scrollSnapType = ''; sw.scrollLeft = lim; }, 60); }
   }, { passive: true });
@@ -6639,12 +7012,143 @@ function openCardPick() {
   document.getElementById('cardPickList').innerHTML = HOME_CARD_DEFS.map(d => `<label class="pick-row"><input type="checkbox" ${homeCards.includes(d[0]) ? 'checked' : ''} onchange="toggleHomeCard('${d[0]}',this.checked)"><span>${d[1]} ${d[2]}<small>${d[3]}</small></span></label>`).join('');
   document.getElementById('cardPickOverlay').classList.add('show');
 }
+/* Long-press a tile -> it lifts and follows the finger; the other tiles slide to open a gap
+   at whichever slot's centre is nearest to the centre of the floating tile. */
+let coDragging = false;
+document.addEventListener('touchmove', e => { if (coDragging && e.cancelable) e.preventDefault(); }, { passive: false });
+function renderCardOrder() {
+  const g = document.getElementById('cardOrder'); if (!g) return;
+  if (!homeCards.length) { g.className = ''; g.innerHTML = '<div class="set-note">ยังไม่ได้เลือกการ์ด ติ๊กด้านล่างเพื่อเพิ่ม</div>'; return; }
+  g.className = 'co-grid';
+  g.innerHTML = homeCards.map(id => { const d = HOME_CARD_DEFS.find(x => x[0] === id); return d ? `<div class="co-tile" data-id="${id}"><span class="e">${d[1]}</span><span>${escapeHtml(d[2])}</span></div>` : ''; }).join('');
+  g.querySelectorAll('.co-tile').forEach(attachCardDrag);
+}
+/* One drag session: tiles[from] lifts and follows the finger; the others slide so there is a gap at the slot
+   whose centre is nearest to the centre of the floating tile. Slots below `fixed` never take part. */
+function coSession(tiles, from, el, pid, x0, y0, snapCenter, fixed, onDone) {
+  const tile = tiles[from];
+  const slots = tiles.map(t => { const r = t.getBoundingClientRect(); return { x: r.left, y: r.top, cx: r.left + r.width / 2, cy: r.top + r.height / 2 }; });
+  const ax = snapCenter ? 0 : slots[from].cx - x0, ay = snapCenter ? 0 : slots[from].cy - y0;
+  let to = from, moved = false; coDragging = true;
+  try { el.setPointerCapture(pid); } catch (e) {}
+  tile.classList.add('lift'); tiles.forEach(t => { if (t !== tile) t.classList.add('co-slide'); });
+  try { if (navigator.vibrate) navigator.vibrate(12); } catch (e) {}
+  function move(x, y) {
+    const mx = x + ax, my = y + ay;
+    tile.style.transform = `translate(${mx - slots[from].cx}px,${my - slots[from].cy}px) scale(1.08)`;
+    if (!moved) { if (Math.hypot(x - x0, y - y0) < 12) return; moved = true; }
+    let best = to, bd = 1e12;
+    for (let j = fixed; j < slots.length; j++) { const q = (slots[j].cx - mx) ** 2 + (slots[j].cy - my) ** 2; if (q < bd) { bd = q; best = j; } }
+    if (best !== to) {
+      to = best;
+      const rest = tiles.filter(t => t !== tile); rest.splice(best, 0, tile);
+      rest.forEach((t, k) => { if (t === tile) return; const o = tiles.indexOf(t); t.style.transform = `translate(${slots[k].x - slots[o].x}px,${slots[k].y - slots[o].y}px)`; });
+    }
+  }
+  function finish() {
+    coDragging = false;
+    tile.classList.remove('lift'); tile.classList.add('drop');
+    tile.style.transform = `translate(${slots[to].x - slots[from].x}px,${slots[to].y - slots[from].y}px)`;
+    setTimeout(() => onDone(from, to), 170);
+  }
+  move(x0, y0);
+  return { move, finish };
+}
+function attachCardDrag(tile) {
+  let timer = null, sx = 0, sy = 0, cx = 0, cy = 0, sess = null;
+  const cancelHold = () => { if (timer) { clearTimeout(timer); timer = null; } };
+  tile.addEventListener('contextmenu', e => e.preventDefault());
+  tile.addEventListener('pointerdown', e => {
+    if (sess || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    sx = cx = e.clientX; sy = cy = e.clientY; const pid = e.pointerId;
+    cancelHold(); timer = setTimeout(() => { timer = null; start(pid); }, 350);
+  });
+  tile.addEventListener('pointermove', e => {
+    cx = e.clientX; cy = e.clientY;
+    if (sess) { sess.move(cx, cy); return; }
+    if (timer && Math.hypot(cx - sx, cy - sy) > 10) cancelHold();
+  });
+  ['pointerup', 'pointercancel'].forEach(n => tile.addEventListener(n, () => { cancelHold(); if (sess) { const f = sess; sess = null; f.finish(); } }));
+  function start(pid) {
+    const tiles = [...tile.parentNode.children];
+    sess = coSession(tiles, tiles.indexOf(tile), tile, pid, cx, cy, false, 0, (from, to) => {
+      if (to !== from) { const ids = tiles.map(t => t.dataset.id); const [m] = ids.splice(from, 1); ids.splice(to, 0, m); homeCards = ids; saveHomeCards(); renderHomeCards(); }
+      renderCardOrder();
+    });
+  }
+}
+/* Long-press a card on the home page: the full-size card pops up (raised) and follows the finger left/right.
+   The other cards slide one slot to make room at whichever slot's centre is nearest to the centre of the floating card;
+   near the screen edge the row scrolls by itself. Releasing drops the card in that slot. */
+(function () {
+  const sw = document.getElementById('homeSwipe'); if (!sw) return;
+  let timer = null, sx = 0, sy = 0, cx = 0, cy = 0, card = null, S = null, swallow = 0;
+  const cancelHold = () => { if (timer) { clearTimeout(timer); timer = null; } };
+  sw.addEventListener('contextmenu', e => e.preventDefault());
+  sw.addEventListener('click', e => { if (Date.now() < swallow) { e.stopPropagation(); e.preventDefault(); } }, true);
+  sw.addEventListener('pointerdown', e => {
+    if (S || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    const c = e.target.closest ? e.target.closest('.pie-card, .hcard') : null; if (!c || !sw.contains(c) || homeCards.length < 2) return;
+    card = c; sx = cx = e.clientX; sy = cy = e.clientY; const pid = e.pointerId;
+    cancelHold(); timer = setTimeout(() => { timer = null; start(pid); }, 450);
+  });
+  sw.addEventListener('pointermove', e => { cx = e.clientX; cy = e.clientY; if (!S && timer && Math.hypot(cx - sx, cy - sy) > 10) cancelHold(); });
+  ['pointerup', 'pointercancel'].forEach(n => sw.addEventListener(n, () => { cancelHold(); if (S) finish(); }));
+  function start(pid) {
+    const cards = [...sw.children].filter(c => c.style.display !== 'none'), from = cards.indexOf(card);
+    if (from < 1) return;
+    const lefts = cards.map(c => c.offsetLeft), mids = cards.map(c => c.offsetLeft + c.offsetWidth / 2);
+    const r0 = sw.getBoundingClientRect(), fx0 = sx - r0.left + sw.scrollLeft;
+    S = { cards, from, to: from, lefts, mids, r0, fx0, raf: 0, moved: false };
+    window.coBusy = true; coDragging = true;
+    try { card.setPointerCapture(pid); } catch (e) {}
+    sw.style.scrollSnapType = 'none';
+    card.classList.add('lift'); cards.forEach(c => { if (c !== card) c.classList.add('co-slide'); });
+    try { if (navigator.vibrate) navigator.vibrate(14); } catch (e) {}
+    loop();
+  }
+  function loop() {
+    if (!S) return;
+    const d = S, edge = 56;
+    if (cx < d.r0.left + edge) sw.scrollLeft -= 11; else if (cx > d.r0.right - edge) sw.scrollLeft += 11;
+    const tx = cx - d.r0.left + sw.scrollLeft - d.fx0, ty = Math.max(-26, Math.min(26, (cy - sy) * 0.35));
+    card.style.transform = `translate(${tx}px,${ty}px) scale(1.03)`;
+    if (!d.moved && Math.abs(tx) > 12) d.moved = true;
+    if (d.moved) {
+      const mid = d.mids[d.from] + tx; let best = d.to, bd = 1e12;
+      for (let j = 1; j < d.mids.length; j++) { const q = Math.abs(d.mids[j] - mid); if (q < bd) { bd = q; best = j; } }
+      if (best !== d.to) {
+        d.to = best;
+        const rest = d.cards.filter(c => c !== card); rest.splice(best, 0, card);
+        rest.forEach((c, k) => { if (c === card) return; c.style.transform = `translateX(${d.lefts[k] - d.lefts[d.cards.indexOf(c)]}px)`; });
+        try { if (navigator.vibrate) navigator.vibrate(6); } catch (e) {}
+      }
+    }
+    d.raf = requestAnimationFrame(loop);
+  }
+  function finish() {
+    const d = S; S = null; cancelAnimationFrame(d.raf); coDragging = false; swallow = Date.now() + 600;
+    card.classList.remove('lift'); card.classList.add('drop');
+    card.style.transform = `translateX(${d.lefts[d.to] - d.lefts[d.from]}px)`;
+    const id = card.dataset.card || 'pie';
+    setTimeout(() => {
+      d.cards.forEach(c => { c.style.transform = ''; c.classList.remove('co-slide', 'drop', 'lift'); });
+      if (d.to !== d.from) {
+        const ids = d.cards.slice(1).map(c => c.dataset.card || 'pie'); const [m] = ids.splice(d.from - 1, 1); ids.splice(d.to - 1, 0, m);
+        homeCards = ids; saveHomeCards(); renderHomeCards();
+      }
+      sw.style.scrollSnapType = '';
+      const el = sw.querySelector(id === 'pie' ? '.pie-card' : '.hcard[data-card="' + id + '"]');
+      if (el) { try { sw.scrollTo({ left: Math.max(0, el.offsetLeft - (sw.clientWidth - el.offsetWidth) / 2), behavior: 'auto' }); } catch (e) {} }
+      updateHomeDots(); setTimeout(() => { window.coBusy = false; }, 300);
+    }, 180);
+  }
+})();
 function closeCardPick() { document.getElementById('cardPickOverlay').classList.remove('show'); }
 function toggleHomeCard(id, on) {
   homeCards = homeCards.filter(x => x !== id);
   if (on) homeCards.push(id);
-  homeCards.sort((a, b) => HOME_CARD_DEFS.findIndex(d => d[0] === a) - HOME_CARD_DEFS.findIndex(d => d[0] === b));
-  saveHomeCards(); renderHomeCards();
+  saveHomeCards(); renderHomeCards(); renderCardOrder();
 }
 // every budget that is set (overall + per category) for day / week / month / year, with how far each one is used
 function budgetOverview() {
@@ -6724,8 +7228,12 @@ function homeCardHtml(id) {
 function renderHomeCards() {
   const sw = document.getElementById('homeSwipe'); if (!sw) return;
   sw.querySelectorAll('.hcard').forEach(e => e.remove());
-  const pie = sw.querySelector('.pie-card'); if (pie) pie.style.display = homeCards.includes('pie') ? '' : 'none';
-  homeCards.filter(id => id !== 'pie').forEach(id => { const d = document.createElement('div'); d.className = 'hcard'; d.dataset.card = id; d.innerHTML = homeCardHtml(id); sw.appendChild(d); });
+  const pie = sw.querySelector('.pie-card');
+  homeCards.forEach(id => {
+    if (id === 'pie') { if (pie) { pie.style.display = ''; sw.appendChild(pie); } return; }
+    const d = document.createElement('div'); d.className = 'hcard'; d.dataset.card = id; d.innerHTML = homeCardHtml(id); sw.appendChild(d);
+  });
+  if (pie && !homeCards.includes('pie')) { pie.style.display = 'none'; sw.appendChild(pie); }
   const bc = document.getElementById('budgetCard'); if (bc) bc.style.display = homeCards.includes('budget') ? 'none' : '';
   updateHomeDots();
 }

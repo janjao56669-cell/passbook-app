@@ -3,7 +3,7 @@
 // same) — this is what actually makes the browser detect a service worker
 // update and fire the in-app "new version" banner.
 const APP_VERSION = 'V2.1';
-const BUILD_ID = '20261122230000';
+const BUILD_ID = '20261126140000';
 const CACHE_NAME = 'passbook-cache-' + BUILD_ID;
 const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
@@ -48,6 +48,36 @@ async function handleShare(request) {
   } catch (e) { /* the page will say it found nothing */ }
   return Response.redirect(new URL('./?shared=' + (n || 1), self.registration.scope).href, 303);
 }
+
+// closed-app reminders: the worker sends an empty push, the text is fetched here (retry: the phone may be just waking up)
+// shortcut: no 'pushsubscriptionchange' handler; the app re-registers on its next open, add one if phones go quiet
+const PUSH_API = 'https://sweet-morning-e56c.janjao56669.workers.dev';
+self.addEventListener('push', (event) => {
+  event.waitUntil((async () => {
+    let msgs = [];
+    try {
+      const sub = await self.registration.pushManager.getSubscription();
+      for (let i = 0; sub && i < 3; i++) {
+        try { const r = await fetch(PUSH_API + '/pending', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) }); msgs = (await r.json()).msgs || []; break; }
+        catch (e) { await new Promise((res) => setTimeout(res, 1500 * (i + 1))); }
+      }
+    } catch (e) {}
+    if (!msgs.length) msgs = [{ title: '🔔 บัญชีต้อการช่าง', body: 'มีเรื่องแจ้งเตือน แตะเพื่อเปิดแอป', tag: 'pb-push' }];
+    for (const m of msgs) {
+      await self.registration.showNotification(String(m.title || '🔔 บัญชีต้อการช่าง'), { body: String(m.body || ''), tag: m.tag || 'pb-push', renotify: true, icon: 'icon-192.png', badge: 'icon-192.png', vibrate: [180, 90, 180], data: { url: self.registration.scope } });
+    }
+  })());
+});
+
+// tapping a notification opens (or brings back) the app
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || self.registration.scope;
+  event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+    for (const c of list) { if (c.url.startsWith(self.registration.scope) && 'focus' in c) return c.focus(); }
+    return self.clients.openWindow(url);
+  }));
+});
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
