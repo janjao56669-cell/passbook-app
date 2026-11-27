@@ -4045,8 +4045,8 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && ntf
 
 async function ntfTest() {
   if (!ntfReady()) { showToast('เปิดการแจ้งเตือนก่อน'); return; }
-  if (await pushSync(true)) {   // server connected: test the real closed-app path (one notification)
-    try { const reg = await swReady(), sub = await reg.pushManager.getSubscription(); if (sub) { showToast('อีกประมาณ 8 วินาทีจะมีแจ้งเตือนเด้ง ลองปิดแอปรอดูได้', 4000); setTimeout(() => fetch(PUSH_API + '/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint }) }).catch(() => {}), 8000); return; } } catch (e) {}
+  if (await pushSync(true)) {   // server connected: test the real closed-app path; the server waits (delay), so swiping the app away is fine
+    try { const reg = await swReady(), sub = await reg.pushManager.getSubscription(); if (sub) { showToast('อีกประมาณ 10 วินาทีจะมีแจ้งเตือนเด้ง ปิดหรือปัดแอปทิ้งรอดูได้', 4000); fetch(PUSH_API + '/test', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ endpoint: sub.endpoint, delay: 10 }) }).catch(() => {}); return; } } catch (e) {}
   }
   const ok = await ntfShow('🔔 ทดสอบแจ้งเตือน', 'ถ้าเห็นข้อความนี้ที่แถบแจ้งเตือน แปลว่าใช้ได้แล้ว', 'pb-test'); if (!ok) showToast('แจ้งเตือนไม่สำเร็จ', 3000);
 }
