@@ -2,10 +2,10 @@
 // BUILD_ID changes on every release too (even when APP_VERSION label stays the
 // same) — this is what actually makes the browser detect a service worker
 // update and fire the in-app "new version" banner.
-const APP_VERSION = 'V2.3.1';   // = APP_VERSION_LABEL in index.html; the push Worker announces a change of this label
+const APP_VERSION = 'V2.4';   // = APP_VERSION_LABEL in index.html; the push Worker announces a change of this label
 // announcement pushed to every phone once (e.g. maintenance); set one line of JSON with a new id, null = none
 const APP_NOTICE = null;
-const BUILD_ID = '20261126221800';
+const BUILD_ID = '20261127131500';
 const CACHE_NAME = 'passbook-cache-' + BUILD_ID;
 const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './badge-96.png'];
 

@@ -1927,7 +1927,7 @@ const CAT_TRASH_KEY = 'categoryTrash';
 const CUSTOM_EMOJI_KEY = 'customEmojis';
 const TEXT_SIZE_KEY = 'uiTextSize';
 const LAST_BACKUP_KEY = 'lastBackupAt';
-const APP_VERSION_LABEL = 'V2.3.1';
+const APP_VERSION_LABEL = 'V2.4';
 const TEXT_ZOOMS = { normal: 1, large: 1.12, xlarge: 1.24 };
 let customEmojis = [];
 
@@ -6123,6 +6123,11 @@ async function shareYearImg() {
 /* ----- What's new (release notes) ----- */
 // Newest first. Every new release: add a new entry at the TOP and bump APP_VERSION_LABEL + sw.js.
 const RELEASE_NOTES = [
+  { ver: 'V2.4', date: '2026-11-27', items: [
+    { e: '📎', t: 'แนบรูปในความคิดเห็นได้', d: 'หน้าส่งความคิดเห็นแนบรูปหรือภาพแคปหน้าจอได้สูงสุด 3 รูป อธิบายปัญหาได้ง่ายขึ้น' },
+    { e: '🔔', t: 'แจ้งเตือนสำคัญเด้งทันที', d: 'มีเวอร์ชันใหม่ ประกาศ/ปิดปรับปรุง และสรุปเดือน (วันที่ 1 เวลา 08:00) เด้งแม้ปิดแอป ไม่ต้องรอเวลาเตือนที่ตั้งไว้ (เปิดหัวข้อข่าวสารไว้ในตั้งค่าการแจ้งเตือน)' },
+    { e: '🧪', t: 'ปุ่มลองแจ้งเตือนดีขึ้น', d: 'กดแล้วปัดแอปทิ้งได้เลย ภายในประมาณ 10 วินาทีจะเด้ง' }
+  ] },
   { ver: 'V2.3.1', date: '2026-11-26', items: [
     { e: '🏦', t: 'รับเงินค้างรับ เลือกบัญชีได้', d: 'กด ✓ รับเงินแล้ว เลือกได้ว่าเงินเข้าเงินสดหรือธนาคารไหน ยอดแต่ละบัญชีจึงตรง' }
   ] },
@@ -6907,7 +6912,7 @@ if ('serviceWorker' in navigator) {
 
 // Must equal BUILD_ID in sw.js for the same release. If the newest sw.js on the server has this same build,
 // this page IS the newest version (the page is always loaded fresh), so there is nothing to update to.
-const PAGE_BUILD = '20261126221800';
+const PAGE_BUILD = '20261127131500';
 async function pageIsCurrent() {
   try {
     const r = await fetch('sw.js?c=' + Date.now(), { cache: 'no-store' });
