@@ -69,9 +69,10 @@ self.addEventListener('push', (event) => {
       }
     } catch (e) {}
     if (!msgs.length) return;   // keep the general one, tapping it still opens the app
-    (await self.registration.getNotifications({ tag: 'pb-push' })).forEach((n) => n.close());
-    for (const m of msgs) {
-      await self.registration.showNotification(String(m.title || '🔔 บัญชีต้อการช่าง'), Object.assign({ body: String(m.body || ''), tag: m.tag || 'pb-push', silent: true }, opts));   // the general one already buzzed
+    // the first message takes the general one's place (same tag): it stays on screen as the same pop-up with the real text;
+    // closing it and showing a silent one instead made the pop-up vanish, so it looked like nothing came
+    for (const [i, m] of msgs.entries()) {
+      await self.registration.showNotification(String(m.title || '🔔 บัญชีต้อการช่าง'), Object.assign({ body: String(m.body || ''), tag: i === 0 ? 'pb-push' : (m.tag || 'pb-push') + '-' + i }, opts));
     }
   })());
 });
