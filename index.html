@@ -1626,6 +1626,9 @@ try { var __k = localStorage.getItem('uiTextSize'); var __z = {normal:1, large:1
     <input type="text" class="text-input" id="fbName" maxlength="40" placeholder="พิมพ์ชื่อหรือชื่อเล่น" autocomplete="off">
     <div class="field-label"><span>ข้อความ</span><span id="fbCount">0/1000</span></div>
     <textarea class="fb-text" id="fbText" maxlength="1000" placeholder="พิมพ์ที่นี่..." oninput="fbOnInput()"></textarea>
+    <div class="field-label"><span>📎 แนบรูป (ไม่บังคับ สูงสุด 3 รูป)</span></div>
+    <div id="fbImgBox"></div>
+    <input type="file" id="fbImgPick" accept="image/*,.heic,.heif" multiple style="display:none" onchange="fbAddImages(this)">
     <input type="text" class="fb-hp" id="fbWebsite" tabindex="-1" autocomplete="off" aria-hidden="true">
     <div class="fb-error" id="fbError"></div>
     <div class="sheet-actions">
@@ -5549,6 +5552,25 @@ const FB_NAME_KEY = 'feedbackName';
 const FB_DRAFT_KEY = 'feedbackDraft';
 let fbType = FB_TYPES[0];
 let fbSending = false;
+const FB_MAX_IMG = 3;
+let fbImgs = [];   // { blob, url } — kept in memory only until sent
+
+function renderFbImgs() {
+  let html = fbImgs.length ? '<div class="slip-grid">' + fbImgs.map((x, i) => `<div class="slip-th"><img src="${x.url}" alt="รูปแนบ ${i + 1}"><button type="button" class="rm" aria-label="เอารูปออก" onclick="fbRemoveImg(${i})">✕</button></div>`).join('') + '</div>' : '';
+  if (fbImgs.length < FB_MAX_IMG) html += `<div class="attach-row"><button type="button" class="attach-btn" onclick="document.getElementById('fbImgPick').click()">🖼️ ${fbImgs.length ? 'เพิ่มรูป' : 'เลือกรูป / ภาพแคปหน้าจอ'}</button></div>`;
+  document.getElementById('fbImgBox').innerHTML = html;
+}
+async function fbAddImages(inp) {
+  const files = await snapshotFiles(inp);
+  for (const f of files) {
+    if (fbImgs.length >= FB_MAX_IMG) { showToast('แนบได้สูงสุด ' + FB_MAX_IMG + ' รูป', 3000); break; }
+    try { const blob = await resizeToBlob(f, 1280, 0.8); fbImgs.push({ blob, url: URL.createObjectURL(blob) }); }
+    catch (e) { showFbError(e && e.rejected ? e.message : 'เปิดรูปนี้ไม่ได้ ลองแคปหน้าจอรูปนั้นแล้วเลือกรูปที่แคปแทน'); }
+  }
+  renderFbImgs();
+}
+function fbRemoveImg(i) { const x = fbImgs[i]; if (!x) return; try { URL.revokeObjectURL(x.url); } catch (e) {} fbImgs.splice(i, 1); renderFbImgs(); }
+function fbClearImgs() { fbImgs.forEach(x => { try { URL.revokeObjectURL(x.url); } catch (e) {} }); fbImgs = []; }
 
 function detectPlatform() {
   const ua = navigator.userAgent || '';
@@ -5584,6 +5606,7 @@ function openFeedback() {
   document.getElementById('fbCount').textContent = draft.length + '/1000';
   showFbError('');
   renderFbTypes();
+  renderFbImgs();
   document.getElementById('feedbackOverlay').classList.add('show');
 }
 function closeFeedback() { document.getElementById('feedbackOverlay').classList.remove('show'); }
@@ -5607,13 +5630,14 @@ async function sendFeedback() {
   fbSending = true; btn.disabled = true; btn.textContent = 'กำลังส่ง...';
   showFbError('');
   const ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-  const timer = setTimeout(() => { if (ctrl) ctrl.abort(); }, 15000);
+  const timer = setTimeout(() => { if (ctrl) ctrl.abort(); }, fbImgs.length ? 45000 : 15000);
   try {
+    const images = await Promise.all(fbImgs.map(x => fileToDataUrl(x.blob).then(d => d.slice(d.indexOf(',') + 1))));
     const res = await fetch(FEEDBACK_API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        type: fbType, name, text,
+        type: fbType, name, text, images,
         appVersion: APP_VERSION_LABEL, platform: detectPlatform(),
         website: document.getElementById('fbWebsite').value
       }),
@@ -5625,6 +5649,7 @@ async function sendFeedback() {
       try { localStorage.setItem(FB_NAME_KEY, name); localStorage.removeItem(FB_DRAFT_KEY); } catch (e) {}
       document.getElementById('fbText').value = '';
       document.getElementById('fbCount').textContent = '0/1000';
+      fbClearImgs();
       closeFeedback();
       showToast('ส่งความคิดเห็นแล้ว ขอบคุณค่ะ 🙏', 3500);
     } else if (res.status === 429) {
