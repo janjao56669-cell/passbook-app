@@ -4,8 +4,8 @@
 // update and fire the in-app "new version" banner.
 const APP_VERSION = 'V2.4';   // = APP_VERSION_LABEL in index.html; the push Worker announces a change of this label
 // announcement pushed to every phone once (e.g. maintenance); set one line of JSON with a new id, null = none
-const APP_NOTICE = {"id":"morning-test-2026-11-28-0739","title":"🌅 ทดสอบแจ้งเตือนตอนเช้า","body":"ถ้าเห็นอันนี้โดยไม่ได้เปิดแอป = แจ้งเตือนทำงานดี"};
-const BUILD_ID = '20261127131500';
+const APP_NOTICE = null;
+const BUILD_ID = '20261128081000';
 const CACHE_NAME = 'passbook-cache-' + BUILD_ID;
 const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './badge-96.png'];
 
@@ -52,8 +52,25 @@ async function handleShare(request) {
 }
 
 // closed-app reminders: the worker sends an empty push, the text is fetched here (retry: the phone may be just waking up)
-// shortcut: no 'pushsubscriptionchange' handler; the app re-registers on its next open, add one if phones go quiet
 const PUSH_API = 'https://sweet-morning-e56c.janjao56669.workers.dev';
+function b64ToU8(s) { const b = atob(s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - s.length % 4) % 4)); return Uint8Array.from(b, (c) => c.charCodeAt(0)); }
+// Chrome rotates/expires the push subscription on its own; without this the phone stays silent until the app is reopened.
+// Re-subscribe and re-register in the background, reusing the settings the app last stashed in the cache.
+self.addEventListener('pushsubscriptionchange', (event) => {
+  event.waitUntil((async () => {
+    try {
+      let sub = event.newSubscription;   // some browsers hand over the fresh subscription
+      if (!sub) {
+        const k = (await (await fetch(PUSH_API + '/key')).json()).key;
+        if (!k) return;
+        sub = await self.registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(k) });
+      }
+      let cfg = {};   // the worker fills in defaults if the app never stashed one
+      try { const c = await (await caches.open('passbook-push')).match('cfg'); if (c) cfg = await c.json(); } catch (e) {}
+      await fetch(PUSH_API + '/sync', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ subscription: sub.toJSON(), cfg }) });
+    } catch (e) {}
+  })());
+});
 self.addEventListener('push', (event) => {
   event.waitUntil((async () => {
     const opts = { icon: 'icon-192.png', badge: 'badge-96.png', data: { url: self.registration.scope } };

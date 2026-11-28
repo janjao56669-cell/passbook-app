@@ -4033,7 +4033,10 @@ async function pushSync(create) {
     let sub = await reg.pushManager.getSubscription();
     if (!sub && create) { const k = (await (await fetch(PUSH_API + '/key')).json()).key; if (!k) return false; sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToU8(k) }); }
     if (!sub) { pushSetOn(false); return false; }
-    const r = await fetch(PUSH_API + '/sync', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ subscription: sub.toJSON(), cfg: pushCfg() }) });
+    const cfg = pushCfg();
+    const r = await fetch(PUSH_API + '/sync', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ subscription: sub.toJSON(), cfg }) });
+    // stash the settings so the service worker can re-register on its own (pushsubscriptionchange) while the app is closed
+    try { if (r.ok) (await caches.open('passbook-push')).put('cfg', new Response(JSON.stringify(cfg), { headers: { 'Content-Type': 'application/json' } })); } catch (e) {}
     pushSetOn(r.ok);
     return r.ok;
   } catch (e) { return false; }   // offline: keep the last state, try again next time
@@ -6912,7 +6915,7 @@ if ('serviceWorker' in navigator) {
 
 // Must equal BUILD_ID in sw.js for the same release. If the newest sw.js on the server has this same build,
 // this page IS the newest version (the page is always loaded fresh), so there is nothing to update to.
-const PAGE_BUILD = '20261127131500';
+const PAGE_BUILD = '20261128081000';
 async function pageIsCurrent() {
   try {
     const r = await fetch('sw.js?c=' + Date.now(), { cache: 'no-store' });
