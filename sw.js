@@ -4,7 +4,7 @@
 // update and fire the in-app "new version" banner.
 const APP_VERSION = 'V2.4';   // = APP_VERSION_LABEL in index.html; the push Worker announces a change of this label
 // announcement pushed to every phone once (e.g. maintenance); set one line of JSON with a new id, null = none
-const APP_NOTICE = {"id":"test-2026-11-27-1318b","title":"🔔 ทดสอบรอบ 2 (จอดับอยู่ก็เด้ง)","body":"ส่งจากผู้พัฒนา ไม่ต้องทำอะไร"};
+const APP_NOTICE = {"id":"morning-test-2026-11-28-0739","title":"🌅 ทดสอบแจ้งเตือนตอนเช้า","body":"ถ้าเห็นอันนี้โดยไม่ได้เปิดแอป = แจ้งเตือนทำงานดี"};
 const BUILD_ID = '20261127131500';
 const CACHE_NAME = 'passbook-cache-' + BUILD_ID;
 const APP_SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './badge-96.png'];
